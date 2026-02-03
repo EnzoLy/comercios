@@ -52,9 +52,9 @@ export class User {
   updatedAt!: Date
 
   // Relationships
-  @OneToMany('Store', (store: Store) => store.owner)
-  ownedStores!: Store[]
+  @OneToMany('store', (store: any) => store.owner)
+  ownedStores!: any[]
 
-  @OneToMany('Employment', (employment: Employment) => employment.user)
-  employments!: Employment[]
+  @OneToMany('employment', (employment: any) => employment.user)
+  employments!: any[]
 }

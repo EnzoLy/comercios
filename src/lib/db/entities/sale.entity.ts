@@ -98,17 +98,17 @@ export class Sale {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('Store', (store: Store) => store.sales, { onDelete: 'CASCADE' })
+  @ManyToOne('store', (store: any) => store.sales, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
-  store!: Store
+  store!: any
 
-  @ManyToOne('User', { onDelete: 'RESTRICT' })
+  @ManyToOne('user', { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'cashierId' })
-  cashier!: User
+  cashier!: any
 
-  @OneToMany('SaleItem', (saleItem: SaleItem) => saleItem.sale, { cascade: true })
-  items!: SaleItem[]
+  @OneToMany('sale_item', (saleItem: any) => saleItem.sale, { cascade: true })
+  items!: any[]
 
-  @OneToMany('StockMovement', (movement: StockMovement) => movement.sale)
-  stockMovements!: StockMovement[]
+  @OneToMany('stock_movement', (movement: any) => movement.sale)
+  stockMovements!: any[]
 }

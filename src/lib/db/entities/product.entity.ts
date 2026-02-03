@@ -101,24 +101,24 @@ export class Product {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('Store', (store: Store) => store.products, { onDelete: 'CASCADE' })
+  @ManyToOne('store', (store: any) => store.products, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
-  store!: Store
+  store!: any
 
-  @ManyToOne('Category', (category: Category) => category.products, { onDelete: 'SET NULL' })
+  @ManyToOne('category', (category: any) => category.products, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'categoryId' })
-  category?: Category
+  category?: any
 
-  @ManyToOne('Supplier', (supplier: Supplier) => supplier.products, { onDelete: 'SET NULL' })
+  @ManyToOne('supplier', (supplier: any) => supplier.products, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'supplierId' })
-  supplier?: Supplier
+  supplier?: any
 
-  @OneToMany('StockMovement', (movement: StockMovement) => movement.product)
-  stockMovements!: StockMovement[]
+  @OneToMany('stock_movement', (movement: any) => movement.product)
+  stockMovements!: any[]
 
-  @OneToMany('SaleItem', (saleItem: SaleItem) => saleItem.product)
-  saleItems!: SaleItem[]
+  @OneToMany('sale_item', (saleItem: any) => saleItem.product)
+  saleItems!: any[]
 
-  @OneToMany('ProductBarcode', (barcode: ProductBarcode) => barcode.product)
-  barcodes!: ProductBarcode[]
+  @OneToMany('product_barcode', (barcode: any) => barcode.product)
+  barcodes!: any[]
 }

@@ -87,22 +87,22 @@ export class Store {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('User', (user: User) => user.ownedStores, { onDelete: 'CASCADE' })
+  @ManyToOne('user', (user: any) => user.ownedStores, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ownerId' })
-  owner!: User
+  owner!: any
 
-  @OneToMany('Employment', (employment: Employment) => employment.store)
-  employments!: Employment[]
+  @OneToMany('employment', (employment: any) => employment.store)
+  employments!: any[]
 
-  @OneToMany('Category', (category: Category) => category.store)
-  categories!: Category[]
+  @OneToMany('category', (category: any) => category.store)
+  categories!: any[]
 
-  @OneToMany('Product', (product: Product) => product.store)
-  products!: Product[]
+  @OneToMany('product', (product: any) => product.store)
+  products!: any[]
 
-  @OneToMany('Sale', (sale: Sale) => sale.store)
-  sales!: Sale[]
+  @OneToMany('sale', (sale: any) => sale.store)
+  sales!: any[]
 
-  @OneToMany('Supplier', (supplier: Supplier) => supplier.store)
-  suppliers!: Supplier[]
+  @OneToMany('supplier', (supplier: any) => supplier.store)
+  suppliers!: any[]
 }

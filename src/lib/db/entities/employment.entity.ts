@@ -57,11 +57,11 @@ export class Employment {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('User', (user: User) => user.employments, { onDelete: 'CASCADE' })
+  @ManyToOne('user', (user: any) => user.employments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
-  user!: User
+  user!: any
 
-  @ManyToOne('Store', (store: Store) => store.employments, { onDelete: 'CASCADE' })
+  @ManyToOne('store', (store: any) => store.employments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
-  store!: Store
+  store!: any
 }
