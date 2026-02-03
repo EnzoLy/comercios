@@ -16,6 +16,7 @@ import {
   Store,
   BarChart3,
 } from 'lucide-react'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 interface SidebarProps {
   storeSlug: string
@@ -131,13 +132,17 @@ export function Sidebar({ storeSlug, isOwner }: SidebarProps) {
         })}
       </nav>
 
-      <div className="p-4 border-t">
+      <div className="p-4 border-t space-y-2">
         <Link
           href="/dashboard/select-store"
-          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
           Cambiar Tienda
         </Link>
+        <div className="flex items-center justify-between px-3 py-2">
+          <span className="text-sm text-gray-600 dark:text-gray-400">Tema</span>
+          <ThemeToggle />
+        </div>
       </div>
     </aside>
   )

@@ -57,11 +57,16 @@ export async function PATCH(
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
-    // Convert empty strings to null for barcode and imageUrl
-    const updateData = {
-      ...validated,
-      barcode: validated.barcode || null,
-      imageUrl: validated.imageUrl || null,
+    // Build update data, converting empty strings to null and removing undefined values
+    const updateData: any = {}
+
+    for (const [key, value] of Object.entries(validated)) {
+      if (value === undefined) continue
+      if (value === '') {
+        updateData[key] = null
+      } else {
+        updateData[key] = value
+      }
     }
 
     // Check for duplicate SKU or barcode if updating
