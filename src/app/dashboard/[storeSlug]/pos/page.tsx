@@ -416,9 +416,9 @@ export default function POSPage() {
     <div className="h-full flex flex-col lg:flex-row">
       {/* Left: Product Search/Scan */}
       <div className="flex-1 p-4 md:p-6 overflow-auto">
-        <div className="flex items-center justify-between mb-4 md:mb-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-2 mb-4 md:mb-6">
           <h1 className="text-xl md:text-2xl font-bold">Caja</h1>
-          <div className="flex gap-2">
+          <div className="flex flex-col md:flex-row gap-3 md:gap-2 w-full md:w-auto">
             <ShiftSwitcher
               storeId={store.storeId}
               currentShift={currentShift}
@@ -429,6 +429,7 @@ export default function POSPage() {
               size="sm"
               onClick={() => setRecentSalesOpen(true)}
               title="F2"
+              className="w-full md:w-auto"
             >
               Últimas Ventas
             </Button>
@@ -436,6 +437,7 @@ export default function POSPage() {
               variant="outline"
               size="sm"
               onClick={() => setShiftReportOpen(true)}
+              className="w-full md:w-auto"
             >
               <Clock className="h-4 w-4 mr-2" />
               Cerrar Turno
