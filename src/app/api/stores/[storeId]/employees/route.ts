@@ -20,7 +20,11 @@ export async function GET(
       return NextResponse.json({ error: 'Store ID required' }, { status: 400 })
     }
 
-    await requireStoreAccess(storeId)
+    // Only ADMIN, MANAGER, and OWNER can view all employees
+    const owner = await isStoreOwner(storeId)
+    if (!owner) {
+      await requireRole(storeId, [EmploymentRole.ADMIN, EmploymentRole.MANAGER])
+    }
 
     const dataSource = await getDataSource()
     const employmentRepo = dataSource.getRepository(Employment)
@@ -78,20 +82,24 @@ export async function POST(
     const userRepo = dataSource.getRepository(User)
     const employmentRepo = dataSource.getRepository(Employment)
 
+    // Generate email and password if not provided (for POS-only employees)
+    const email = validated.email || `employee-${Date.now()}@${storeId}.internal`
+    const password = validated.password || Math.random().toString(36).slice(-12)
+
     // Check if user exists
     let user = await userRepo.findOne({
-      where: { email: validated.email },
+      where: { email },
     })
 
     if (!user) {
       // Create new user if they don't exist
-      const hashedPassword = await bcrypt.hash(validated.password, 10)
+      const hashedPassword = await bcrypt.hash(password, 10)
       user = userRepo.create({
         name: validated.name,
-        email: validated.email,
+        email,
         password: hashedPassword,
         role: UserRole.EMPLOYEE,
-        mustChangePassword: true,
+        mustChangePassword: false, // POS employees don't need to change password
       })
       await userRepo.save(user)
     }

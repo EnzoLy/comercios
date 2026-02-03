@@ -97,3 +97,53 @@ export function getEmploymentRoleFromHeaders(request: Request): EmploymentRole |
   const role = request.headers.get('x-employment-role')
   return role as EmploymentRole | null
 }
+
+/**
+ * Validates that activeUserId has access to the store as an active employee.
+ * Returns the validated userId to use for queries.
+ * Throws ForbiddenError if activeUserId is invalid or inactive.
+ * Logs access denial attempts to audit_log for security monitoring.
+ */
+export async function validateActiveUser(
+  activeUserId: string | null | undefined,
+  sessionUserId: string,
+  storeId: string
+): Promise<string> {
+  // If no activeUserId or same as session, use session user
+  if (!activeUserId || activeUserId === sessionUserId) {
+    return sessionUserId
+  }
+
+  // Validate that activeUserId exists as active employment in this store
+  const { getRepository } = await import('@/lib/db')
+  const { Employment } = await import('@/lib/db/entities/employment.entity')
+  const { AuditLog } = await import('@/lib/db/entities/audit-log.entity')
+
+  const employmentRepo = await getRepository(Employment)
+  const employment = await employmentRepo.findOne({
+    where: { userId: activeUserId, storeId, isActive: true }
+  })
+
+  if (!employment) {
+    // Log access denial attempt
+    try {
+      const auditLogRepo = await getRepository(AuditLog)
+      await auditLogRepo.save({
+        eventType: 'ACTIVE_USER_ACCESS_DENIED',
+        userId: activeUserId,
+        storeId,
+        details: JSON.stringify({
+          sessionUserId,
+          reason: 'Employment not found or inactive'
+        }),
+      })
+    } catch (error) {
+      // Don't let audit logging failures break the request
+      console.error('Failed to log access denial:', error)
+    }
+
+    throw new ForbiddenError('Active user does not have access to this store')
+  }
+
+  return activeUserId
+}

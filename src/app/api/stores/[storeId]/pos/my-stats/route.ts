@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import {
   requireStoreAccess,
   getUserIdFromHeaders,
+  validateActiveUser,
 } from '@/lib/auth/permissions'
 import { getDataSource } from '@/lib/db'
 import { Sale, SaleStatus } from '@/lib/db/entities/sale.entity'
@@ -40,6 +41,12 @@ export async function GET(
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || 'today'
 
+    // Check if there's an activeUserId override (for multi-user PC scenario)
+    const activeUserId = searchParams.get('activeUserId')
+
+    // Validate activeUserId against database - throws ForbiddenError if invalid
+    const filterUserId = await validateActiveUser(activeUserId, userId, storeId)
+
     const dataSource = await getDataSource()
 
     // Calculate date range
@@ -55,7 +62,7 @@ export async function GET(
       .createQueryBuilder('sale')
       .leftJoinAndSelect('sale.items', 'items')
       .where('sale.storeId = :storeId', { storeId })
-      .andWhere('sale.cashierId = :userId', { userId })
+      .andWhere('sale.cashierId = :userId', { userId: filterUserId })
       .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
       .andWhere('sale.createdAt >= :startDate', { startDate })
       .andWhere('sale.createdAt <= :endDate', { endDate })
@@ -72,9 +79,9 @@ export async function GET(
       .createQueryBuilder('saleItem')
       .select('saleItem.productName', 'productName')
       .addSelect('SUM(saleItem.quantity)', 'totalQuantity')
-      .innerJoin(Sale, 'sale', 'sale.id = saleItem.saleId')
+      .innerJoin('saleItem.sale', 'sale')
       .where('sale.storeId = :storeId', { storeId })
-      .andWhere('sale.cashierId = :userId', { userId })
+      .andWhere('sale.cashierId = :userId', { userId: filterUserId })
       .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
       .andWhere('sale.createdAt >= :startDate', { startDate })
       .andWhere('sale.createdAt <= :endDate', { endDate })
@@ -107,7 +114,7 @@ export async function GET(
     const sortedEmployees = Array.from(employeeSalesMap.entries())
       .sort((a, b) => b[1] - a[1])
 
-    const employeeRank = sortedEmployees.findIndex((e) => e[0] === userId) + 1
+    const employeeRank = sortedEmployees.findIndex((e) => e[0] === filterUserId) + 1
     const totalEmployees = sortedEmployees.length
 
     return NextResponse.json({
@@ -128,6 +135,15 @@ export async function GET(
     })
   } catch (error) {
     console.error('Get my stats error:', error)
+
+    // Handle authorization errors
+    if (error instanceof Error && error.name === 'ForbiddenError') {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 403 }
+      )
+    }
+
     return NextResponse.json(
       { error: 'Failed to fetch stats' },
       { status: 500 }

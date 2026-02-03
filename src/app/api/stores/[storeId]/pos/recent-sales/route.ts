@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import {
   requireStoreAccess,
   getUserIdFromHeaders,
+  validateActiveUser,
 } from '@/lib/auth/permissions'
 import { getDataSource } from '@/lib/db'
 import { Sale, SaleStatus } from '@/lib/db/entities/sale.entity'
@@ -36,6 +37,13 @@ export async function GET(
       )
     }
 
+    // Check if there's an activeUserId override (for multi-user PC scenario)
+    const url = new URL(request.url)
+    const activeUserId = url.searchParams.get('activeUserId')
+
+    // Validate activeUserId against database - throws ForbiddenError if invalid
+    const filterUserId = await validateActiveUser(activeUserId, userId, storeId)
+
     const dataSource = await getDataSource()
 
     // Get last 10 completed sales by this employee
@@ -44,7 +52,7 @@ export async function GET(
       .createQueryBuilder('sale')
       .leftJoinAndSelect('sale.items', 'items')
       .where('sale.storeId = :storeId', { storeId })
-      .andWhere('sale.cashierId = :userId', { userId })
+      .andWhere('sale.cashierId = :userId', { userId: filterUserId })
       .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
       .orderBy('sale.createdAt', 'DESC')
       .limit(10)
@@ -70,6 +78,15 @@ export async function GET(
     return NextResponse.json(response)
   } catch (error) {
     console.error('Get recent sales error:', error)
+
+    // Handle authorization errors
+    if (error instanceof Error && error.name === 'ForbiddenError') {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 403 }
+      )
+    }
+
     return NextResponse.json(
       { error: 'Failed to fetch recent sales' },
       { status: 500 }
