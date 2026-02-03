@@ -501,14 +501,14 @@ export default function POSPage() {
             <p className="text-center text-gray-500 mt-8">El carrito está vacío</p>
           ) : (
             cart.map((item) => (
-              <Card key={item.productId}>
+              <Card key={item.productId} style={{ borderColor: 'var(--color-accent)' }}>
                 <CardContent className="p-3 md:p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1">
                       <p className="font-medium text-sm md:text-base">{item.name}</p>
                       <p className="text-xs md:text-sm text-gray-500">{item.sku}</p>
                       {item.discount && item.discount > 0 && (
-                        <p className="text-xs text-red-500 mt-1">
+                        <p className="text-xs mt-1" style={{ color: 'var(--color-primary)' }}>
                           Descuento: {formatCurrency(item.discount)}
                         </p>
                       )}
@@ -519,7 +519,7 @@ export default function POSPage() {
                       onClick={() => removeFromCart(item.productId)}
                       className="h-8 w-8 p-0"
                     >
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                      <Trash2 className="h-4 w-4" style={{ color: '#ef4444' }} />
                     </Button>
                   </div>
 
@@ -574,12 +574,12 @@ export default function POSPage() {
               </div>
             )}
             {cartDiscount > 0 && (
-              <div className="flex justify-between text-sm md:text-base text-red-500">
+              <div className="flex justify-between text-sm md:text-base" style={{ color: 'var(--color-primary)' }}>
                 <span>Descuento:</span>
                 <span>-{formatCurrency(cartDiscount)}</span>
               </div>
             )}
-            <div className="flex justify-between text-lg md:text-xl font-bold border-t pt-2">
+            <div className="flex justify-between text-lg md:text-xl font-bold pt-2" style={{ borderTop: '2px solid var(--color-primary)' }}>
               <span>Total:</span>
               <span>{formatCurrency(total)}</span>
             </div>
