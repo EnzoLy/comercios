@@ -40,9 +40,9 @@ function StoreLayoutContent({
 
   // Define allowed routes by role
   const allowedRoutes: Record<string, string[]> = {
-    CASHIER: ['pos'],
-    STOCK_KEEPER: ['pos', 'inventory'],
-    MANAGER: ['pos', 'employees', 'shifts', 'analytics', 'sales', 'reports'],
+    CASHIER: ['pos', 'my-access'],
+    STOCK_KEEPER: ['pos', 'inventory', 'my-access'],
+    MANAGER: ['pos', 'employees', 'shifts', 'analytics', 'sales', 'reports', 'my-access'],
     ADMIN: [
       'pos',
       'employees',
@@ -53,6 +53,7 @@ function StoreLayoutContent({
       'products',
       'categories',
       'inventory',
+      'my-access',
     ],
   }
 
