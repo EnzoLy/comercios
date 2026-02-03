@@ -15,10 +15,43 @@ export const authConfig: NextAuthConfig = {
       },
       async authorize(credentials) {
         try {
-          // Validate credentials
-          const { email, password } = signInSchema.parse(credentials)
+          const email = (credentials as any)?.email
+          const password = (credentials as any)?.password
 
-          // Find user
+          // Check for QR token login flag
+          const isQrLogin = password === '__QR_TOKEN_LOGIN__'
+
+          // For QR login, skip password validation
+          if (!isQrLogin) {
+            // Normal login - validate credentials with schema
+            const validated = signInSchema.parse({ email, password })
+            const validatedEmail = validated.email
+            const validatedPassword = validated.password
+
+            // Find user
+            const userRepo = await getRepository(User)
+            const user = await userRepo.findOne({
+              where: { email: validatedEmail },
+              relations: ['employments', 'employments.store'],
+            })
+
+            if (!user || !user.isActive) {
+              return null
+            }
+
+            // Verify password
+            const isValidPassword = await bcrypt.compare(validatedPassword, user.password)
+            if (!isValidPassword) {
+              return null
+            }
+          } else {
+            // QR login - only validate email exists
+            if (!email) {
+              return null
+            }
+          }
+
+          // Find user for both normal and QR login
           const userRepo = await getRepository(User)
           const user = await userRepo.findOne({
             where: { email },
@@ -29,20 +62,17 @@ export const authConfig: NextAuthConfig = {
             return null
           }
 
-          // Verify password
-          const isValidPassword = await bcrypt.compare(password, user.password)
-          if (!isValidPassword) {
-            return null
-          }
+          // For normal login, restrict to ADMIN or OWNER
+          // For QR login, allow any active user with valid employment
+          if (!isQrLogin) {
+            const hasAdminAccess = (user.employments || []).some(
+              (emp: Employment) => emp.isActive && (emp.role === 'ADMIN' || emp.store.ownerId === user.id)
+            )
 
-          // Check if user has ADMIN or OWNER access (restrict login to these roles)
-          const hasAdminAccess = (user.employments || []).some(
-            (emp: Employment) => emp.isActive && (emp.role === 'ADMIN' || emp.store.ownerId === user.id)
-          )
-
-          if (!hasAdminAccess) {
-            console.warn(`Login denied: ${email} has no ADMIN/OWNER role`)
-            return null
+            if (!hasAdminAccess) {
+              console.warn(`Login denied: ${email} has no ADMIN/OWNER role`)
+              return null
+            }
           }
 
           // Build stores array from employments
