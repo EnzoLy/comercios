@@ -62,6 +62,7 @@ function QRLoginContent() {
       // Redirect to store with QR data in query params
       setTimeout(() => {
         const params = new URLSearchParams({
+          qrUserId: result.data.userId,
           qrRole: result.data.role,
           qrName: result.data.name,
         })
