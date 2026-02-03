@@ -17,6 +17,7 @@ import {
   Store,
   BarChart3,
   Clock,
+  QrCode,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 
@@ -42,6 +43,11 @@ export function Sidebar({ storeSlug, isOwner, role }: SidebarProps) {
       label: 'Panel de Control',
       href: `/dashboard/${storeSlug}`,
       icon: LayoutDashboard,
+    },
+    {
+      label: 'Mi Acceso',
+      href: `/dashboard/${storeSlug}/my-access`,
+      icon: QrCode,
     },
     {
       label: 'Productos',
