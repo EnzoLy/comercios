@@ -7,8 +7,8 @@ import {
   OneToMany,
   Index,
 } from 'typeorm'
-import { Store } from './store.entity'
-import { Employment } from './employment.entity'
+import type { Store } from './store.entity'
+import type { Employment } from './employment.entity'
 
 export enum UserRole {
   SUPER_ADMIN = 'SUPER_ADMIN',
@@ -52,9 +52,9 @@ export class User {
   updatedAt!: Date
 
   // Relationships
-  @OneToMany(() => Store, (store: Store) => store.owner)
+  @OneToMany('Store', (store: Store) => store.owner)
   ownedStores!: Store[]
 
-  @OneToMany(() => Employment, (employment: Employment) => employment.user)
+  @OneToMany('Employment', (employment: Employment) => employment.user)
   employments!: Employment[]
 }

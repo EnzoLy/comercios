@@ -9,12 +9,12 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { User } from './user.entity'
-import { Employment } from './employment.entity'
-import { Category } from './category.entity'
-import { Product } from './product.entity'
-import { Sale } from './sale.entity'
-import { Supplier } from './supplier.entity'
+import type { User } from './user.entity'
+import type { Employment } from './employment.entity'
+import type { Category } from './category.entity'
+import type { Product } from './product.entity'
+import type { Sale } from './sale.entity'
+import type { Supplier } from './supplier.entity'
 
 @Entity('store')
 export class Store {
@@ -87,22 +87,22 @@ export class Store {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne(() => User, (user: User) => user.ownedStores, { onDelete: 'CASCADE' })
+  @ManyToOne('User', (user: User) => user.ownedStores, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ownerId' })
   owner!: User
 
-  @OneToMany(() => Employment, (employment: Employment) => employment.store)
+  @OneToMany('Employment', (employment: Employment) => employment.store)
   employments!: Employment[]
 
-  @OneToMany(() => Category, (category) => category.store)
+  @OneToMany('Category', (category: Category) => category.store)
   categories!: Category[]
 
-  @OneToMany(() => Product, (product) => product.store)
+  @OneToMany('Product', (product: Product) => product.store)
   products!: Product[]
 
-  @OneToMany(() => Sale, (sale) => sale.store)
+  @OneToMany('Sale', (sale: Sale) => sale.store)
   sales!: Sale[]
 
-  @OneToMany(() => Supplier, (supplier) => supplier.store)
+  @OneToMany('Supplier', (supplier: Supplier) => supplier.store)
   suppliers!: Supplier[]
 }
