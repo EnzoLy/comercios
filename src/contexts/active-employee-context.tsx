@@ -48,9 +48,10 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    // If QR data is empty and we already processed, continue to normal flow
-    if (!qrRole && qrProcessed) {
-      // QR data was processed and cleared, continue normal
+    // If we already processed QR data, keep the activeEmployee as is
+    if (qrProcessed) {
+      // Don't reset activeEmployee after QR processing
+      return
     }
 
     // Now check session
