@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useStore } from '@/hooks/use-store'
 import { usePermission } from '@/hooks/use-permission'
+import { useActiveEmployee } from '@/contexts/active-employee-context'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,7 @@ import { QrCode, RefreshCw } from 'lucide-react'
 export default function MyAccessPage() {
   const store = useStore()
   const { data: session } = useSession()
+  const { activeEmployee } = useActiveEmployee()
   const [employment, setEmployment] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [qrDialogOpen, setQrDialogOpen] = useState(false)
@@ -22,27 +24,34 @@ export default function MyAccessPage() {
     if (store && session?.user?.id) {
       loadEmployment()
     }
-  }, [store, session?.user?.id])
+  }, [store, session?.user?.id, activeEmployee])
 
   const loadEmployment = async () => {
     if (!store || !session?.user?.id) return
 
     setIsLoading(true)
     try {
-      // Get the current user's employment in this store
-      const response = await fetch(`/api/stores/${store.storeId}/employees`)
+      // If impersonating another employee, fetch their employment
+      // Otherwise fetch the current user's employment
+      const response = await fetch(`/api/stores/${store.storeId}/employments/me`)
       if (!response.ok) throw new Error('Failed to load employment')
 
-      const employees = await response.json()
-      // Find the current user's employment using session
-      const currentEmployment = employees.find((e: any) => e.userId === session.user.id)
+      const currentEmployment = await response.json()
 
-      if (!currentEmployment) {
-        toast.error('No se encontró tu registro de empleado')
-        return
+      // If activeEmployee is set (impersonating), merge with active employee data
+      if (activeEmployee) {
+        const mergedEmployment = {
+          ...currentEmployment,
+          user: {
+            ...currentEmployment.user,
+            name: activeEmployee.name || currentEmployment.user.name,
+          },
+          role: activeEmployee.role || currentEmployment.role,
+        }
+        setEmployment(mergedEmployment)
+      } else {
+        setEmployment(currentEmployment)
       }
-
-      setEmployment(currentEmployment)
     } catch (error) {
       toast.error('Error al cargar tu información')
       console.error('Load employment error:', error)
