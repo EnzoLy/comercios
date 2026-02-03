@@ -185,34 +185,34 @@ export default function InventoryPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950">
+          <Card style={{ borderColor: 'var(--color-secondary)', backgroundColor: 'rgba(var(--color-secondary), 0.05)' }}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-orange-900 dark:text-orange-100">
+              <CardTitle className="text-sm font-medium" style={{ color: 'var(--color-secondary)' }}>
                 Stock Bajo
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+              <div className="text-2xl font-bold" style={{ color: 'var(--color-secondary)' }}>
                 {alerts.summary.lowStockCount}
               </div>
-              <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
+              <p className="text-xs mt-1" style={{ color: 'var(--color-secondary)' }}>
                 Bajo el nivel mínimo
               </p>
             </CardContent>
           </Card>
 
           {alerts.summary.highStockCount > 0 && (
-            <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950">
+            <Card style={{ borderColor: 'var(--color-accent)', backgroundColor: 'rgba(var(--color-accent), 0.05)' }}>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                <CardTitle className="text-sm font-medium" style={{ color: 'var(--color-accent)' }}>
                   Stock Alto
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                <div className="text-2xl font-bold" style={{ color: 'var(--color-accent)' }}>
                   {alerts.summary.highStockCount}
                 </div>
-                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                <p className="text-xs mt-1" style={{ color: 'var(--color-accent)' }}>
                   Sobre el nivel máximo
                 </p>
               </CardContent>

@@ -482,8 +482,8 @@ export default function POSPage() {
       </div>
 
       {/* Right: Cart */}
-      <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l bg-gray-50 dark:bg-gray-900 flex flex-col max-h-[50vh] lg:max-h-none">
-        <div className="p-4 md:p-6 border-b">
+      <div className="w-full lg:w-96 flex flex-col max-h-[50vh] lg:max-h-none" style={{ borderTop: '1px solid var(--color-primary)', borderLeft: '1px solid var(--color-primary)' }}>
+        <div className="p-4 md:p-6" style={{ borderBottom: '1px solid var(--color-primary)' }}>
           <h2 className="text-lg md:text-xl font-bold flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
             Carrito ({cart.length})
@@ -561,7 +561,7 @@ export default function POSPage() {
           )}
         </div>
 
-        <div className="p-4 md:p-6 border-t space-y-4">
+        <div className="p-4 md:p-6 space-y-4" style={{ borderTop: '1px solid var(--color-primary)' }}>
           <div className="space-y-2">
             <div className="flex justify-between text-sm md:text-base">
               <span>Subtotal:</span>
@@ -664,7 +664,7 @@ export default function POSPage() {
                 </div>
                 <div className="flex justify-between text-lg font-bold border-t pt-2">
                   <span>Cambio:</span>
-                  <span className={change < 0 ? 'text-red-500' : 'text-green-600'}>
+                  <span style={{ color: change < 0 ? '#ef4444' : 'var(--color-primary)' }}>
                     {formatCurrency(change)}
                   </span>
                 </div>

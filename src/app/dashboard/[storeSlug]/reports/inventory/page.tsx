@@ -218,14 +218,14 @@ export default function InventoryReportPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-green-200 bg-green-50 dark:bg-green-950">
+          <Card style={{ borderColor: 'var(--color-primary)', backgroundColor: 'rgba(var(--color-primary), 0.05)' }}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-green-900 dark:text-green-100">
+              <CardTitle className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
                 Healthy Stock
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-900 dark:text-green-100">
+              <div className="text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>
                 {totalProducts - alerts.summary.lowStockCount - alerts.summary.outOfStockCount}
               </div>
             </CardContent>
