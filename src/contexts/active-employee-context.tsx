@@ -39,28 +39,48 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    // Check localStorage for active employee override
-    const activeUserId = localStorage.getItem('activeUserId')
-    const activeUserName = localStorage.getItem('activeUserName')
-    const activeUserRole = localStorage.getItem('activeUserRole')
-    const activeUserIsOwner = localStorage.getItem('activeUserIsOwner')
+    // Check localStorage for QR login data
+    const qrStoreSlug = localStorage.getItem('qrStoreSlug')
+    const qrEmployeeName = localStorage.getItem('qrEmployeeName')
+    const qrEmployeeRole = localStorage.getItem('qrEmployeeRole')
 
-    if (activeUserId && activeUserName && activeUserRole && activeUserIsOwner) {
-      // Using impersonated employee
-      setActiveEmployeeState({
-        id: activeUserId,
-        name: activeUserName,
-        role: activeUserRole,
-        isOwner: activeUserIsOwner === 'true',
-      })
-    } else {
-      // Using session user (owner/admin)
+    if (qrStoreSlug === storeSlug && qrEmployeeName && qrEmployeeRole) {
+      // Set activeEmployee from QR login data
       setActiveEmployeeState({
         id: session.user.id,
-        name: session.user.name || '',
-        role: store.employmentRole,
+        name: qrEmployeeName,
+        role: qrEmployeeRole,
         isOwner: store.isOwner,
       })
+      // Clean up QR data after using it once
+      localStorage.removeItem('qrEmploymentId')
+      localStorage.removeItem('qrEmployeeName')
+      localStorage.removeItem('qrEmployeeRole')
+      localStorage.removeItem('qrStoreSlug')
+    } else {
+      // Check localStorage for active employee override (manual impersonation)
+      const activeUserId = localStorage.getItem('activeUserId')
+      const activeUserName = localStorage.getItem('activeUserName')
+      const activeUserRole = localStorage.getItem('activeUserRole')
+      const activeUserIsOwner = localStorage.getItem('activeUserIsOwner')
+
+      if (activeUserId && activeUserName && activeUserRole && activeUserIsOwner) {
+        // Using impersonated employee
+        setActiveEmployeeState({
+          id: activeUserId,
+          name: activeUserName,
+          role: activeUserRole,
+          isOwner: activeUserIsOwner === 'true',
+        })
+      } else {
+        // Using session user (owner/admin)
+        setActiveEmployeeState({
+          id: session.user.id,
+          name: session.user.name || '',
+          role: store.employmentRole,
+          isOwner: store.isOwner,
+        })
+      }
     }
   }, [session, storeSlug])
 

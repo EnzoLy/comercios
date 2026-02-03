@@ -59,6 +59,12 @@ function QRLoginContent() {
       setStatus('success')
       setMessage('Acceso concedido. Redirigiendo...')
 
+      // Save employment data to localStorage for activeEmployee context
+      localStorage.setItem('qrEmploymentId', result.data.employmentId)
+      localStorage.setItem('qrEmployeeName', result.data.name)
+      localStorage.setItem('qrEmployeeRole', result.data.role)
+      localStorage.setItem('qrStoreSlug', result.data.storeSlug)
+
       // Redirect to store
       setTimeout(() => {
         router.push(`/dashboard/${result.data.storeSlug}`)

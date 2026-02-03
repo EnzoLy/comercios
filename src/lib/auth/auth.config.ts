@@ -12,13 +12,11 @@ export const authConfig: NextAuthConfig = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
-        employmentId: { label: 'Employment ID', type: 'text' },
       },
       async authorize(credentials) {
         try {
           const email = (credentials as any)?.email
           const password = (credentials as any)?.password
-          const employmentId = (credentials as any)?.employmentId
 
           // Check for QR token login flag
           const isQrLogin = password === '__QR_TOKEN_LOGIN__'
@@ -78,17 +76,7 @@ export const authConfig: NextAuthConfig = {
           }
 
           // Build stores array from employments
-          // For QR login with a specific employmentId, only include that employment
-          let storesEmployments = user.employments || []
-          if (isQrLogin && employmentId) {
-            storesEmployments = storesEmployments.filter((emp: Employment) => emp.id === employmentId)
-            if (storesEmployments.length === 0) {
-              console.warn(`QR login: employment ${employmentId} not found for user ${email}`)
-              return null
-            }
-          }
-
-          const stores = storesEmployments
+          const stores = (user.employments || [])
             .filter((emp: Employment) => emp.isActive)
             .map((emp: Employment) => ({
               storeId: emp.storeId,
