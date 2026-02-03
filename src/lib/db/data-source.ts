@@ -14,6 +14,7 @@ import { Sale } from './entities/sale.entity'
 import { SaleItem } from './entities/sale-item.entity'
 import { EmployeeShift } from './entities/employee-shift.entity'
 import { ShiftClose } from './entities/shift-close.entity'
+import { AuditLog } from './entities/audit-log.entity'
 import { EmploymentAccessToken } from './entities/employment-access-token.entity'
 
 // Import migrations
@@ -49,6 +50,7 @@ export async function getDataSource(): Promise<DataSource> {
           Store,
           Employment,
           EmploymentAccessToken,
+          AuditLog,
           Category,
           Supplier,
           Product,
@@ -83,6 +85,7 @@ export async function getDataSource(): Promise<DataSource> {
           Store,
           Employment,
           EmploymentAccessToken,
+          AuditLog,
           Category,
           Supplier,
           Product,
