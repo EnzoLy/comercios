@@ -111,10 +111,9 @@ export async function POST(
       }
     }
 
-    const product = productRepo.create({
-      ...productData,
-      storeId,
-    } as any)
+    const product = new Product()
+    Object.assign(product, productData)
+    product.storeId = storeId
 
     await productRepo.save(product)
 

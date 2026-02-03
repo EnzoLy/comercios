@@ -54,41 +54,16 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Nombre</p>
-                <p className="text-lg font-semibold">{store.name}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Slug</p>
+                <p className="text-sm font-medium text-muted-foreground">Tienda</p>
                 <p className="text-lg font-semibold">{store.slug}</p>
               </div>
-              {store.email && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Email</p>
-                  <p className="text-lg font-semibold">{store.email}</p>
-                </div>
-              )}
-              {store.phone && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Teléfono</p>
-                  <p className="text-lg font-semibold">{store.phone}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Estado</CardTitle>
-              <CardDescription>
-                Estado de operación de la tienda
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Activa</p>
-                <p className="text-lg font-semibold">
-                  {store.isActive ? '✅ Sí' : '❌ No'}
-                </p>
+                <p className="text-sm font-medium text-muted-foreground">ID de Tienda</p>
+                <p className="text-lg font-semibold text-muted-foreground">{store.storeId}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Rol</p>
+                <p className="text-lg font-semibold capitalize">{store.role}</p>
               </div>
             </CardContent>
           </Card>

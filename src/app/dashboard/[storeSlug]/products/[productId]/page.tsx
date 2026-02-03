@@ -45,6 +45,7 @@ export default async function EditProductPage({
     unit: product.unit || undefined,
     imageUrl: product.imageUrl || undefined,
     trackStock: product.trackStock,
+    isWeighedProduct: product.isWeighedProduct,
     isActive: product.isActive,
   }
 

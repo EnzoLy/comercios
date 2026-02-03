@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarcodeScanner } from './barcode-scanner'
-import { createProductSchema, type CreateProductInput } from '@/lib/validations/product.schema'
+import { createProductSchema, updateProductSchema, type CreateProductInput, type UpdateProductInput } from '@/lib/validations/product.schema'
 import { useStore } from '@/hooks/use-store'
 import { Camera, Loader2, Plus, X } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -58,19 +58,40 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
     }
   }
 
+  const schema = mode === 'edit' ? updateProductSchema : createProductSchema
+
   const {
     register,
     handleSubmit,
     setValue,
     watch,
     formState: { errors },
-  } = useForm<CreateProductInput>({
-    resolver: zodResolver(createProductSchema),
-    defaultValues: (product as any) || {
+  } = useForm<any>({
+    resolver: zodResolver(schema),
+    defaultValues: product ? {
+      name: product.name,
+      sku: product.sku,
+      costPrice: product.costPrice,
+      sellingPrice: product.sellingPrice,
+      currentStock: product.currentStock ?? 0,
+      minStockLevel: product.minStockLevel ?? 10,
+      trackStock: product.trackStock ?? true,
+      isActive: product.isActive ?? true,
+      isWeighedProduct: product.isWeighedProduct ?? false,
+      description: product.description,
+      barcode: product.barcode,
+      categoryId: product.categoryId,
+      supplierId: product.supplierId,
+      maxStockLevel: product.maxStockLevel,
+      unit: product.unit,
+      imageUrl: product.imageUrl,
+      additionalBarcodes: product.additionalBarcodes,
+    } : {
       currentStock: 0,
       minStockLevel: 10,
       trackStock: true,
       isActive: true,
+      isWeighedProduct: false,
     },
   })
 
@@ -172,8 +193,8 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                 {...register('name')}
                 disabled={isLoading}
               />
-              {errors.name && (
-                <p className="text-sm text-red-500">{errors.name.message}</p>
+              {errors.name?.message && (
+                <p className="text-sm text-red-500">{String(errors.name.message)}</p>
               )}
             </div>
 
@@ -185,8 +206,8 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                 {...register('description')}
                 disabled={isLoading}
               />
-              {errors.description && (
-                <p className="text-sm text-red-500">{errors.description.message}</p>
+              {errors.description?.message && (
+                <p className="text-sm text-red-500">{String(errors.description.message)}</p>
               )}
             </div>
 
@@ -211,8 +232,8 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
               <p className="text-xs text-gray-500">
                 Selecciona una categoría para organizar mejor tus productos
               </p>
-              {errors.categoryId && (
-                <p className="text-sm text-red-500">{errors.categoryId.message}</p>
+              {errors.categoryId?.message && (
+                <p className="text-sm text-red-500">{String(errors.categoryId.message)}</p>
               )}
             </div>
 
@@ -230,8 +251,8 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                 <p className="text-xs text-gray-500">
                   Código único que usarás para identificar este producto
                 </p>
-                {errors.sku && (
-                  <p className="text-sm text-red-500">{errors.sku.message}</p>
+                {errors.sku?.message && (
+                  <p className="text-sm text-red-500">{String(errors.sku.message)}</p>
                 )}
               </div>
 
@@ -258,8 +279,8 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                 <p className="text-xs text-gray-500">
                   Código de barras del fabricante (si tiene). Usa 📷 para escanear.
                 </p>
-                {errors.barcode && (
-                  <p className="text-sm text-red-500">{errors.barcode.message}</p>
+                {errors.barcode?.message && (
+                  <p className="text-sm text-red-500">{String(errors.barcode.message)}</p>
                 )}
               </div>
 
@@ -368,8 +389,8 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   {...register('costPrice', { valueAsNumber: true })}
                   disabled={isLoading}
                 />
-                {errors.costPrice && (
-                  <p className="text-sm text-red-500">{errors.costPrice.message}</p>
+                {errors.costPrice?.message && (
+                  <p className="text-sm text-red-500">{String(errors.costPrice.message)}</p>
                 )}
               </div>
 
@@ -383,8 +404,8 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   {...register('sellingPrice', { valueAsNumber: true })}
                   disabled={isLoading}
                 />
-                {errors.sellingPrice && (
-                  <p className="text-sm text-red-500">{errors.sellingPrice.message}</p>
+                {errors.sellingPrice?.message && (
+                  <p className="text-sm text-red-500">{String(errors.sellingPrice.message)}</p>
                 )}
               </div>
             </div>
@@ -406,8 +427,8 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   {...register('currentStock', { valueAsNumber: true })}
                   disabled={isLoading}
                 />
-                {errors.currentStock && (
-                  <p className="text-sm text-red-500">{errors.currentStock.message}</p>
+                {errors.currentStock?.message && (
+                  <p className="text-sm text-red-500">{String(errors.currentStock.message)}</p>
                 )}
               </div>
 
@@ -420,8 +441,8 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   {...register('minStockLevel', { valueAsNumber: true })}
                   disabled={isLoading}
                 />
-                {errors.minStockLevel && (
-                  <p className="text-sm text-red-500">{errors.minStockLevel.message}</p>
+                {errors.minStockLevel?.message && (
+                  <p className="text-sm text-red-500">{String(errors.minStockLevel.message)}</p>
                 )}
               </div>
 
@@ -434,8 +455,8 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   {...register('maxStockLevel', { valueAsNumber: true })}
                   disabled={isLoading}
                 />
-                {errors.maxStockLevel && (
-                  <p className="text-sm text-red-500">{errors.maxStockLevel.message}</p>
+                {errors.maxStockLevel?.message && (
+                  <p className="text-sm text-red-500">{String(errors.maxStockLevel.message)}</p>
                 )}
               </div>
             </div>
@@ -448,8 +469,8 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                 {...register('unit')}
                 disabled={isLoading}
               />
-              {errors.unit && (
-                <p className="text-sm text-red-500">{errors.unit.message}</p>
+              {errors.unit?.message && (
+                <p className="text-sm text-red-500">{String(errors.unit.message)}</p>
               )}
             </div>
           </CardContent>
