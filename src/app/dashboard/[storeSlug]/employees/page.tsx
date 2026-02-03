@@ -177,7 +177,7 @@ export default function EmployeesPage() {
   if (!canManage) {
     return (
       <div className="p-4 md:p-8">
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Shield className="h-16 w-16 text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold mb-2">Acceso Denegado</h3>
@@ -254,7 +254,7 @@ export default function EmployeesPage() {
       </div>
 
       {activeEmployees.length === 0 ? (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Users className="h-16 w-16 text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold mb-2">No hay empleados aún</h3>
@@ -268,7 +268,7 @@ export default function EmployeesPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader>
             <CardTitle>Empleados Activos ({activeEmployees.length})</CardTitle>
           </CardHeader>
@@ -351,7 +351,7 @@ export default function EmployeesPage() {
       )}
 
       {inactiveEmployees.length > 0 && (
-        <Card className="mt-6">
+        <Card className="mt-6" style={{ borderColor: 'var(--color-secondary)' }}>
           <CardHeader>
             <CardTitle>Empleados Inactivos ({inactiveEmployees.length})</CardTitle>
             <CardDescription>Antiguos miembros del equipo</CardDescription>

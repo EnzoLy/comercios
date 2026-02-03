@@ -214,7 +214,7 @@ export default function CategoriesPage() {
       </div>
 
       {categories.length === 0 ? (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <FolderTree className="h-16 w-16 text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold mb-2">No hay categorías aún</h3>
@@ -228,7 +228,7 @@ export default function CategoriesPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader>
             <CardTitle>Todas las Categorías ({categories.length})</CardTitle>
             <CardDescription>

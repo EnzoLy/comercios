@@ -64,7 +64,7 @@ export default async function ProductsPage({
       )}
 
       {products.length === 0 ? (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Package className="h-16 w-16 text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold mb-2">Aún no hay productos</h3>
@@ -80,7 +80,7 @@ export default async function ProductsPage({
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader>
             <CardTitle>Todos los Productos ({products.length})</CardTitle>
           </CardHeader>

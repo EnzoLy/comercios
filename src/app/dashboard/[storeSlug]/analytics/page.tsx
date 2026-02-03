@@ -207,7 +207,7 @@ export default function AnalyticsHub() {
 
       {/* Top Product Section */}
       {!isLoading && overview?.topProduct && (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader>
             <CardTitle>Mejor Producto en Este Período</CardTitle>
           </CardHeader>

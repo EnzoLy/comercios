@@ -229,7 +229,7 @@ export default function InventoryPage() {
         </TabsList>
 
         <TabsContent value="movements" className="space-y-4">
-          <Card>
+          <Card style={{ borderColor: 'var(--color-primary)' }}>
             <CardHeader>
               <CardTitle>Movimientos de Stock Recientes</CardTitle>
               <CardDescription>Últimas 30 transacciones de stock</CardDescription>
@@ -300,7 +300,7 @@ export default function InventoryPage() {
         </TabsContent>
 
         <TabsContent value="adjust" className="space-y-4">
-          <Card>
+          <Card style={{ borderColor: 'var(--color-secondary)' }}>
             <CardHeader>
               <CardTitle>Ajustar Stock</CardTitle>
               <CardDescription>
@@ -391,7 +391,7 @@ export default function InventoryPage() {
 
         <TabsContent value="alerts" className="space-y-4">
           {alerts?.outOfStock && alerts.outOfStock.length > 0 && (
-            <Card className="border-red-200">
+            <Card style={{ borderColor: 'var(--color-accent)' }}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-red-900 dark:text-red-100">
                   <AlertTriangle className="h-5 w-5" />
@@ -415,7 +415,7 @@ export default function InventoryPage() {
           )}
 
           {alerts?.lowStock && alerts.lowStock.length > 0 && (
-            <Card className="border-orange-200">
+            <Card style={{ borderColor: 'var(--color-secondary)' }}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-orange-900 dark:text-orange-100">
                   <AlertTriangle className="h-5 w-5" />
@@ -444,7 +444,7 @@ export default function InventoryPage() {
           )}
 
           {(!alerts || (alerts.outOfStock.length === 0 && alerts.lowStock.length === 0)) && (
-            <Card>
+            <Card style={{ borderColor: 'var(--color-primary)' }}>
               <CardContent className="flex flex-col items-center justify-center py-16">
                 <Package className="h-16 w-16 text-green-400 mb-4" />
                 <h3 className="text-lg font-semibold mb-2 text-green-900 dark:text-green-100">

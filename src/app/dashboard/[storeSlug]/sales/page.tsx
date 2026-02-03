@@ -49,7 +49,7 @@ export default async function SalesPage({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Ingresos Totales
@@ -64,7 +64,7 @@ export default async function SalesPage({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card style={{ borderColor: 'var(--color-secondary)' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Ingresos de Hoy
@@ -79,7 +79,7 @@ export default async function SalesPage({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card style={{ borderColor: 'var(--color-accent)' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Venta Promedio
@@ -96,7 +96,7 @@ export default async function SalesPage({
       </div>
 
       {/* Sales Table */}
-      <Card>
+      <Card style={{ borderColor: 'var(--color-primary)' }}>
         <CardHeader>
           <CardTitle>Ventas Recientes</CardTitle>
           <CardDescription>Últimas 50 transacciones</CardDescription>
