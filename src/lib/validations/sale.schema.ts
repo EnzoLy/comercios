@@ -15,7 +15,7 @@ export const createSaleSchema = z.object({
   paymentMethod: z.nativeEnum(PaymentMethod),
   tax: z.number().min(0).default(0),
   discount: z.number().min(0).default(0),
-  amountPaid: z.number().min(0).optional(),
+  amountPaid: z.number().positive().optional().nullable(),
   notes: z.string().optional(),
   customerName: z.string().optional(),
   customerEmail: z.string().email('Invalid email').optional().or(z.literal('')),

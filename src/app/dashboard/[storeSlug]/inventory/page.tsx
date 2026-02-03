@@ -1,23 +1,27 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useStore } from '@/hooks/use-store'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { StockAdjustmentDialog } from '@/components/inventory/stock-adjustment-dialog'
+import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LoadingPage } from '@/components/ui/loading'
-import { AlertTriangle, TrendingUp, TrendingDown, Package, Plus } from 'lucide-react'
+import { AlertTriangle, TrendingUp, TrendingDown, Package, Search, Loader2 } from 'lucide-react'
 
 export default function InventoryPage() {
+  const router = useRouter()
   const store = useStore()
   const [alerts, setAlerts] = useState<any>(null)
   const [movements, setMovements] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [adjustmentOpen, setAdjustmentOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [adjustmentData, setAdjustmentData] = useState<Record<string, { quantity: string; notes: string }>>({})
+  const [savingProductId, setSavingProductId] = useState<string | null>(null)
 
   useEffect(() => {
     if (store) {
@@ -76,6 +80,73 @@ export default function InventoryPage() {
     return quantity > 0 ? 'text-green-600' : 'text-red-600'
   }
 
+  const updateAdjustmentData = (productId: string, field: 'quantity' | 'notes', value: string) => {
+    setAdjustmentData((prev) => ({
+      ...prev,
+      [productId]: {
+        ...(prev[productId] || { quantity: '', notes: '' }),
+        [field]: value,
+      },
+    }))
+  }
+
+  const saveAdjustment = async (productId: string) => {
+    if (!store) return
+
+    const data = adjustmentData[productId]
+    if (!data || !data.quantity || !data.notes.trim()) {
+      toast.error('Por favor completa cantidad y notas')
+      return
+    }
+
+    const quantity = Number(data.quantity)
+    if (isNaN(quantity) || quantity === 0) {
+      toast.error('La cantidad debe ser un número diferente de 0')
+      return
+    }
+
+    setSavingProductId(productId)
+
+    try {
+      const response = await fetch(`/api/stores/${store.storeId}/inventory/movements`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId,
+          type: 'ADJUSTMENT',
+          quantity,
+          notes: data.notes,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        toast.error(result.error || 'Error al ajustar el stock')
+        return
+      }
+
+      toast.success('¡Stock ajustado exitosamente!')
+      setAdjustmentData((prev) => {
+        const newData = { ...prev }
+        delete newData[productId]
+        return newData
+      })
+      loadData()
+    } catch (error) {
+      toast.error('Error al guardar el ajuste')
+      console.error('Adjustment error:', error)
+    } finally {
+      setSavingProductId(null)
+    }
+  }
+
+  const filteredProducts = products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   if (isLoading) {
     return (
       <LoadingPage
@@ -88,17 +159,11 @@ export default function InventoryPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Inventario</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Administra los niveles de stock y rastrea movimientos
-          </p>
-        </div>
-        <Button onClick={() => setAdjustmentOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Ajustar Stock
-        </Button>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Inventario</h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Administra los niveles de stock y rastrea movimientos
+        </p>
       </div>
 
       {/* Stock Alerts */}
@@ -159,6 +224,7 @@ export default function InventoryPage() {
       <Tabs defaultValue="movements" className="space-y-4">
         <TabsList>
           <TabsTrigger value="movements">Movimientos Recientes</TabsTrigger>
+          <TabsTrigger value="adjust">Ajustar Stock</TabsTrigger>
           <TabsTrigger value="alerts">Alertas de Stock</TabsTrigger>
         </TabsList>
 
@@ -227,6 +293,96 @@ export default function InventoryPage() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="adjust" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Ajustar Stock</CardTitle>
+              <CardDescription>
+                Ajusta manualmente los niveles de stock. Usa números positivos para agregar, negativos para restar.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar por nombre o SKU..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* Products Table */}
+              {filteredProducts.length === 0 ? (
+                <p className="text-center text-gray-500 py-8">
+                  {searchTerm ? 'No se encontraron productos' : 'Cargando productos...'}
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {filteredProducts.map((product) => (
+                    <div key={product.id} className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
+                        {/* Product Info */}
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          <p className="text-sm text-gray-600">{product.sku}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Stock actual: <span className="font-semibold">{product.currentStock}</span>
+                          </p>
+                        </div>
+
+                        {/* Quantity Input */}
+                        <div>
+                          <label className="text-sm font-medium block mb-1">Cantidad</label>
+                          <Input
+                            type="number"
+                            placeholder="Ej: +10 o -5"
+                            value={adjustmentData[product.id]?.quantity ?? ''}
+                            onChange={(e) => updateAdjustmentData(product.id, 'quantity', e.target.value)}
+                            disabled={savingProductId === product.id}
+                          />
+                        </div>
+
+                        {/* Notes Input */}
+                        <div>
+                          <label className="text-sm font-medium block mb-1">Razón</label>
+                          <Input
+                            type="text"
+                            placeholder="Ej: Recount, damage..."
+                            value={adjustmentData[product.id]?.notes ?? ''}
+                            onChange={(e) => updateAdjustmentData(product.id, 'notes', e.target.value)}
+                            disabled={savingProductId === product.id}
+                          />
+                        </div>
+
+                        {/* Save Button */}
+                        <div className="flex items-end">
+                          <Button
+                            onClick={() => saveAdjustment(product.id)}
+                            disabled={savingProductId === product.id || !adjustmentData[product.id]}
+                            className="w-full"
+                            size="sm"
+                          >
+                            {savingProductId === product.id ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Guardando...
+                              </>
+                            ) : (
+                              'Guardar'
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </CardContent>
@@ -302,15 +458,6 @@ export default function InventoryPage() {
           )}
         </TabsContent>
       </Tabs>
-
-      <StockAdjustmentDialog
-        isOpen={adjustmentOpen}
-        onClose={() => {
-          setAdjustmentOpen(false)
-          loadData()
-        }}
-        products={products}
-      />
     </div>
   )
 }

@@ -47,8 +47,7 @@ export default function POSPage() {
   const [scannerOpen, setScannerOpen] = useState(false)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH)
-  const [amountPaid, setAmountPaid] = useState<number>(0)
+  const [amountPaid, setAmountPaid] = useState<number | undefined>(undefined)
   const [taxEnabled, setTaxEnabled] = useState(false)
   const [defaultTaxRate, setDefaultTaxRate] = useState(0)
   const [taxName, setTaxName] = useState('IVA')
@@ -100,9 +99,9 @@ export default function POSPage() {
       const existing = prev.find((item) => item.productId === product.id)
 
       // Determine tax rate: product override or store default
-      let taxRate = defaultTaxRate
+      let taxRate = Number(defaultTaxRate) || 0
       if (product.overrideTaxRate && product.taxRate !== null && product.taxRate !== undefined) {
-        taxRate = product.taxRate
+        taxRate = Number(product.taxRate) || 0
       }
 
       if (existing) {
@@ -123,7 +122,7 @@ export default function POSPage() {
           productId: product.id,
           name: product.name,
           sku: product.sku,
-          price: Number(product.sellingPrice),
+          price: Number(product.sellingPrice) || 0,
           quantity: 1,
           stock: product.currentStock,
           taxRate,
@@ -178,17 +177,17 @@ export default function POSPage() {
           const itemTax = taxEnabled ? (itemSubtotal * item.taxRate) / 100 : 0
           return {
             productId: item.productId,
-            quantity: item.quantity,
-            unitPrice: item.price,
+            quantity: Number(item.quantity),
+            unitPrice: Number(item.price),
             discount: 0,
-            taxRate: item.taxRate,
-            taxAmount: itemTax,
+            taxRate: Number(item.taxRate),
+            taxAmount: Number(itemTax),
           }
         }),
-        paymentMethod,
-        tax,
+        paymentMethod: PaymentMethod.CASH,
+        tax: Number(tax),
         discount: 0,
-        amountPaid: paymentMethod === PaymentMethod.CASH ? amountPaid : total,
+        amountPaid: amountPaid ? Number(amountPaid) : undefined,
       }
 
       const response = await fetch(`/api/stores/${store.storeId}/sales`, {
@@ -207,7 +206,7 @@ export default function POSPage() {
       toast.success('¡Venta completada con éxito!')
       clearCart()
       setCheckoutOpen(false)
-      setAmountPaid(0)
+      setAmountPaid(undefined)
 
       // Optionally navigate to sale details
       // router.push(`/dashboard/${store.slug}/sales/${result.id}`)
@@ -219,7 +218,7 @@ export default function POSPage() {
     }
   }
 
-  const change = amountPaid > total ? amountPaid - total : 0
+  const change = amountPaid ? (amountPaid > total ? amountPaid - total : 0) : 0
 
   if (!store) {
     return (
@@ -384,55 +383,33 @@ export default function POSPage() {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Método de Pago</Label>
-              <Select
-                value={paymentMethod}
-                onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={PaymentMethod.CASH}>Efectivo</SelectItem>
-                  <SelectItem value={PaymentMethod.CARD}>Tarjeta</SelectItem>
-                  <SelectItem value={PaymentMethod.MOBILE}>Pago Móvil</SelectItem>
-                  <SelectItem value={PaymentMethod.CREDIT}>Crédito</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>Monto Pagado (Opcional)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={amountPaid ?? ''}
+                onChange={(e) => setAmountPaid(e.target.value ? Number(e.target.value) : undefined)}
+                placeholder="Dejar vacío si no se aplica"
+              />
             </div>
 
-            {paymentMethod === PaymentMethod.CASH && (
-              <>
-                <div className="space-y-2">
-                  <Label>Monto Pagado</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={amountPaid || ''}
-                    onChange={(e) => setAmountPaid(Number(e.target.value))}
-                    placeholder="0.00"
-                  />
+            {amountPaid && amountPaid > 0 && (
+              <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg space-y-2">
+                <div className="flex justify-between">
+                  <span>Total:</span>
+                  <span className="font-semibold">{formatCurrency(total)}</span>
                 </div>
-
-                {amountPaid > 0 && (
-                  <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg space-y-2">
-                    <div className="flex justify-between">
-                      <span>Total:</span>
-                      <span className="font-semibold">{formatCurrency(total)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Pagado:</span>
-                      <span className="font-semibold">{formatCurrency(amountPaid)}</span>
-                    </div>
-                    <div className="flex justify-between text-lg font-bold border-t pt-2">
-                      <span>Cambio:</span>
-                      <span className={change < 0 ? 'text-red-500' : 'text-green-600'}>
-                        {formatCurrency(change)}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </>
+                <div className="flex justify-between">
+                  <span>Pagado:</span>
+                  <span className="font-semibold">{formatCurrency(amountPaid)}</span>
+                </div>
+                <div className="flex justify-between text-lg font-bold border-t pt-2">
+                  <span>Cambio:</span>
+                  <span className={change < 0 ? 'text-red-500' : 'text-green-600'}>
+                    {formatCurrency(change)}
+                  </span>
+                </div>
+              </div>
             )}
           </div>
 
@@ -446,10 +423,7 @@ export default function POSPage() {
             </Button>
             <Button
               onClick={handleCheckout}
-              disabled={
-                isProcessing ||
-                (paymentMethod === PaymentMethod.CASH && (amountPaid < total || change < 0))
-              }
+              disabled={isProcessing}
             >
               {isProcessing ? 'Procesando...' : 'Completar Venta'}
             </Button>

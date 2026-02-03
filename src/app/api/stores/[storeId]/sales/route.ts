@@ -138,6 +138,7 @@ export async function POST(
       const total = subtotal + validated.tax - validated.discount
 
       // Step 3: Create sale record
+      const amountPaid = validated.amountPaid || total
       const sale = manager.create(Sale, {
         storeId,
         cashierId: userId,
@@ -147,8 +148,8 @@ export async function POST(
         tax: validated.tax,
         discount: validated.discount,
         total,
-        amountPaid: validated.amountPaid,
-        change: validated.amountPaid ? validated.amountPaid - total : undefined,
+        amountPaid,
+        change: amountPaid - total,
         notes: validated.notes,
         customerName: validated.customerName,
         customerEmail: validated.customerEmail,

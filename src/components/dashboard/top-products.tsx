@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { TrendingUp } from 'lucide-react'
@@ -11,11 +12,12 @@ interface TopProduct {
 
 interface TopProductsProps {
   products: TopProduct[]
+  storeSlug?: string
 }
 
-export function TopProducts({ products }: TopProductsProps) {
-  return (
-    <Card>
+export function TopProducts({ products, storeSlug }: TopProductsProps) {
+  const content = (
+    <Card className={storeSlug ? 'cursor-pointer transition-all hover:shadow-lg hover:border-green-300 dark:hover:border-green-600' : ''}>
       <CardHeader>
         <div className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-green-600" />
@@ -57,4 +59,14 @@ export function TopProducts({ products }: TopProductsProps) {
       </CardContent>
     </Card>
   )
+
+  if (storeSlug) {
+    return (
+      <Link href={`/dashboard/${storeSlug}/products`}>
+        {content}
+      </Link>
+    )
+  }
+
+  return content
 }

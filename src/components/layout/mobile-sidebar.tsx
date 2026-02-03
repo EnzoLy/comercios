@@ -12,6 +12,7 @@ import {
   Warehouse,
   ShoppingCart,
   Receipt,
+  BarChart3,
   Users,
   Settings,
   Store,
@@ -70,6 +71,12 @@ export function MobileSidebar({ storeSlug, isOwner }: MobileSidebarProps) {
       label: 'Ventas',
       href: `/dashboard/${storeSlug}/sales`,
       icon: Receipt,
+      permission: 'view_reports',
+    },
+    {
+      label: 'Analíticas',
+      href: `/dashboard/${storeSlug}/analytics`,
+      icon: BarChart3,
       permission: 'view_reports',
     },
     {
