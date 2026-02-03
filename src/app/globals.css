@@ -84,6 +84,21 @@
   --ring: var(--color-primary);
 }
 
+/* Force dark mode to be pure black */
+.dark * {
+  --tw-bg-opacity: 1;
+}
+
+html.dark {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.dark body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
