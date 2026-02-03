@@ -80,7 +80,7 @@ export const authConfig: NextAuthConfig = {
           // For QR login with a specific employmentId, only include that employment
           let storesEmployments = user.employments || []
           if (isQrLogin && employmentId) {
-            storesEmployments = storesEmployments.filter(emp => emp.id === employmentId)
+            storesEmployments = storesEmployments.filter((emp: Employment) => emp.id === employmentId)
             if (storesEmployments.length === 0) {
               console.warn(`QR login: employment ${employmentId} not found for user ${email}`)
               return null
