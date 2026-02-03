@@ -13,31 +13,31 @@ import { Employment } from './employment.entity'
 @Entity('audit_log')
 export class AuditLog {
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  id!: string
 
   @Column({ type: 'varchar', length: 100, name: 'event_type' })
-  eventType: string // 'PIN_FAILED', 'PIN_SUCCESS', 'ACCESS_DENIED', etc.
+  eventType!: string // 'PIN_FAILED', 'PIN_SUCCESS', 'ACCESS_DENIED', etc.
 
   @Column({ type: 'uuid', nullable: true, name: 'user_id' })
-  userId?: string
+  userId!: string | null
 
   @Column({ type: 'uuid', nullable: true, name: 'store_id' })
-  storeId?: string
+  storeId!: string | null
 
   @Column({ type: 'uuid', nullable: true, name: 'employment_id' })
-  employmentId?: string
+  employmentId!: string | null
 
   @Column({ type: 'text', nullable: true })
-  details?: string // JSON serialized with metadata
+  details!: string | null // JSON serialized with metadata
 
   @Column({ type: 'varchar', length: 45, nullable: true, name: 'ip_address' })
-  ipAddress?: string
+  ipAddress!: string | null
 
   @Column({ type: 'text', nullable: true, name: 'user_agent' })
-  userAgent?: string
+  userAgent!: string | null
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date
+  createdAt!: Date
 
   // Relations
   @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
