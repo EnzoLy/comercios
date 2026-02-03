@@ -102,12 +102,12 @@ export function GenerateQRDialog({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+        <DialogHeader className="text-center">
+          <DialogTitle className="flex items-center justify-center gap-2">
             <QrCode className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
             Mi Código QR de Acceso
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-center">
             Escanea este código con tu móvil para acceder rápidamente (válido por 24 horas)
           </DialogDescription>
         </DialogHeader>
