@@ -76,6 +76,66 @@ export async function middleware(request: NextRequest) {
       // Find the storeId for this slug
       const store = session.user.stores.find((s) => s.slug === storeSlug)
       if (store) {
+        // Check role-based access for admin routes
+        const adminRoutes = [
+          '/employees',
+          '/products',
+          '/categories',
+          '/inventory',
+          '/analytics',
+          '/sales',
+          '/reports',
+          '/settings',
+          '/shifts',
+        ]
+
+        const managementRoutes = [
+          '/products',
+          '/categories',
+          '/inventory',
+          '/analytics',
+          '/sales',
+          '/reports',
+          '/shifts',
+        ]
+
+        const ownerOnlyRoutes = ['/settings']
+
+        const isAccessingAdminRoute = adminRoutes.some((route) =>
+          pathname.includes(route)
+        )
+
+        const isAccessingManagementRoute = managementRoutes.some((route) =>
+          pathname.includes(route)
+        )
+
+        const isAccessingOwnerRoute = ownerOnlyRoutes.some((route) =>
+          pathname.includes(route)
+        )
+
+        // CASHIER and STOCK_KEEPER can access: dashboard, pos
+        // MANAGER can access: dashboard, pos, employees, shifts, analytics, sales, reports
+        // ADMIN can access: dashboard, pos, employees, shifts, analytics, sales, reports, products, categories, inventory
+        // OWNER can access: everything
+
+        const role = store.employmentRole || ''
+        const isOwner = store.isOwner
+
+        if (isAccessingOwnerRoute && !isOwner) {
+          // Only owners can access settings
+          return NextResponse.redirect(new URL(`/dashboard/${storeSlug}`, request.url))
+        }
+
+        if (isAccessingManagementRoute && role === 'CASHIER' && !isOwner) {
+          // CASHIER cannot access management routes
+          return NextResponse.redirect(new URL(`/dashboard/${storeSlug}`, request.url))
+        }
+
+        if (isAccessingAdminRoute && role === 'STOCK_KEEPER' && !isOwner) {
+          // STOCK_KEEPER has limited access
+          return NextResponse.redirect(new URL(`/dashboard/${storeSlug}`, request.url))
+        }
+
         // Attach storeId to request headers for API routes
         const requestHeaders = new Headers(request.headers)
         requestHeaders.set('x-store-id', store.storeId)
