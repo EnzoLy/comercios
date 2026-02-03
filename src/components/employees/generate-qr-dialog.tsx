@@ -81,7 +81,7 @@ export function GenerateQRDialog({
     if (!qrDataUrl) return
     const link = document.createElement('a')
     link.href = qrDataUrl
-    link.download = `qr-${employeeName.replace(/\s+/g, '-').toLowerCase()}.png`
+    link.download = `codigo-qr-acceso.png`
     link.click()
     toast.success('Código QR descargado')
   }
