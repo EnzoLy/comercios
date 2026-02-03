@@ -67,17 +67,17 @@ export default function InventoryPage() {
       case 'PURCHASE':
       case 'RETURN':
       case 'ADJUSTMENT':
-        return <TrendingUp className="h-4 w-4 text-green-600" />
+        return <TrendingUp className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />
       case 'SALE':
       case 'DAMAGE':
-        return <TrendingDown className="h-4 w-4 text-red-600" />
+        return <TrendingDown className="h-4 w-4" style={{ color: '#ef4444' }} />
       default:
         return <Package className="h-4 w-4" />
     }
   }
 
   const getMovementColor = (quantity: number) => {
-    return quantity > 0 ? 'text-green-600' : 'text-red-600'
+    return quantity > 0 ? 'var(--color-primary)' : '#ef4444'
   }
 
   const updateAdjustmentData = (productId: string, field: 'quantity' | 'notes', value: string) => {
@@ -169,17 +169,17 @@ export default function InventoryPage() {
       {/* Stock Alerts */}
       {alerts && (alerts.summary.lowStockCount > 0 || alerts.summary.outOfStockCount > 0) && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="border-red-200 bg-red-50 dark:bg-red-950">
+          <Card style={{ borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.05)' }}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-red-900 dark:text-red-100">
+              <CardTitle className="text-sm font-medium" style={{ color: '#dc2626' }}>
                 Sin Stock
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-900 dark:text-red-100">
+              <div className="text-2xl font-bold" style={{ color: '#dc2626' }}>
                 {alerts.summary.outOfStockCount}
               </div>
-              <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+              <p className="text-xs mt-1" style={{ color: '#b91c1c' }}>
                 Productos con 0 stock
               </p>
             </CardContent>
@@ -275,7 +275,7 @@ export default function InventoryPage() {
                             </div>
                           </td>
                           <td className="py-3 px-4 text-right">
-                            <span className={`font-semibold ${getMovementColor(movement.quantity)}`}>
+                            <span className="font-semibold" style={{ color: getMovementColor(movement.quantity) }}>
                               {movement.quantity > 0 ? '+' : ''}{movement.quantity}
                             </span>
                           </td>
