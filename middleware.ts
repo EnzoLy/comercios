@@ -76,64 +76,43 @@ export async function middleware(request: NextRequest) {
       // Find the storeId for this slug
       const store = session.user.stores.find((s) => s.slug === storeSlug)
       if (store) {
-        // Check role-based access for admin routes
-        const adminRoutes = [
-          '/employees',
-          '/products',
-          '/categories',
-          '/inventory',
-          '/analytics',
-          '/sales',
-          '/reports',
-          '/settings',
-          '/shifts',
-        ]
-
-        const managementRoutes = [
-          '/products',
-          '/categories',
-          '/inventory',
-          '/analytics',
-          '/sales',
-          '/reports',
-          '/shifts',
-        ]
-
-        const ownerOnlyRoutes = ['/settings']
-
-        const isAccessingAdminRoute = adminRoutes.some((route) =>
-          pathname.includes(route)
-        )
-
-        const isAccessingManagementRoute = managementRoutes.some((route) =>
-          pathname.includes(route)
-        )
-
-        const isAccessingOwnerRoute = ownerOnlyRoutes.some((route) =>
-          pathname.includes(route)
-        )
-
-        // CASHIER and STOCK_KEEPER can access: dashboard, pos
-        // MANAGER can access: dashboard, pos, employees, shifts, analytics, sales, reports
-        // ADMIN can access: dashboard, pos, employees, shifts, analytics, sales, reports, products, categories, inventory
-        // OWNER can access: everything
-
+        // Check role-based access for specific routes
         const role = store.employmentRole || ''
         const isOwner = store.isOwner
 
-        if (isAccessingOwnerRoute && !isOwner) {
-          // Only owners can access settings
-          return NextResponse.redirect(new URL(`/dashboard/${storeSlug}`, request.url))
+        // Extract the page/route from pathname: /dashboard/[storeSlug]/[page]
+        const pageMatch = pathname.match(
+          new RegExp(`^/dashboard/${storeSlug}/([^/]+)`)
+        )
+        const page = pageMatch ? pageMatch[1] : ''
+
+        // Define allowed routes by role
+        const allowedRoutes: Record<string, string[]> = {
+          CASHIER: ['pos'],
+          STOCK_KEEPER: ['pos', 'inventory'],
+          MANAGER: ['pos', 'employees', 'shifts', 'analytics', 'sales', 'reports'],
+          ADMIN: [
+            'pos',
+            'employees',
+            'shifts',
+            'analytics',
+            'sales',
+            'reports',
+            'products',
+            'categories',
+            'inventory',
+          ],
         }
 
-        if (isAccessingManagementRoute && role === 'CASHIER' && !isOwner) {
-          // CASHIER cannot access management routes
-          return NextResponse.redirect(new URL(`/dashboard/${storeSlug}`, request.url))
-        }
+        // Owner can access everything
+        if (!isOwner) {
+          const allowedPagesForRole = allowedRoutes[role] || ['pos']
 
-        if (isAccessingAdminRoute && role === 'STOCK_KEEPER' && !isOwner) {
-          // STOCK_KEEPER has limited access
-          return NextResponse.redirect(new URL(`/dashboard/${storeSlug}`, request.url))
+          // Check if user is trying to access a route they don't have permission for
+          if (page && !allowedPagesForRole.includes(page)) {
+            // Redirect to dashboard
+            return NextResponse.redirect(new URL(`/dashboard/${storeSlug}`, request.url))
+          }
         }
 
         // Attach storeId to request headers for API routes
