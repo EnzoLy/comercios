@@ -77,15 +77,16 @@ export default function MyAccessPage() {
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Mi Acceso</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Genera códigos QR para acceder rápidamente desde tu dispositivo móvil
-        </p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 md:p-8">
+      <div className="w-full max-w-2xl">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold mb-2">Mi Acceso</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Genera códigos QR para acceder rápidamente desde tu dispositivo móvil
+          </p>
+        </div>
 
-      <div className="grid gap-6 max-w-2xl">
+        <div className="grid gap-6">
         {/* Main QR Card */}
         <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader>
@@ -196,15 +197,16 @@ export default function MyAccessPage() {
         </Card>
       </div>
 
-      {/* QR Dialog */}
-      {employment && store && (
-        <GenerateQRDialog
-          isOpen={qrDialogOpen}
-          employmentId={employment.id}
-          storeId={store.storeId}
-          onOpenChange={setQrDialogOpen}
-        />
-      )}
+        {/* QR Dialog */}
+        {employment && store && (
+          <GenerateQRDialog
+            isOpen={qrDialogOpen}
+            employmentId={employment.id}
+            storeId={store.storeId}
+            onOpenChange={setQrDialogOpen}
+          />
+        )}
+      </div>
     </div>
   )
 }
