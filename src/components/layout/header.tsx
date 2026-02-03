@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
@@ -11,9 +12,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { User, LogOut, UserX } from 'lucide-react'
+import { User, LogOut, UserX, Lock } from 'lucide-react'
 import { MobileSidebar } from './mobile-sidebar'
 import { useActiveEmployee } from '@/contexts/active-employee-context'
+import { OwnerPinDialog } from '@/components/auth/owner-pin-dialog'
+import { SetOwnerPinDialog } from '@/components/auth/set-owner-pin-dialog'
 import { toast } from 'sonner'
 
 interface HeaderProps {
@@ -28,6 +31,8 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
   const router = useRouter()
   const { data: session } = useSession()
   const { clearImpersonation } = useActiveEmployee()
+  const [showOwnerPinDialog, setShowOwnerPinDialog] = useState(false)
+  const [showSetOwnerPinDialog, setShowSetOwnerPinDialog] = useState(false)
 
   const handleSignOut = async () => {
     await signOut({ redirect: false })
@@ -36,9 +41,36 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
   }
 
   const handleStopImpersonation = () => {
+    // If owner is impersonating, require PIN verification
+    if (isImpersonating && isOwner) {
+      setShowOwnerPinDialog(true)
+    } else {
+      clearImpersonation()
+      toast.success('Volviste a tu usuario original')
+      router.refresh()
+    }
+  }
+
+  const handleOwnerPinSuccess = () => {
+    setShowOwnerPinDialog(false)
     clearImpersonation()
     toast.success('Volviste a tu usuario original')
     router.refresh()
+  }
+
+  const handleOwnerNoPin = () => {
+    setShowOwnerPinDialog(false)
+    setShowSetOwnerPinDialog(true)
+  }
+
+  const handleSetPinSuccess = () => {
+    setShowSetOwnerPinDialog(false)
+    // Si fue desde impersonación, hace refresh; si no, solo cierra
+    if (showOwnerPinDialog) {
+      handleOwnerPinSuccess()
+    } else {
+      toast.success('PIN configurado correctamente')
+    }
   }
 
   return (
@@ -84,6 +116,15 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
                 <DropdownMenuSeparator />
               </>
             )}
+            {isOwner && (
+              <>
+                <DropdownMenuItem onClick={() => setShowSetOwnerPinDialog(true)}>
+                  <Lock className="mr-2 h-4 w-4" />
+                  Configurar PIN
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
               Cerrar Sesión
@@ -91,6 +132,23 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Owner PIN Dialog */}
+      <OwnerPinDialog
+        isOpen={showOwnerPinDialog}
+        userName={session?.user?.name || 'Propietario'}
+        onSuccess={handleOwnerPinSuccess}
+        onNoPin={handleOwnerNoPin}
+        onCancel={() => setShowOwnerPinDialog(false)}
+      />
+
+      {/* Set Owner PIN Dialog */}
+      <SetOwnerPinDialog
+        isOpen={showSetOwnerPinDialog}
+        userName={session?.user?.name || 'Propietario'}
+        onSuccess={handleSetPinSuccess}
+        onCancel={() => setShowSetOwnerPinDialog(false)}
+      />
     </header>
   )
 }

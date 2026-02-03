@@ -45,6 +45,9 @@ export class User {
   @Column({ type: 'boolean', default: false })
   mustChangePassword!: boolean
 
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'owner_pin' })
+  ownerPin?: string
+
   @CreateDateColumn()
   createdAt!: Date
 

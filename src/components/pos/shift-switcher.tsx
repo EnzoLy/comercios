@@ -15,6 +15,8 @@ import {
 import { toast } from 'sonner'
 import { Clock, AlertCircle } from 'lucide-react'
 import { PinPadDialog } from './pin-pad-dialog'
+import { OwnerPinDialog } from '@/components/auth/owner-pin-dialog'
+import { SetOwnerPinDialog } from '@/components/auth/set-owner-pin-dialog'
 import { useActiveEmployee } from '@/contexts/active-employee-context'
 
 interface Shift {
@@ -50,7 +52,9 @@ export function ShiftSwitcher({
   const [isSwitching, setIsSwitching] = useState(false)
   const [pinPadOpen, setPinPadOpen] = useState(false)
   const [requirePin, setRequirePin] = useState(true)
-  const { activeEmployee, setActiveEmployee } = useActiveEmployee()
+  const [showOwnerPinDialog, setShowOwnerPinDialog] = useState(false)
+  const [showSetOwnerPinDialog, setShowSetOwnerPinDialog] = useState(false)
+  const { activeEmployee, setActiveEmployee, clearImpersonation } = useActiveEmployee()
   const { data: session } = useSession()
   const router = useRouter()
 
@@ -137,6 +141,15 @@ export function ShiftSwitcher({
     const isEmployeeChange =
       currentShift?.employeeId !== selectedShift.employeeId
 
+    // Check if switching to owner's shift (no employee or employee is owner)
+    const isOwnerShift = !selectedShift.employee?.id || selectedShift.employee?.id === session?.user?.id
+
+    // If currently impersonating and switching to owner shift, require owner PIN
+    if (isEmployeeChange && activeEmployee && isOwnerShift) {
+      setShowOwnerPinDialog(true)
+      return
+    }
+
     if (isEmployeeChange && selectedShift.employee?.id) {
       // Check if PIN is required
       if (requirePin) {
@@ -201,6 +214,19 @@ export function ShiftSwitcher({
       toast.error('Error al cambiar de usuario')
       setIsSwitching(false)
     }
+  }
+
+  const handleOwnerReturnToShift = () => {
+    // When owner returns from impersonation via PIN verification
+    setShowOwnerPinDialog(false)
+    setShowSetOwnerPinDialog(false)
+
+    // Reload to refresh UI
+    setTimeout(() => {
+      router.refresh()
+      setShowConfirmation(false)
+      setSelectedShift(null)
+    }, 300)
   }
 
   // Show button if there are shifts available
@@ -282,25 +308,7 @@ export function ShiftSwitcher({
             })}
           </div>
 
-          {selectedShift && (
-            <div
-              className={`p-3 rounded border ${currentShift?.employeeId !== selectedShift.employeeId
-                ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
-                }`}
-            >
-              <p
-                className={`text-sm ${currentShift?.employeeId !== selectedShift.employeeId
-                  ? 'text-red-800 dark:text-red-200'
-                  : 'text-yellow-800 dark:text-yellow-200'
-                  }`}
-              >
-                {currentShift?.employeeId !== selectedShift.employeeId
-                  ? `⚠️ Cambiarás de usuario a ${selectedShift.employee?.name}. Deberás cerrar sesión e iniciar sesión nuevamente.`
-                  : '⚠️ Confirma el cambio de turno. El carrito actual se vaciará.'}
-              </p>
-            </div>
-          )}
+
 
           <DialogFooter className="flex gap-2">
             <Button
@@ -339,6 +347,34 @@ export function ShiftSwitcher({
           onCancel={() => setPinPadOpen(false)}
         />
       )}
+
+      {/* Owner PIN Dialog - para volver a owner */}
+      <OwnerPinDialog
+        isOpen={showOwnerPinDialog}
+        userName={session?.user?.name || 'Propietario'}
+        onSuccess={() => {
+          clearImpersonation()
+          toast.success('Bienvenido de vuelta')
+          handleOwnerReturnToShift()
+        }}
+        onNoPin={() => {
+          setShowOwnerPinDialog(false)
+          setShowSetOwnerPinDialog(true)
+        }}
+        onCancel={() => setShowOwnerPinDialog(false)}
+      />
+
+      {/* Set Owner PIN Dialog - para configurar PIN */}
+      <SetOwnerPinDialog
+        isOpen={showSetOwnerPinDialog}
+        userName={session?.user?.name || 'Propietario'}
+        onSuccess={() => {
+          clearImpersonation()
+          toast.success('PIN configurado. Bienvenido de vuelta')
+          handleOwnerReturnToShift()
+        }}
+        onCancel={() => setShowSetOwnerPinDialog(false)}
+      />
     </>
   )
 }
