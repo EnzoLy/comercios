@@ -8,6 +8,7 @@ declare module 'next-auth' {
       email: string
       name: string
       role: string
+      colorTheme: string
       stores: Array<{
         storeId: string
         slug: string
@@ -23,6 +24,7 @@ declare module 'next-auth' {
     email: string
     name: string
     role: string
+    colorTheme: string
     stores: Array<{
       storeId: string
       slug: string
@@ -39,6 +41,7 @@ declare module 'next-auth/jwt' {
     email: string
     name: string
     role: string
+    colorTheme: string
     stores: Array<{
       storeId: string
       slug: string
