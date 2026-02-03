@@ -172,7 +172,7 @@ export default function CategoriesPage() {
               size="sm"
               onClick={() => setDeletingCategory(category)}
             >
-              <Trash2 className="h-4 w-4 text-red-500" />
+              <Trash2 className="h-4 w-4" style={{ color: '#ef4444' }} />
             </Button>
           </div>
         </div>
