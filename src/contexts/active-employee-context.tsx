@@ -17,6 +17,7 @@ interface ActiveEmployeeContextType {
   setActiveEmployee: (employee: ActiveEmployee | null) => void
   isImpersonating: boolean
   clearImpersonation: () => void
+  isLoading: boolean
 }
 
 const ActiveEmployeeContext = createContext<ActiveEmployeeContextType | undefined>(undefined)
@@ -28,6 +29,7 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
   const storeSlug = params?.storeSlug as string | undefined
   const [activeEmployee, setActiveEmployeeState] = useState<ActiveEmployee | null>(null)
   const [qrProcessed, setQrProcessed] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   // Initialize from session or query params
   useEffect(() => {
@@ -39,7 +41,8 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
 
     // If we have QR data and haven't processed it yet
     if (qrUserId && qrRole && qrName && !qrProcessed) {
-      // Set activeEmployee from QR login data
+      setIsLoading(true)
+      // Set activeEmployee from QR login data immediately
       setActiveEmployeeState({
         id: qrUserId,
         name: qrName,
@@ -48,12 +51,14 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
         employmentId: qrEmploymentId || undefined,
       })
       setQrProcessed(true)
+      setIsLoading(false)
       return
     }
 
     // If we already processed QR data AND QR params still exist, keep activeEmployee
     if (qrProcessed && qrUserId && qrRole && qrName) {
       // Don't reset activeEmployee while QR params are still in URL
+      setIsLoading(false)
       return
     }
 
@@ -61,6 +66,8 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
     if (qrProcessed && !qrUserId) {
       setQrProcessed(false)
     }
+
+    setIsLoading(false)
 
     // Now check session
     if (!session?.user || !storeSlug) {
@@ -147,6 +154,7 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
         setActiveEmployee,
         isImpersonating,
         clearImpersonation,
+        isLoading,
       }}
     >
       {children}
