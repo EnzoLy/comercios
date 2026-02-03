@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { useStore } from '@/hooks/use-store'
 import { usePermission } from '@/hooks/use-permission'
 import { toast } from 'sonner'
@@ -12,18 +13,19 @@ import { QrCode, RefreshCw } from 'lucide-react'
 
 export default function MyAccessPage() {
   const store = useStore()
+  const { data: session } = useSession()
   const [employment, setEmployment] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [qrDialogOpen, setQrDialogOpen] = useState(false)
 
   useEffect(() => {
-    if (store) {
+    if (store && session?.user?.id) {
       loadEmployment()
     }
-  }, [store])
+  }, [store, session?.user?.id])
 
   const loadEmployment = async () => {
-    if (!store) return
+    if (!store || !session?.user?.id) return
 
     setIsLoading(true)
     try {
@@ -32,9 +34,8 @@ export default function MyAccessPage() {
       if (!response.ok) throw new Error('Failed to load employment')
 
       const employees = await response.json()
-      // Find the current user's employment
-      const userSession = await fetch('/api/auth/me').then((r) => r.json())
-      const currentEmployment = employees.find((e: any) => e.userId === userSession.user?.id)
+      // Find the current user's employment using session
+      const currentEmployment = employees.find((e: any) => e.userId === session.user.id)
 
       if (!currentEmployment) {
         toast.error('No se encontró tu registro de empleado')
