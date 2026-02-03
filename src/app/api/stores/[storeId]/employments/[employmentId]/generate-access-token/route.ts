@@ -93,17 +93,17 @@ export async function POST(
 
     // Audit log
     await auditRepo.save({
-      eventType: 'ACCESS_TOKEN_GENERATED',
-      userId: session.user.id,
-      storeId,
-      employmentId,
+      event_type: 'ACCESS_TOKEN_GENERATED',
+      user_id: session.user.id,
+      store_id: storeId,
+      employment_id: employmentId,
       details: JSON.stringify({
         tokenId: accessToken.id,
         expiresInHours,
         revokedPreviousTokens: previousTokens.length,
       }),
-      ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
-      userAgent: request.headers.get('user-agent'),
+      ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+      user_agent: request.headers.get('user-agent'),
     })
 
     // Build full QR URL

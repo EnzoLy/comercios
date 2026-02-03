@@ -34,55 +34,55 @@ export async function POST(request: NextRequest) {
     // Validations
     if (!accessToken) {
       await auditRepo.save({
-        eventType: 'ACCESS_TOKEN_INVALID',
+        event_type: 'ACCESS_TOKEN_INVALID',
         details: JSON.stringify({ reason: 'Token not found' }),
-        ipAddress: ipAddress,
-        userAgent: userAgent,
+        ip_address: ipAddress,
+        user_agent: userAgent,
       })
       return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
     }
 
     if (accessToken.isRevoked) {
       await auditRepo.save({
-        eventType: 'ACCESS_TOKEN_REVOKED',
-        userId: accessToken.employment.userId,
-        storeId: accessToken.employment.storeId,
-        employmentId: accessToken.employmentId,
+        event_type: 'ACCESS_TOKEN_REVOKED',
+        user_id: accessToken.employment.userId,
+        store_id: accessToken.employment.storeId,
+        employment_id: accessToken.employmentId,
         details: JSON.stringify({ tokenId: accessToken.id }),
-        ipAddress: ipAddress,
-        userAgent: userAgent,
+        ip_address: ipAddress,
+        user_agent: userAgent,
       })
       return NextResponse.json({ error: 'Token revocado' }, { status: 401 })
     }
 
     if (new Date() > accessToken.expiresAt) {
       await auditRepo.save({
-        eventType: 'ACCESS_TOKEN_EXPIRED',
-        userId: accessToken.employment.userId,
-        storeId: accessToken.employment.storeId,
-        employmentId: accessToken.employmentId,
+        event_type: 'ACCESS_TOKEN_EXPIRED',
+        user_id: accessToken.employment.userId,
+        store_id: accessToken.employment.storeId,
+        employment_id: accessToken.employmentId,
         details: JSON.stringify({
           tokenId: accessToken.id,
           expiredAt: accessToken.expiresAt,
         }),
-        ipAddress: ipAddress,
-        userAgent: userAgent,
+        ip_address: ipAddress,
+        user_agent: userAgent,
       })
       return NextResponse.json({ error: 'Token expirado' }, { status: 401 })
     }
 
     if (accessToken.usedAt && !accessToken.allowMultipleUses) {
       await auditRepo.save({
-        eventType: 'ACCESS_TOKEN_ALREADY_USED',
-        userId: accessToken.employment.userId,
-        storeId: accessToken.employment.storeId,
-        employmentId: accessToken.employmentId,
+        event_type: 'ACCESS_TOKEN_ALREADY_USED',
+        user_id: accessToken.employment.userId,
+        store_id: accessToken.employment.storeId,
+        employment_id: accessToken.employmentId,
         details: JSON.stringify({
           tokenId: accessToken.id,
           usedAt: accessToken.usedAt,
         }),
-        ipAddress: ipAddress,
-        userAgent: userAgent,
+        ip_address: ipAddress,
+        user_agent: userAgent,
       })
       return NextResponse.json({ error: 'Token ya usado' }, { status: 401 })
     }
@@ -103,16 +103,16 @@ export async function POST(request: NextRequest) {
 
     // Audit log of success
     await auditRepo.save({
-      eventType: 'ACCESS_TOKEN_USED_SUCCESS',
-      userId: accessToken.employment.userId,
-      storeId: accessToken.employment.storeId,
-      employmentId: accessToken.employmentId,
+      event_type: 'ACCESS_TOKEN_USED_SUCCESS',
+      user_id: accessToken.employment.userId,
+      store_id: accessToken.employment.storeId,
+      employment_id: accessToken.employmentId,
       details: JSON.stringify({
         tokenId: accessToken.id,
         employeeName: accessToken.employment.user.name,
       }),
-      ipAddress: accessToken.ipAddress,
-      userAgent: accessToken.userAgent,
+      ip_address: accessToken.ipAddress,
+      user_agent: accessToken.userAgent,
     })
 
     // Return data for session creation

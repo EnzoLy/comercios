@@ -53,13 +53,13 @@ export async function POST(
     await tokenRepo.save(token)
 
     await auditRepo.save({
-      eventType: 'ACCESS_TOKEN_REVOKED_MANUAL',
-      userId: session.user.id,
-      storeId,
-      employmentId: token.employmentId,
+      event_type: 'ACCESS_TOKEN_REVOKED_MANUAL',
+      user_id: session.user.id,
+      store_id: storeId,
+      employment_id: token.employmentId,
       details: JSON.stringify({ tokenId }),
-      ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
-      userAgent: request.headers.get('user-agent'),
+      ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+      user_agent: request.headers.get('user-agent'),
     })
 
     return NextResponse.json({ success: true })
