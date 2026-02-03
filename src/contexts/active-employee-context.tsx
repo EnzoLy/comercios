@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useSession } from 'next-auth/react'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 
 interface ActiveEmployee {
   id: string
@@ -23,43 +23,34 @@ const ActiveEmployeeContext = createContext<ActiveEmployeeContextType | undefine
 export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
   const { data: session } = useSession()
   const params = useParams()
+  const searchParams = useSearchParams()
   const storeSlug = params?.storeSlug as string | undefined
   const [activeEmployee, setActiveEmployeeState] = useState<ActiveEmployee | null>(null)
+  const [qrProcessed, setQrProcessed] = useState(false)
 
-  // Initialize from session or localStorage
+  // Initialize from session or query params
   useEffect(() => {
-    // Check localStorage for QR login data first (before session check)
-    const qrStoreSlug = localStorage.getItem('qrStoreSlug')
-    const qrEmployeeName = localStorage.getItem('qrEmployeeName')
-    const qrEmployeeRole = localStorage.getItem('qrEmployeeRole')
-    const qrUsed = localStorage.getItem('qrUsed')
+    // Check query params for QR login data first
+    const qrRole = searchParams?.get('qrRole')
+    const qrName = searchParams?.get('qrName')
+    const qrEmploymentId = searchParams?.get('qrEmploymentId')
 
-    console.log('[ActiveEmployeeProvider] QR data check:', {
-      qrStoreSlug,
-      qrEmployeeName,
-      qrEmployeeRole,
-      qrUsed,
-      storeSlug,
-      hasAllQRData: !!(qrStoreSlug && qrEmployeeName && qrEmployeeRole && !qrUsed),
-    })
-
-    // If we have QR data and haven't used it yet
-    if (qrStoreSlug && qrEmployeeName && qrEmployeeRole && !qrUsed) {
-      console.log('[ActiveEmployeeProvider] Setting activeEmployee from QR data')
-
-      // Set the flag to mark as used
-      localStorage.setItem('qrUsed', 'true')
-
+    // If we have QR data and haven't processed it yet
+    if (qrRole && qrName && qrEmploymentId && !qrProcessed) {
       // Set activeEmployee from QR login data
-      const activeEmp = {
-        id: session?.user?.id || 'qr-employee',
-        name: qrEmployeeName,
-        role: qrEmployeeRole,
+      setActiveEmployeeState({
+        id: session?.user?.id || qrEmploymentId,
+        name: qrName,
+        role: qrRole,
         isOwner: false,
-      }
-      console.log('[ActiveEmployeeProvider] Setting activeEmployee:', activeEmp)
-      setActiveEmployeeState(activeEmp)
+      })
+      setQrProcessed(true)
       return
+    }
+
+    // If QR data is empty and we already processed, continue to normal flow
+    if (!qrRole && qrProcessed) {
+      // QR data was processed and cleared, continue normal
     }
 
     // Now check session
@@ -97,7 +88,7 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
         isOwner: store.isOwner,
       })
     }
-  }, [session, storeSlug])
+  }, [session, storeSlug, searchParams, qrProcessed])
 
   const setActiveEmployee = (employee: ActiveEmployee | null) => {
     if (employee) {
@@ -119,12 +110,8 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('activeUserRole')
     localStorage.removeItem('activeUserIsOwner')
 
-    // Clear QR login data
-    localStorage.removeItem('qrEmploymentId')
-    localStorage.removeItem('qrEmployeeName')
-    localStorage.removeItem('qrEmployeeRole')
-    localStorage.removeItem('qrStoreSlug')
-    localStorage.removeItem('qrUsed')
+    // Clear QR flag
+    setQrProcessed(false)
 
     // Restore to session user
     if (session?.user && storeSlug) {
