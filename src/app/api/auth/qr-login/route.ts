@@ -87,8 +87,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Token ya usado' }, { status: 401 })
     }
 
-    // Verify employment is active
-    if (!accessToken.employment.isActive) {
+    // Get employment details directly to ensure we have correct data
+    const employment = await employmentRepo.findOne({
+      where: { id: accessToken.employmentId },
+      relations: ['user', 'store'],
+    })
+
+    if (!employment || !employment.isActive) {
       return NextResponse.json(
         { error: 'Empleado inactivo' },
         { status: 403 }
@@ -104,12 +109,12 @@ export async function POST(request: NextRequest) {
     // Audit log of success
     await auditRepo.save({
       event_type: 'ACCESS_TOKEN_USED_SUCCESS',
-      user_id: accessToken.employment.userId,
-      store_id: accessToken.employment.storeId,
+      user_id: employment.userId,
+      store_id: employment.storeId,
       employment_id: accessToken.employmentId,
       details: JSON.stringify({
         tokenId: accessToken.id,
-        employeeName: accessToken.employment.user.name,
+        employeeName: employment.user.name,
       }),
       ip_address: accessToken.ipAddress,
       user_agent: accessToken.userAgent,
@@ -120,13 +125,13 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         data: {
-          userId: accessToken.employment.userId,
-          email: accessToken.employment.user.email,
-          name: accessToken.employment.user.name,
-          storeSlug: accessToken.employment.store.slug,
-          storeId: accessToken.employment.storeId,
+          userId: employment.userId,
+          email: employment.user.email,
+          name: employment.user.name,
+          storeSlug: employment.store.slug,
+          storeId: employment.storeId,
           employmentId: accessToken.employmentId,
-          role: accessToken.employment.role,
+          role: employment.role,
         },
       },
       { status: 200 }
