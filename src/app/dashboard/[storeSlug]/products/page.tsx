@@ -50,13 +50,13 @@ export default async function ProductsPage({
       </div>
 
       {lowStockProducts.length > 0 && (
-        <Card className="mb-6 border-orange-200 bg-orange-50 dark:bg-orange-950">
+        <Card className="mb-6" style={{ borderColor: 'var(--color-secondary)', backgroundColor: 'rgba(var(--color-secondary), 0.05)' }}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-900 dark:text-orange-100">
+            <CardTitle className="flex items-center gap-2" style={{ color: 'var(--color-secondary)' }}>
               <AlertTriangle className="h-5 w-5" />
               Alerta de Stock Bajo
             </CardTitle>
-            <CardDescription className="text-orange-700 dark:text-orange-300">
+            <CardDescription style={{ color: 'var(--color-secondary)' }}>
               {lowStockProducts.length} producto(s) bajo el nivel mínimo de stock
             </CardDescription>
           </CardHeader>

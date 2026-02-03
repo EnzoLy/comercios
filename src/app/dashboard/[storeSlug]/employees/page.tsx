@@ -219,18 +219,18 @@ export default function EmployeesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card>
+        <Card style={{ borderColor: 'var(--color-accent)' }}>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">
               Total de Empleados
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{employees.length}</div>
+            <div className="text-2xl font-bold" style={{ color: 'var(--color-accent)' }}>{employees.length}</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">
               Activos
@@ -241,14 +241,14 @@ export default function EmployeesPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card style={{ borderColor: 'var(--color-secondary)' }}>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-gray-600">
               Inactivos
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-400">{inactiveEmployees.length}</div>
+            <div className="text-2xl font-bold" style={{ color: 'var(--color-secondary)' }}>{inactiveEmployees.length}</div>
           </CardContent>
         </Card>
       </div>
