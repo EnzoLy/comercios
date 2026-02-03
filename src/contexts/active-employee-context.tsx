@@ -9,6 +9,7 @@ interface ActiveEmployee {
   name: string
   role: string
   isOwner: boolean
+  employmentId?: string
 }
 
 interface ActiveEmployeeContextType {
@@ -34,6 +35,7 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
     const qrUserId = searchParams?.get('qrUserId')
     const qrRole = searchParams?.get('qrRole')
     const qrName = searchParams?.get('qrName')
+    const qrEmploymentId = searchParams?.get('qrEmploymentId')
 
     // If we have QR data and haven't processed it yet
     if (qrUserId && qrRole && qrName && !qrProcessed) {
@@ -43,6 +45,7 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
         name: qrName,
         role: qrRole,
         isOwner: false,
+        employmentId: qrEmploymentId || undefined,
       })
       setQrProcessed(true)
       return

@@ -65,6 +65,7 @@ function QRLoginContent() {
           qrUserId: result.data.userId,
           qrRole: result.data.role,
           qrName: result.data.name,
+          qrEmploymentId: result.data.employmentId,
         })
         router.push(`/dashboard/${result.data.storeSlug}?${params.toString()}`)
       }, 1500)

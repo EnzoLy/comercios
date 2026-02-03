@@ -31,25 +31,34 @@ export default function MyAccessPage() {
 
     setIsLoading(true)
     try {
-      // If impersonating another employee, fetch their employment
-      // Otherwise fetch the current user's employment
-      const response = await fetch(`/api/stores/${store.storeId}/employments/me`)
-      if (!response.ok) throw new Error('Failed to load employment')
-
-      const currentEmployment = await response.json()
-
-      // If activeEmployee is set (impersonating), merge with active employee data
-      if (activeEmployee) {
-        const mergedEmployment = {
-          ...currentEmployment,
+      // If activeEmployee has an employmentId (from QR login), construct employment from it
+      if (activeEmployee?.employmentId) {
+        // Build employment object from activeEmployee data
+        const employmentFromQR = {
+          id: activeEmployee.employmentId,
+          userId: activeEmployee.id,
+          storeId: store.storeId,
+          role: activeEmployee.role,
+          isActive: true,
           user: {
-            ...currentEmployment.user,
-            name: activeEmployee.name || currentEmployment.user.name,
+            id: activeEmployee.id,
+            name: activeEmployee.name,
+            email: session.user.email || '', // Use session email
+            role: 'USER',
           },
-          role: activeEmployee.role || currentEmployment.role,
+          store: {
+            id: store.storeId,
+            name: store.name || '',
+            slug: store.slug,
+          },
         }
-        setEmployment(mergedEmployment)
+        setEmployment(employmentFromQR)
       } else {
+        // Get the employment for the session user
+        const response = await fetch(`/api/stores/${store.storeId}/employments/me`)
+        if (!response.ok) throw new Error('Failed to load employment')
+
+        const currentEmployment = await response.json()
         setEmployment(currentEmployment)
       }
     } catch (error) {
