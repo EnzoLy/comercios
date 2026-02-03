@@ -51,10 +51,15 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    // If we already processed QR data, keep the activeEmployee as is
-    if (qrProcessed) {
-      // Don't reset activeEmployee after QR processing
+    // If we already processed QR data AND QR params still exist, keep activeEmployee
+    if (qrProcessed && qrUserId && qrRole && qrName) {
+      // Don't reset activeEmployee while QR params are still in URL
       return
+    }
+
+    // If QR params are gone (navigated away or cleared), reset the flag
+    if (qrProcessed && !qrUserId) {
+      setQrProcessed(false)
     }
 
     // Now check session
