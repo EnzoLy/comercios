@@ -22,9 +22,10 @@ interface Product {
 interface ProductSearchProps {
   storeId: string
   onProductSelect: (product: Product) => void
+  categoryId?: string | null
 }
 
-export function ProductSearch({ storeId, onProductSelect }: ProductSearchProps) {
+export function ProductSearch({ storeId, onProductSelect, categoryId }: ProductSearchProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [suggestions, setSuggestions] = useState<Product[]>([])
   const [isOpen, setIsOpen] = useState(false)
@@ -61,8 +62,14 @@ export function ProductSearch({ storeId, onProductSelect }: ProductSearchProps) 
 
       setIsLoading(true)
       try {
+        const params = new URLSearchParams({
+          search: debouncedSearchTerm,
+        })
+        if (categoryId) {
+          params.append('categoryId', categoryId)
+        }
         const response = await fetch(
-          `/api/stores/${storeId}/products?search=${encodeURIComponent(debouncedSearchTerm)}`
+          `/api/stores/${storeId}/products?${params.toString()}`
         )
 
         if (!response.ok) {
@@ -83,7 +90,7 @@ export function ProductSearch({ storeId, onProductSelect }: ProductSearchProps) 
     }
 
     searchProducts()
-  }, [debouncedSearchTerm, storeId])
+  }, [debouncedSearchTerm, storeId, categoryId])
 
   const handleSelectProduct = (product: Product) => {
     onProductSelect(product)
