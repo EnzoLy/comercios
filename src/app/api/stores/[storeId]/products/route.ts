@@ -77,11 +77,13 @@ export async function POST(
     const dataSource = await getDataSource()
     const productRepo = dataSource.getRepository(Product)
 
-    // Convert empty strings to null for barcode and imageUrl
-    const productData = {
-      ...validated,
-      barcode: validated.barcode || null,
-      imageUrl: validated.imageUrl || null,
+    // Build product data, excluding null/undefined values
+    const productData: any = {}
+    for (const [key, value] of Object.entries(validated)) {
+      if (value === undefined) continue
+      if (key === 'barcode' && value === '') continue
+      if (key === 'imageUrl' && value === '') continue
+      productData[key] = value
     }
 
     // Check for duplicate SKU or barcode in same store
@@ -112,7 +114,7 @@ export async function POST(
     const product = productRepo.create({
       ...productData,
       storeId,
-    })
+    } as any)
 
     await productRepo.save(product)
 
