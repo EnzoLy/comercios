@@ -31,30 +31,45 @@ export default function MyAccessPage() {
 
     setIsLoading(true)
     try {
-      // If activeEmployee has an employmentId (from QR login), construct employment from it
-      if (activeEmployee?.employmentId) {
-        // Build employment object from activeEmployee data
-        const employmentFromQR = {
-          id: activeEmployee.employmentId,
-          userId: activeEmployee.id,
-          storeId: store.storeId,
-          role: activeEmployee.role,
-          isActive: true,
-          user: {
-            id: activeEmployee.id,
-            name: activeEmployee.name,
-            email: session.user.email || '', // Use session email
-            role: 'USER',
-          },
-          store: {
-            id: store.storeId,
-            name: store.name || '',
-            slug: store.slug,
-          },
+      // If activeEmployee exists, find their employment
+      if (activeEmployee) {
+        // If we have employmentId from QR, use it directly
+        if (activeEmployee.employmentId) {
+          const employmentFromQR = {
+            id: activeEmployee.employmentId,
+            userId: activeEmployee.id,
+            storeId: store.storeId,
+            role: activeEmployee.role,
+            isActive: true,
+            user: {
+              id: activeEmployee.id,
+              name: activeEmployee.name,
+              email: session.user.email || '',
+              role: 'USER',
+            },
+            store: {
+              id: store.storeId,
+              name: store.name || '',
+              slug: store.slug,
+            },
+          }
+          setEmployment(employmentFromQR)
+        } else {
+          // No employmentId, need to fetch all employees and find the one matching activeEmployee
+          const response = await fetch(`/api/stores/${store.storeId}/employees`)
+          if (!response.ok) throw new Error('Failed to load employees')
+
+          const employees = await response.json()
+          const activeEmpData = employees.find((e: any) => e.userId === activeEmployee.id)
+
+          if (activeEmpData) {
+            setEmployment(activeEmpData)
+          } else {
+            toast.error('No se encontró el empleado activo')
+          }
         }
-        setEmployment(employmentFromQR)
       } else {
-        // Get the employment for the session user
+        // No activeEmployee, get the session user's employment
         const response = await fetch(`/api/stores/${store.storeId}/employments/me`)
         if (!response.ok) throw new Error('Failed to load employment')
 
