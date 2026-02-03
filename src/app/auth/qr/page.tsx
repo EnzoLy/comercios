@@ -1,12 +1,13 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, CheckCircle, XCircle, QrCode } from 'lucide-react'
 
-export default function QRLoginPage() {
+function QRLoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
@@ -103,5 +104,26 @@ export default function QRLoginPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function QRLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <Loader2 className="h-16 w-16 animate-spin" style={{ color: 'var(--color-primary)' }} />
+              </div>
+              <CardTitle>Acceso QR</CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
+      }
+    >
+      <QRLoginContent />
+    </Suspense>
   )
 }
