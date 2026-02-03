@@ -33,13 +33,12 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
     // Check query params for QR login data first
     const qrRole = searchParams?.get('qrRole')
     const qrName = searchParams?.get('qrName')
-    const qrEmploymentId = searchParams?.get('qrEmploymentId')
 
     // If we have QR data and haven't processed it yet
-    if (qrRole && qrName && qrEmploymentId && !qrProcessed) {
+    if (qrRole && qrName && !qrProcessed && session?.user?.id) {
       // Set activeEmployee from QR login data
       setActiveEmployeeState({
-        id: session?.user?.id || qrEmploymentId,
+        id: session.user.id,
         name: qrName,
         role: qrRole,
         isOwner: false,

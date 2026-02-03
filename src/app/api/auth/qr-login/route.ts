@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
           name: accessToken.employment.user.name,
           storeSlug: accessToken.employment.store.slug,
           storeId: accessToken.employment.storeId,
-          employmentId: accessToken.employment.id,
+          employmentId: accessToken.employmentId,
           role: accessToken.employment.role,
         },
       },
