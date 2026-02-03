@@ -100,28 +100,28 @@ export default function AnalyticsHub() {
       description: 'Ver tendencias de ventas diarias o mensuales',
       icon: TrendingUp,
       href: `/dashboard/${storeSlug}/analytics/sales-by-date`,
-      color: 'bg-blue-50 dark:bg-blue-950',
+      colorVar: '--color-primary',
     },
     {
       title: 'Desempeño de Empleados',
       description: 'Seguimiento de ventas por empleado/cajero',
       icon: Users,
       href: `/dashboard/${storeSlug}/analytics/employees`,
-      color: 'bg-purple-50 dark:bg-purple-950',
+      colorVar: '--color-secondary',
     },
     {
       title: 'Analítica de Productos',
       description: 'Analizar ventas de productos y márgenes',
       icon: Package,
       href: `/dashboard/${storeSlug}/analytics/products`,
-      color: 'bg-green-50 dark:bg-green-950',
+      colorVar: '--color-accent',
     },
     {
       title: 'Análisis por Categoría',
       description: 'Ver ventas por categoría de producto',
       icon: FolderTree,
       href: `/dashboard/${storeSlug}/analytics/categories`,
-      color: 'bg-orange-50 dark:bg-orange-950',
+      colorVar: '--color-primary',
     },
   ]
 
@@ -185,12 +185,12 @@ export default function AnalyticsHub() {
             const Icon = link.icon
             return (
               <Link key={link.href} href={link.href}>
-                <Card className={`h-full hover:shadow-lg transition-shadow cursor-pointer ${link.color}`}>
+                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer" style={{ borderColor: `var(${link.colorVar})` }}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div>
                         <CardTitle className="flex items-center gap-2">
-                          <Icon className="h-5 w-5" />
+                          <Icon className="h-5 w-5" style={{ color: `var(${link.colorVar})` }} />
                           {link.title}
                         </CardTitle>
                         <CardDescription>{link.description}</CardDescription>
@@ -227,7 +227,7 @@ export default function AnalyticsHub() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Margen de Ganancia</p>
-                <p className="text-lg font-semibold text-green-600">
+                <p className="text-lg font-semibold" style={{ color: 'var(--color-primary)' }}>
                   {overview.topProduct.marginPercentage}%
                 </p>
               </div>

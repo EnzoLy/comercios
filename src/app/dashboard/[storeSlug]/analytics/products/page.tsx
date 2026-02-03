@@ -127,15 +127,15 @@ export default function ProductsPage() {
   const getMarginBadge = (margin: string) => {
     const marginNum = parseFloat(margin)
     if (marginNum >= 40) {
-      return <Badge className="bg-green-100 text-green-800">Margen Alto</Badge>
+      return <Badge style={{ backgroundColor: 'var(--color-primary)', color: 'white' }}>Margen Alto</Badge>
     }
     if (marginNum < 0) {
       return <Badge className="bg-red-100 text-red-800">Pérdida</Badge>
     }
     if (marginNum < 20) {
-      return <Badge className="bg-yellow-100 text-yellow-800">Margen Bajo</Badge>
+      return <Badge style={{ backgroundColor: 'var(--color-secondary)', color: 'white' }}>Margen Bajo</Badge>
     }
-    return <Badge className="bg-blue-100 text-blue-800">Normal</Badge>
+    return <Badge style={{ backgroundColor: 'var(--color-accent)', color: 'white' }}>Normal</Badge>
   }
 
   return (
@@ -318,18 +318,18 @@ export default function ProductsPage() {
                           {formatCurrency(product.costPrice)}
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          <span className={margin > 0 ? 'text-green-600' : 'text-red-600'}>
+                          <span style={{ color: margin > 0 ? 'var(--color-primary)' : '#ef4444' }}>
                             {formatCurrency(product.profit)}
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                             {margin > 0 ? (
-                              <TrendingUp className="h-4 w-4 text-green-600" />
+                              <TrendingUp className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />
                             ) : (
-                              <TrendingDown className="h-4 w-4 text-red-600" />
+                              <TrendingDown className="h-4 w-4" style={{ color: '#ef4444' }} />
                             )}
-                            <span className={margin > 0 ? 'text-green-600' : 'text-red-600'}>
+                            <span style={{ color: margin > 0 ? 'var(--color-primary)' : '#ef4444' }}>
                               {formatPercentage(margin)}
                             </span>
                           </div>

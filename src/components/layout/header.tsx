@@ -12,11 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { User, LogOut, UserX, Lock } from 'lucide-react'
+import { User, LogOut, UserX, Lock, Palette } from 'lucide-react'
 import { MobileSidebar } from './mobile-sidebar'
 import { useActiveEmployee } from '@/contexts/active-employee-context'
 import { OwnerPinDialog } from '@/components/auth/owner-pin-dialog'
 import { SetOwnerPinDialog } from '@/components/auth/set-owner-pin-dialog'
+import { ThemeSelector } from '@/components/theme/theme-selector'
 import { toast } from 'sonner'
 
 interface HeaderProps {
@@ -33,6 +34,7 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
   const { clearImpersonation } = useActiveEmployee()
   const [showOwnerPinDialog, setShowOwnerPinDialog] = useState(false)
   const [showSetOwnerPinDialog, setShowSetOwnerPinDialog] = useState(false)
+  const [showThemeSelector, setShowThemeSelector] = useState(false)
 
   const handleSignOut = async () => {
     await signOut({ redirect: false })
@@ -82,9 +84,9 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
 
       <div className="flex items-center gap-4">
         {isImpersonating && (
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-amber-100 dark:bg-amber-900 text-amber-900 dark:text-amber-100 rounded-lg text-sm">
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white" style={{ backgroundColor: 'var(--color-primary)' }}>
             <UserX className="h-4 w-4" />
-            <span className="font-medium">Trabajando como: {userName}</span>
+            <span>Trabajando como: {userName}</span>
           </div>
         )}
 
@@ -100,7 +102,7 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium">{userName}</p>
                 {isImpersonating && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 font-medium mt-1">
+                  <p className="text-xs font-medium mt-1 dark:text-opacity-90" style={{ color: 'var(--color-primary)' }}>
                     Sesión temporal
                   </p>
                 )}
@@ -125,6 +127,11 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
                 <DropdownMenuSeparator />
               </>
             )}
+            <DropdownMenuItem onClick={() => setShowThemeSelector(true)}>
+              <Palette className="mr-2 h-4 w-4" />
+              Tema de Color
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
               Cerrar Sesión
@@ -148,6 +155,12 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
         userName={session?.user?.name || 'Propietario'}
         onSuccess={handleSetPinSuccess}
         onCancel={() => setShowSetOwnerPinDialog(false)}
+      />
+
+      {/* Theme Selector Dialog */}
+      <ThemeSelector
+        isOpen={showThemeSelector}
+        onOpenChange={setShowThemeSelector}
       />
     </header>
   )

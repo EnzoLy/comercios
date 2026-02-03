@@ -62,6 +62,7 @@ export const authConfig: NextAuthConfig = {
             name: user.name,
             role: user.role,
             mustChangePassword: user.mustChangePassword,
+            colorTheme: user.colorTheme,
             stores,
           }
         } catch (error) {
@@ -84,6 +85,7 @@ export const authConfig: NextAuthConfig = {
         token.name = user.name
         token.role = user.role
         token.mustChangePassword = user.mustChangePassword
+        token.colorTheme = user.colorTheme
         token.stores = user.stores
       }
       return token
@@ -96,6 +98,7 @@ export const authConfig: NextAuthConfig = {
         session.user.name = token.name as string
         session.user.role = token.role as string
         session.user.mustChangePassword = token.mustChangePassword as boolean
+        session.user.colorTheme = token.colorTheme as string
         session.user.stores = token.stores as Array<{
           storeId: string
           slug: string

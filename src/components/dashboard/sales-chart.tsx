@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 
 interface SalesData {
@@ -17,6 +17,21 @@ interface SalesChartProps {
 
 export function SalesChart({ data }: SalesChartProps) {
   const [period, setPeriod] = useState<'7' | '30'>('7')
+  const [themeColors, setThemeColors] = useState({
+    primary: '#10b981',
+    secondary: '#3b82f6',
+  })
+
+  useEffect(() => {
+    const root = document.documentElement
+    const primary = getComputedStyle(root).getPropertyValue('--color-primary').trim()
+    const secondary = getComputedStyle(root).getPropertyValue('--color-secondary').trim()
+
+    setThemeColors({
+      primary: primary || '#10b981',
+      secondary: secondary || '#3b82f6',
+    })
+  }, [])
 
   // Filter data based on selected period
   const filteredData = data.slice(-parseInt(period))
@@ -30,10 +45,10 @@ export function SalesChart({ data }: SalesChartProps) {
       return (
         <div className="bg-white dark:bg-gray-800 p-3 border rounded-lg shadow-lg">
           <p className="font-medium mb-1">{payload[0].payload.date}</p>
-          <p className="text-sm text-green-600 dark:text-green-400">
+          <p className="text-sm" style={{ color: 'var(--color-primary)' }}>
             Ingresos: ${payload[0].value.toFixed(2)}
           </p>
-          <p className="text-sm text-blue-600 dark:text-blue-400">
+          <p className="text-sm" style={{ color: 'var(--color-secondary)' }}>
             Transacciones: {payload[1]?.value || 0}
           </p>
         </div>
@@ -99,18 +114,18 @@ export function SalesChart({ data }: SalesChartProps) {
                 yAxisId="left"
                 type="monotone"
                 dataKey="revenue"
-                stroke="#10b981"
+                stroke={themeColors.primary}
                 strokeWidth={2}
-                dot={{ fill: '#10b981', r: 4 }}
+                dot={{ fill: themeColors.primary, r: 4 }}
                 activeDot={{ r: 6 }}
               />
               <Line
                 yAxisId="right"
                 type="monotone"
                 dataKey="transactions"
-                stroke="#3b82f6"
+                stroke={themeColors.secondary}
                 strokeWidth={2}
-                dot={{ fill: '#3b82f6', r: 4 }}
+                dot={{ fill: themeColors.secondary, r: 4 }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>

@@ -155,9 +155,9 @@ export default function EmployeesPage() {
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'ADMIN':
-        return <Shield className="h-4 w-4 text-blue-600" />
+        return <Shield className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />
       case 'MANAGER':
-        return <Crown className="h-4 w-4 text-purple-600" />
+        return <Crown className="h-4 w-4" style={{ color: 'var(--color-secondary)' }} />
       default:
         return <User className="h-4 w-4 text-gray-600" />
     }
@@ -237,7 +237,7 @@ export default function EmployeesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{activeEmployees.length}</div>
+            <div className="text-2xl font-bold" style={{ color: 'var(--color-primary)' }}>{activeEmployees.length}</div>
           </CardContent>
         </Card>
 
@@ -307,7 +307,7 @@ export default function EmployeesPage() {
                       <td className="py-3 px-4 text-center">
                         {['CASHIER', 'STOCK_KEEPER', 'MANAGER'].includes(employee.role) ? (
                           employee.pin ? (
-                            <span className="text-sm text-green-600 dark:text-green-400">✓ Configurado</span>
+                            <span className="text-sm" style={{ color: 'var(--color-primary)' }}>✓ Configurado</span>
                           ) : (
                             <span className="text-sm text-red-600 dark:text-red-400">✗ Falta configurar</span>
                           )
@@ -416,8 +416,8 @@ export default function EmployeesPage() {
               </p>
             </div>
 
-            <div className="p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <p className="text-sm text-blue-900 dark:text-blue-100">
+            <div className="p-3 border rounded-lg" style={{ backgroundColor: 'color-mix(in srgb, var(--color-primary) 10%, transparent)', borderColor: 'var(--color-primary)' }}>
+              <p className="text-sm" style={{ color: 'var(--color-primary)' }}>
                 <strong>Nota:</strong> Los empleados no pueden iniciar sesión en la web.
                 Solo acceden al sistema mediante PIN en el punto de venta (POS).
               </p>

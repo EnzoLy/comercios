@@ -197,9 +197,10 @@ function SidebarItem({
       className={cn(
         'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
         isActive
-          ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
+          ? 'text-white dark:text-white hover:opacity-90'
           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
       )}
+      style={isActive ? { backgroundColor: 'var(--color-primary)' } : {}}
     >
       <Icon className="h-5 w-5" />
       {item.label}

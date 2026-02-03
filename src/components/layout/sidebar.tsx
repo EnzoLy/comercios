@@ -110,7 +110,7 @@ export function Sidebar({ storeSlug, isOwner, role }: SidebarProps) {
 
   if (!mounted) {
     return (
-      <aside className="hidden md:flex w-64 border-r bg-gray-50 dark:bg-gray-900 flex-col h-screen">
+      <aside className="hidden md:flex w-64 border-r bg-white dark:bg-gray-950 flex-col h-screen">
         <div className="p-4 border-b">
           <div className="flex items-center gap-2">
             <Store className="h-5 w-5" />
@@ -131,7 +131,7 @@ export function Sidebar({ storeSlug, isOwner, role }: SidebarProps) {
   }
 
   return (
-    <aside className="hidden md:flex w-64 border-r bg-gray-50 dark:bg-gray-900 flex-col h-screen">
+    <aside className="hidden md:flex w-64 border-r bg-white dark:bg-gray-950 flex-col h-screen">
       <div className="p-4 border-b">
         <Link href="/dashboard/select-store" className="flex items-center gap-2 hover:opacity-80">
           <Store className="h-5 w-5" />
@@ -158,7 +158,7 @@ export function Sidebar({ storeSlug, isOwner, role }: SidebarProps) {
 
       <div className="p-4 border-t space-y-2">
         <div className="flex items-center justify-between px-3 py-2">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Tema</span>
+          <span className="text-sm text-gray-600">Tema</span>
           <ThemeToggle />
         </div>
       </div>
@@ -198,9 +198,10 @@ function SidebarItem({
       className={cn(
         'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
         isActive
-          ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
+          ? 'text-white dark:text-white hover:opacity-90'
           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
       )}
+      style={isActive ? { backgroundColor: 'var(--color-primary)' } : {}}
     >
       <Icon className="h-5 w-5" />
       {item.label}

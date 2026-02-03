@@ -48,6 +48,9 @@ export class User {
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'owner_pin' })
   ownerPin?: string
 
+  @Column({ type: 'varchar', length: 50, default: 'lavender', name: 'color_theme' })
+  colorTheme!: string
+
   @CreateDateColumn()
   createdAt!: Date
 

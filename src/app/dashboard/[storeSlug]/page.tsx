@@ -134,12 +134,12 @@ export default async function StoreDashboard({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
         {/* Ingresos de Hoy - Links to Sales */}
         <Link href={`/dashboard/${storeSlug}/sales`}>
-          <Card className="cursor-pointer transition-all hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600">
+          <Card className="cursor-pointer transition-all hover:shadow-lg" style={{ borderColor: 'var(--color-primary)' }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Ingresos de Hoy
               </CardTitle>
-              <DollarSign className="h-4 w-4 text-gray-400" />
+              <DollarSign className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${todayRevenue.toFixed(2)}</div>
@@ -152,12 +152,12 @@ export default async function StoreDashboard({
 
         {/* Transacciones - Links to Sales */}
         <Link href={`/dashboard/${storeSlug}/sales`}>
-          <Card className="cursor-pointer transition-all hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600">
+          <Card className="cursor-pointer transition-all hover:shadow-lg" style={{ borderColor: 'var(--color-primary)' }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Transacciones
               </CardTitle>
-              <ShoppingCart className="h-4 w-4 text-gray-400" />
+              <ShoppingCart className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{todaySales.length}</div>
@@ -168,12 +168,12 @@ export default async function StoreDashboard({
 
         {/* Total de Productos - Links to Products */}
         <Link href={`/dashboard/${storeSlug}/products`}>
-          <Card className="cursor-pointer transition-all hover:shadow-lg hover:border-green-300 dark:hover:border-green-600">
+          <Card className="cursor-pointer transition-all hover:shadow-lg" style={{ borderColor: 'var(--color-secondary)' }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Total de Productos
               </CardTitle>
-              <Package className="h-4 w-4 text-gray-400" />
+              <Package className="h-4 w-4" style={{ color: 'var(--color-secondary)' }} />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalProducts}</div>
@@ -184,12 +184,12 @@ export default async function StoreDashboard({
 
         {/* Alertas de Stock Bajo - Links to Inventory */}
         <Link href={`/dashboard/${storeSlug}/inventory`}>
-          <Card className="cursor-pointer transition-all hover:shadow-lg hover:border-orange-300 dark:hover:border-orange-600">
+          <Card className="cursor-pointer transition-all hover:shadow-lg" style={{ borderColor: 'var(--color-accent)' }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Alertas de Stock Bajo
               </CardTitle>
-              <AlertTriangle className="h-4 w-4 text-orange-400" />
+              <AlertTriangle className="h-4 w-4" style={{ color: 'var(--color-accent)' }} />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{lowStockCount}</div>
