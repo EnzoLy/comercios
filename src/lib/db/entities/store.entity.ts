@@ -76,6 +76,10 @@ export class Store {
   @Column({ type: 'varchar', length: 100, nullable: true })
   taxName?: string
 
+  // Security Configuration
+  @Column({ type: 'boolean', default: true })
+  requireEmployeePin!: boolean
+
   @Column({ type: 'uuid' })
   @Index('idx_store_owner')
   ownerId!: string

@@ -102,16 +102,29 @@ export default async function ProductsPage({
                   {products.map((product) => (
                     <tr key={product.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="py-3 px-2 sm:px-4">
-                        <div>
-                          <p className="font-medium text-sm sm:text-base">{product.name}</p>
-                          {product.category && (
-                            <p className="text-xs sm:text-sm text-gray-500">
-                              {product.category.name}
-                            </p>
+                        <div className="flex items-center gap-3">
+                          {product.imageUrl ? (
+                            <img
+                              src={product.imageUrl}
+                              alt={product.name}
+                              className="w-10 h-10 object-cover rounded flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center flex-shrink-0">
+                              <Package className="h-5 w-5 text-gray-400" />
+                            </div>
                           )}
-                          <p className="text-xs text-gray-500 md:hidden mt-1">
-                            {product.sku}
-                          </p>
+                          <div>
+                            <p className="font-medium text-sm sm:text-base">{product.name}</p>
+                            {product.category && (
+                              <p className="text-xs sm:text-sm text-gray-500">
+                                {product.category.name}
+                              </p>
+                            )}
+                            <p className="text-xs text-gray-500 md:hidden mt-1">
+                              {product.sku}
+                            </p>
+                          </div>
                         </div>
                       </td>
                       <td className="py-3 px-2 sm:px-4 hidden md:table-cell">

@@ -14,6 +14,7 @@ interface FavoriteProduct {
   price: number
   quantitySold: number
   currentStock: number
+  imageUrl?: string | null
 }
 
 interface FavoriteProductsProps {
@@ -36,7 +37,10 @@ export function FavoriteProducts({
   const fetchFavorites = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/stores/${storeId}/pos/favorites`)
+      const activeUserId = localStorage.getItem('activeUserId')
+      const queryParam = activeUserId ? `?activeUserId=${activeUserId}` : ''
+
+      const response = await fetch(`/api/stores/${storeId}/pos/favorites${queryParam}`)
       if (response.ok) {
         const data = await response.json()
         setFavorites(data)
@@ -108,30 +112,43 @@ export function FavoriteProducts({
                   onClick={() => handleAddToCart(favorite)}
                   disabled={favorite.currentStock === 0}
                 >
-                  <div className="w-full flex justify-between items-start gap-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">
-                        {favorite.name}
-                      </p>
-                      <p className="text-xs text-gray-500 truncate">
-                        {favorite.sku}
-                      </p>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="font-semibold text-sm">
-                        {formatCurrency(favorite.price)}
-                      </p>
-                      <p
-                        className={`text-xs ${
-                          favorite.currentStock > 0
-                            ? 'text-green-600'
-                            : 'text-red-500'
-                        }`}
-                      >
-                        {favorite.currentStock > 0
-                          ? `Stock: ${favorite.currentStock}`
-                          : 'Agotado'}
-                      </p>
+                  <div className="w-full flex items-center gap-3">
+                    {favorite.imageUrl ? (
+                      <img
+                        src={favorite.imageUrl}
+                        alt={favorite.name}
+                        className="w-12 h-12 object-cover rounded flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center flex-shrink-0">
+                        <Package className="h-6 w-6 text-gray-400" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0 flex justify-between items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">
+                          {favorite.name}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">
+                          {favorite.sku}
+                        </p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="font-semibold text-sm">
+                          {formatCurrency(favorite.price)}
+                        </p>
+                        <p
+                          className={`text-xs ${
+                            favorite.currentStock > 0
+                              ? 'text-green-600'
+                              : 'text-red-500'
+                          }`}
+                        >
+                          {favorite.currentStock > 0
+                            ? `Stock: ${favorite.currentStock}`
+                            : 'Agotado'}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </Button>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { TrendingUp, Trophy, Target } from 'lucide-react'
 import { toast } from 'sonner'
+import { useActiveEmployee } from '@/contexts/active-employee-context'
 
 interface PersonalStatsData {
   period: string
@@ -23,17 +24,23 @@ interface PersonalStatsProps {
 }
 
 export function PersonalStats({ storeId, refreshTrigger }: PersonalStatsProps) {
+  const { activeEmployee } = useActiveEmployee()
   const [stats, setStats] = useState<PersonalStatsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     fetchStats()
-  }, [storeId, refreshTrigger])
+  }, [storeId, refreshTrigger, activeEmployee?.id])
 
   const fetchStats = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/stores/${storeId}/pos/my-stats?period=today`)
+      const activeUserId = localStorage.getItem('activeUserId')
+      // Ensure we only send valid IDs, not "undefined" or "null" strings
+      const isValidId = activeUserId && activeUserId !== 'undefined' && activeUserId !== 'null'
+      const queryParam = isValidId ? `&activeUserId=${activeUserId}` : ''
+
+      const response = await fetch(`/api/stores/${storeId}/pos/my-stats?period=today${queryParam}`)
       if (response.ok) {
         const data = await response.json()
         setStats(data)
@@ -96,11 +103,10 @@ export function PersonalStats({ storeId, refreshTrigger }: PersonalStatsProps) {
 
           {/* Average Transaction */}
           <div
-            className={`p-2 rounded ${
-              stats.isAboveAverage
-                ? 'bg-emerald-50 dark:bg-emerald-900/20'
-                : 'bg-orange-50 dark:bg-orange-900/20'
-            }`}
+            className={`p-2 rounded ${stats.isAboveAverage
+              ? 'bg-emerald-50 dark:bg-emerald-900/20'
+              : 'bg-orange-50 dark:bg-orange-900/20'
+              }`}
           >
             <div className="flex items-center justify-between">
               <div>
@@ -108,11 +114,10 @@ export function PersonalStats({ storeId, refreshTrigger }: PersonalStatsProps) {
                   Promedio por Venta
                 </p>
                 <p
-                  className={`text-sm font-semibold ${
-                    stats.isAboveAverage
-                      ? 'text-emerald-600'
-                      : 'text-orange-600'
-                  }`}
+                  className={`text-sm font-semibold ${stats.isAboveAverage
+                    ? 'text-emerald-600'
+                    : 'text-orange-600'
+                    }`}
                 >
                   {formatCurrency(stats.averageTransaction)}
                 </p>

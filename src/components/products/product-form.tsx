@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarcodeScanner } from './barcode-scanner'
 import { createProductSchema, updateProductSchema, type CreateProductInput, type UpdateProductInput } from '@/lib/validations/product.schema'
 import { useStore } from '@/hooks/use-store'
-import { Camera, Loader2, Plus, X } from 'lucide-react'
+import { Camera, Loader2, Plus, X, Upload, Image as ImageIcon, Link as LinkIcon } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
@@ -36,6 +36,9 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
   const [categories, setCategories] = useState<any[]>([])
   const [additionalBarcodes, setAdditionalBarcodes] = useState<string[]>([])
   const [newBarcode, setNewBarcode] = useState('')
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [imageInputMode, setImageInputMode] = useState<'url' | 'upload'>('url')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load categories
   useEffect(() => {
@@ -132,6 +135,47 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
     setAdditionalBarcodes(additionalBarcodes.filter((b) => b !== barcode))
   }
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setUploadingImage(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        toast.error(result.error || 'Error al subir la imagen')
+        return
+      }
+
+      setValue('imageUrl', result.imageUrl)
+      toast.success('Imagen subida exitosamente')
+    } catch (error) {
+      console.error('Upload error:', error)
+      toast.error('Error al subir la imagen')
+    } finally {
+      setUploadingImage(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleRemoveImage = () => {
+    setValue('imageUrl', '')
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   const onSubmit = async (data: CreateProductInput) => {
     console.log('onSubmit called with data:', data)
     if (!store) {
@@ -208,6 +252,99 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
               />
               {errors.description?.message && (
                 <p className="text-sm text-red-500">{String(errors.description.message)}</p>
+              )}
+            </div>
+
+            <div className="space-y-3 border-t pt-4">
+              <Label>Imagen del Producto</Label>
+
+              <div className="flex gap-2 mb-3">
+                <Button
+                  type="button"
+                  variant={imageInputMode === 'url' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setImageInputMode('url')}
+                  disabled={isLoading || uploadingImage}
+                >
+                  <LinkIcon className="h-4 w-4 mr-2" />
+                  URL
+                </Button>
+                <Button
+                  type="button"
+                  variant={imageInputMode === 'upload' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setImageInputMode('upload')}
+                  disabled={isLoading || uploadingImage}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Subir Archivo
+                </Button>
+              </div>
+
+              {imageInputMode === 'url' ? (
+                <div className="space-y-2">
+                  <Input
+                    id="imageUrl"
+                    placeholder="https://ejemplo.com/imagen.jpg"
+                    {...register('imageUrl')}
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Ingresa la URL de una imagen (JPG, PNG, WebP, GIF)
+                  </p>
+                  {errors.imageUrl?.message && (
+                    <p className="text-sm text-red-500">{String(errors.imageUrl.message)}</p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                      onChange={handleImageUpload}
+                      disabled={isLoading || uploadingImage}
+                      className="cursor-pointer"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Sube una imagen (JPG, PNG, WebP, GIF - máx. 5MB)
+                  </p>
+                </div>
+              )}
+
+              {watch('imageUrl') && (
+                <div className="relative w-full max-w-xs border rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+                  <div className="relative aspect-square flex items-center justify-center p-2">
+                    <img
+                      src={watch('imageUrl') || ''}
+                      alt="Vista previa del producto"
+                      className="max-w-full max-h-full object-contain"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.style.display = 'none'
+                      }}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleRemoveImage}
+                    disabled={isLoading || uploadingImage}
+                    className="absolute top-2 right-2"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {uploadingImage && (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Subiendo imagen...
+                </div>
               )}
             </div>
 

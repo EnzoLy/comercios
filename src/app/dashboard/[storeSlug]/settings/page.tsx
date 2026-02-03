@@ -5,8 +5,9 @@ import { useParams } from 'next/navigation'
 import { useStore } from '@/hooks/use-store'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Percent, Cog } from 'lucide-react'
+import { Percent, Cog, Shield } from 'lucide-react'
 import { TaxSettingsForm } from '@/components/settings/tax-settings-form'
+import { SecuritySettingsForm } from '@/components/settings/security-settings-form'
 
 export default function SettingsPage() {
   const params = useParams()
@@ -27,10 +28,14 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="taxes" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList className="grid w-full max-w-2xl grid-cols-3">
           <TabsTrigger value="taxes" className="gap-2">
             <Percent className="h-4 w-4" />
             Impuestos
+          </TabsTrigger>
+          <TabsTrigger value="security" className="gap-2">
+            <Shield className="h-4 w-4" />
+            Seguridad
           </TabsTrigger>
           <TabsTrigger value="general" className="gap-2">
             <Cog className="h-4 w-4" />
@@ -41,6 +46,11 @@ export default function SettingsPage() {
         {/* Tab de Impuestos */}
         <TabsContent value="taxes" className="space-y-6 mt-6">
           <TaxSettingsForm />
+        </TabsContent>
+
+        {/* Tab de Seguridad */}
+        <TabsContent value="security" className="space-y-6 mt-6">
+          <SecuritySettingsForm />
         </TabsContent>
 
         {/* Tab de Configuración General */}

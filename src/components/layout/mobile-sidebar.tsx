@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { usePermission } from '@/hooks/use-permission'
@@ -17,6 +17,7 @@ import {
   Settings,
   Store,
   Menu,
+  Clock,
 } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
@@ -24,6 +25,7 @@ import { Button } from '@/components/ui/button'
 interface MobileSidebarProps {
   storeSlug: string
   isOwner: boolean
+  role?: string
 }
 
 interface NavItem {
@@ -31,9 +33,10 @@ interface NavItem {
   href: string
   icon: React.ComponentType<{ className?: string }>
   permission?: 'manage_products' | 'manage_inventory' | 'make_sales' | 'view_reports' | 'manage_employees' | 'manage_store'
+  ownerOnly?: boolean
 }
 
-export function MobileSidebar({ storeSlug, isOwner }: MobileSidebarProps) {
+export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
@@ -86,12 +89,33 @@ export function MobileSidebar({ storeSlug, isOwner }: MobileSidebarProps) {
       permission: 'manage_employees',
     },
     {
+      label: 'Turnos',
+      href: `/dashboard/${storeSlug}/shifts`,
+      icon: Clock,
+      permission: 'manage_employees',
+    },
+    {
       label: 'Configuración',
       href: `/dashboard/${storeSlug}/settings`,
       icon: Settings,
       permission: 'manage_store',
     },
   ]
+
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <Button variant="ghost" size="icon" className="md:hidden">
+        <Menu className="h-5 w-5" />
+        <span className="sr-only">Alternar menú</span>
+      </Button>
+    )
+  }
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -120,46 +144,65 @@ export function MobileSidebar({ storeSlug, isOwner }: MobileSidebarProps) {
           </div>
 
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {navItems.map((item) => {
-              const hasPermission = !item.permission || usePermission(item.permission)
-
-              if (!hasPermission) {
-                return null
-              }
-
-              const isActive = pathname === item.href
-              const Icon = item.icon
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                  {item.label}
-                </Link>
-              )
-            })}
+            {navItems.map((item) => (
+              <SidebarItem
+                key={item.href}
+                item={item}
+                storeSlug={storeSlug}
+                isOwner={isOwner}
+                pathname={pathname}
+                onClose={() => setOpen(false)}
+              />
+            ))}
           </nav>
 
-          <div className="p-4 border-t">
-            <Link
-              href="/dashboard/select-store"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-            >
-              Cambiar Tienda
-            </Link>
-          </div>
         </div>
       </SheetContent>
     </Sheet>
+  )
+}
+
+function SidebarItem({
+  item,
+  storeSlug,
+  isOwner,
+  pathname,
+  onClose,
+}: {
+  item: NavItem
+  storeSlug: string
+  isOwner: boolean
+  pathname: string
+  onClose: () => void
+}) {
+  const hasPermission = usePermission(item.permission as any)
+
+  // Check owner-only restriction
+  if (item.ownerOnly && !isOwner) {
+    return null
+  }
+
+  // Check permissions (some items don't need permission)
+  if (item.permission && !hasPermission) {
+    return null
+  }
+
+  const isActive = pathname === item.href
+  const Icon = item.icon
+
+  return (
+    <Link
+      href={item.href}
+      onClick={onClose}
+      className={cn(
+        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+        isActive
+          ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
+          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+      )}
+    >
+      <Icon className="h-5 w-5" />
+      {item.label}
+    </Link>
   )
 }

@@ -36,7 +36,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { LoadingPage } from '@/components/ui/loading'
-import { UserPlus, Users, Crown, Shield, User } from 'lucide-react'
+import { SetPinDialog } from '@/components/employees/set-pin-dialog'
+import { UserPlus, Users, Crown, Shield, User, Key } from 'lucide-react'
 
 interface Employment {
   id: string
@@ -45,6 +46,8 @@ interface Employment {
   isActive: boolean
   startDate: string
   endDate?: string
+  pin?: string
+  requiresPin: boolean
   user: {
     id: string
     name: string
@@ -60,11 +63,11 @@ export default function EmployeesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [inviteOpen, setInviteOpen] = useState(false)
   const [isInviting, setIsInviting] = useState(false)
-  const [email, setEmail] = useState('')
   const [name, setName] = useState('')
-  const [password, setPassword] = useState('')
   const [role, setRole] = useState('CASHIER')
   const [removingEmployee, setRemovingEmployee] = useState<Employment | null>(null)
+  const [selectedPinEmployee, setSelectedPinEmployee] = useState<Employment | null>(null)
+  const [pinDialogOpen, setPinDialogOpen] = useState(false)
 
   useEffect(() => {
     if (store) {
@@ -91,7 +94,7 @@ export default function EmployeesPage() {
   }
 
   const handleInvite = async () => {
-    if (!store || !email.trim()) return
+    if (!store || !name.trim()) return
 
     setIsInviting(true)
 
@@ -99,21 +102,19 @@ export default function EmployeesPage() {
       const response = await fetch(`/api/stores/${store.storeId}/employees`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role }),
+        body: JSON.stringify({ name, role }),
       })
 
       const result = await response.json()
 
       if (!response.ok) {
-        toast.error(result.error || 'Error al invitar al empleado')
+        toast.error(result.error || 'Error al registrar al empleado')
         return
       }
 
-      toast.success('¡Empleado registrado con éxito!')
+      toast.success('¡Empleado registrado con éxito! Ahora configura su PIN.')
       setInviteOpen(false)
       setName('')
-      setEmail('')
-      setPassword('')
       setRole('CASHIER')
       loadEmployees()
       router.refresh()
@@ -277,9 +278,9 @@ export default function EmployeesPage() {
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-3 px-4">Nombre</th>
-                    <th className="text-left py-3 px-4">Correo</th>
                     <th className="text-left py-3 px-4">Rol</th>
                     <th className="text-left py-3 px-4">Fecha de Inicio</th>
+                    <th className="text-center py-3 px-4">PIN</th>
                     <th className="text-center py-3 px-4">Estado</th>
                     <th className="text-right py-3 px-4">Acciones</th>
                   </tr>
@@ -289,9 +290,6 @@ export default function EmployeesPage() {
                     <tr key={employee.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="py-3 px-4">
                         <p className="font-medium">{employee.user.name}</p>
-                      </td>
-                      <td className="py-3 px-4">
-                        <p className="text-sm text-gray-600">{employee.user.email}</p>
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
@@ -307,9 +305,34 @@ export default function EmployeesPage() {
                         </span>
                       </td>
                       <td className="py-3 px-4 text-center">
+                        {['CASHIER', 'STOCK_KEEPER', 'MANAGER'].includes(employee.role) ? (
+                          employee.pin ? (
+                            <span className="text-sm text-green-600 dark:text-green-400">✓ Configurado</span>
+                          ) : (
+                            <span className="text-sm text-red-600 dark:text-red-400">✗ Falta configurar</span>
+                          )
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center">
                         <Badge variant="default">Activo</Badge>
                       </td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 text-right space-x-2 flex justify-end">
+                        {['CASHIER', 'STOCK_KEEPER', 'MANAGER'].includes(employee.role) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedPinEmployee(employee)
+                              setPinDialogOpen(true)
+                            }}
+                            className="gap-2"
+                          >
+                            <Key className="w-4 h-4" />
+                            {employee.pin ? 'Cambiar PIN' : 'Configurar PIN'}
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -339,7 +362,7 @@ export default function EmployeesPage() {
                 <div key={employee.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <div>
                     <p className="font-medium">{employee.user.name}</p>
-                    <p className="text-sm text-gray-600">{employee.user.email}</p>
+                    <p className="text-sm text-gray-600">{employee.role}</p>
                   </div>
                   <Badge variant="secondary">Inactivo</Badge>
                 </div>
@@ -355,7 +378,8 @@ export default function EmployeesPage() {
           <DialogHeader>
             <DialogTitle>Registrar Empleado</DialogTitle>
             <DialogDescription>
-              Crea un nuevo usuario directamente para tu tienda.
+              Registra un nuevo empleado para tu tienda. Solo necesitas su nombre y rol.
+              Después configura su PIN de 4 dígitos para acceder al POS.
             </DialogDescription>
           </DialogHeader>
 
@@ -369,32 +393,8 @@ export default function EmployeesPage() {
                 onChange={(e) => setName(e.target.value)}
                 disabled={isInviting}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Correo Electrónico *</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="juan@ejemplo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isInviting}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Contraseña Temporal *</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isInviting}
-              />
               <p className="text-xs text-gray-500">
-                Se le pedirá al empleado que cambie esta contraseña al iniciar sesión por primera vez.
+                El empleado usará este nombre para identificarse en el sistema
               </p>
             </div>
 
@@ -411,6 +411,16 @@ export default function EmployeesPage() {
                   <SelectItem value="STOCK_KEEPER">Almacenero - Solo Inventario</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-gray-500">
+                Define qué acciones puede realizar este empleado
+              </p>
+            </div>
+
+            <div className="p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm text-blue-900 dark:text-blue-100">
+                <strong>Nota:</strong> Los empleados no pueden iniciar sesión en la web.
+                Solo acceden al sistema mediante PIN en el punto de venta (POS).
+              </p>
             </div>
           </div>
 
@@ -423,7 +433,7 @@ export default function EmployeesPage() {
             >
               Cancelar
             </Button>
-            <Button onClick={handleInvite} disabled={isInviting || !email.trim() || !name.trim() || !password.trim()}>
+            <Button onClick={handleInvite} disabled={isInviting || !name.trim()}>
               {isInviting ? 'Registrando...' : 'Registrar Empleado'}
             </Button>
           </DialogFooter>
@@ -451,6 +461,22 @@ export default function EmployeesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* PIN Dialog */}
+      {selectedPinEmployee && store && (
+        <SetPinDialog
+          isOpen={pinDialogOpen}
+          employeeId={selectedPinEmployee.userId}
+          employmentId={selectedPinEmployee.id}
+          employeeName={selectedPinEmployee.user.name}
+          storeId={store.storeId}
+          onSuccess={() => {
+            loadEmployees()
+            setPinDialogOpen(false)
+          }}
+          onOpenChange={setPinDialogOpen}
+        />
+      )}
     </div>
   )
 }

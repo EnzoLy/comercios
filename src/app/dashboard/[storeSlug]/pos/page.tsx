@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +15,9 @@ import { RecentSalesDialog } from '@/components/pos/recent-sales-dialog'
 import { DiscountControls } from '@/components/pos/discount-controls'
 import { ShiftReportDialog } from '@/components/pos/shift-report-dialog'
 import { PersonalStats } from '@/components/pos/personal-stats'
+import { ShiftSwitcher } from '@/components/pos/shift-switcher'
+import { EmployeeSelector } from '@/components/pos/employee-selector'
+import { useActiveEmployee } from '@/contexts/active-employee-context'
 import { useStore } from '@/hooks/use-store'
 import { formatCurrency } from '@/lib/utils/currency'
 import { LoadingPage } from '@/components/ui/loading'
@@ -49,6 +53,7 @@ interface CartItem {
 
 export default function POSPage() {
   const router = useRouter()
+  const { data: session } = useSession()
   const store = useStore()
   const [cart, setCart] = useState<CartItem[]>([])
   const [scannerOpen, setScannerOpen] = useState(false)
@@ -63,27 +68,73 @@ export default function POSPage() {
   const [recentSalesOpen, setRecentSalesOpen] = useState(false)
   const [shiftReportOpen, setShiftReportOpen] = useState(false)
   const [statRefreshTrigger, setStatRefreshTrigger] = useState(0)
+  const [currentShift, setCurrentShift] = useState<any>(null)
+  const [showEmployeeSelector, setShowEmployeeSelector] = useState(false)
+  const { activeEmployee, setActiveEmployee } = useActiveEmployee()
 
-  // Fetch tax settings from store
+  // Fetch tax settings and current shift from store
   useEffect(() => {
     if (!store) return
 
-    const fetchTaxSettings = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch(`/api/stores/${store.storeId}/tax-settings`)
-        if (response.ok) {
-          const data = await response.json()
+        // Fetch tax settings
+        const taxResponse = await fetch(`/api/stores/${store.storeId}/tax-settings`)
+        if (taxResponse.ok) {
+          const data = await taxResponse.json()
           setTaxEnabled(data.taxEnabled)
           setDefaultTaxRate(data.defaultTaxRate)
           setTaxName(data.taxName)
         }
+
+        // NUEVO: Auto-detección de turno del usuario logueado
+        // Use session data instead of manual fetch
+        const currentUser = session?.user
+
+        // Fetch today's shifts
+        const shiftsResponse = await fetch(`/api/stores/${store.storeId}/employee-shifts/today`)
+        if (shiftsResponse.ok) {
+          const shifts = await shiftsResponse.json()
+
+          // Check for active employee from context first, fallback to localStorage
+          const activeUserId = activeEmployee?.id || localStorage.getItem('activeUserId')
+          const existingActiveShift = activeUserId ? shifts.find((s: any) => s.employeeId === activeUserId) : null
+
+          // Verificar si el usuario logueado tiene turno hoy
+          const userShift = currentUser && shifts.find((s: any) => s.employeeId === currentUser.id)
+
+          if (existingActiveShift) {
+            // Maintain the existing active shift (could be an employee or the owner)
+            setCurrentShift(existingActiveShift)
+            console.log(`Maintaining active shift for user: ${existingActiveShift.employee?.name || activeUserId}`)
+          } else if (userShift && currentUser) {
+            // No active shift, but the logged-in user has a shift today
+            setCurrentShift(userShift)
+
+            // Get user's role in this store from session
+            const storeInfo = (currentUser as any).stores?.find((s: any) => s.storeId === store.storeId)
+
+            if (storeInfo) {
+              setActiveEmployee({
+                id: currentUser.id || '',
+                name: currentUser.name || '',
+                role: storeInfo.employmentRole,
+                isOwner: storeInfo.isOwner
+              })
+            }
+            console.log(`Auto-selected shift for logged-in user: ${currentUser.name}`)
+          } else {
+            // No valid active shift and current user has no shift - show selector
+            setShowEmployeeSelector(true)
+          }
+        }
       } catch (error) {
-        console.error('Error fetching tax settings:', error)
+        console.error('Error fetching data:', error)
       }
     }
 
-    fetchTaxSettings()
-  }, [store])
+    fetchData()
+  }, [store, session, activeEmployee?.id])
 
   const handleBarcodeDetected = async (barcode: string) => {
     if (!store) return
@@ -179,6 +230,13 @@ export default function POSPage() {
     }
   }
 
+  const handleShiftChange = (shift: any) => {
+    // Clear cart when changing shift
+    clearCart()
+    setCurrentShift(shift)
+    setCartDiscount(0)
+  }
+
   const updateQuantity = (productId: string, delta: number) => {
     setCart((prev) =>
       prev.map((item) => {
@@ -213,12 +271,12 @@ export default function POSPage() {
 
   const tax = taxEnabled
     ? cart.reduce((sum, item) => {
-        const itemSubtotal = item.price * item.quantity
-        const itemDiscount = item.discount || 0
-        const discountedSubtotal = itemSubtotal - itemDiscount
-        const itemTax = (discountedSubtotal * item.taxRate) / 100
-        return sum + itemTax
-      }, 0)
+      const itemSubtotal = item.price * item.quantity
+      const itemDiscount = item.discount || 0
+      const discountedSubtotal = itemSubtotal - itemDiscount
+      const itemTax = (discountedSubtotal * item.taxRate) / 100
+      return sum + itemTax
+    }, 0)
     : 0
 
   const total = subtotal + tax - cartDiscount
@@ -229,7 +287,11 @@ export default function POSPage() {
     setIsProcessing(true)
 
     try {
+      // NUEVO: Obtener activeUserId del localStorage
+      const activeUserId = localStorage.getItem('activeUserId')
+
       const saleData = {
+        activeUserId,
         items: cart.map((item) => {
           const itemSubtotal = item.price * item.quantity
           const itemDiscount = item.discount || 0
@@ -304,7 +366,7 @@ export default function POSPage() {
         case 'tab':
           if (e.key === 'Tab' && isInput) return
           e.preventDefault()
-          ;(document.querySelector('[placeholder*="Buscar"]') as HTMLInputElement)?.focus()
+            ; (document.querySelector('[placeholder*="Buscar"]') as HTMLInputElement)?.focus()
           break
         case 'escape':
           e.preventDefault()
@@ -357,6 +419,11 @@ export default function POSPage() {
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <h1 className="text-xl md:text-2xl font-bold">Caja</h1>
           <div className="flex gap-2">
+            <ShiftSwitcher
+              storeId={store.storeId}
+              currentShift={currentShift}
+              onShiftChange={handleShiftChange}
+            />
             <Button
               variant="outline"
               size="sm"
@@ -387,12 +454,6 @@ export default function POSPage() {
               Escanear Código de Barras
             </Button>
           </div>
-
-          {/* Category Filter */}
-          <CategoryFilter
-            storeId={store.storeId}
-            onCategorySelect={setSelectedCategoryId}
-          />
 
           <ProductSearch
             storeId={store.storeId}
@@ -427,6 +488,12 @@ export default function POSPage() {
             <ShoppingCart className="h-5 w-5" />
             Carrito ({cart.length})
           </h2>
+          {currentShift && (
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              Turno: {currentShift.startTime}
+              {currentShift.endTime && ` - ${currentShift.endTime}`}
+            </p>
+          )}
         </div>
 
         <div className="flex-1 overflow-auto p-4 md:p-6 space-y-3 md:space-y-4">
@@ -622,6 +689,19 @@ export default function POSPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Employee Selector */}
+      <EmployeeSelector
+        storeId={store?.storeId || ''}
+        isOpen={showEmployeeSelector}
+        onClose={() => setShowEmployeeSelector(false)}
+        onEmployeeSelected={(employeeId, name) => {
+          // No need to manually set localStorage here, 
+          // EmployeeSelector now uses setActiveEmployee correctly
+          toast.success(`Empleado activo: ${name}`)
+          router.refresh()
+        }}
+      />
     </div>
   )
 }

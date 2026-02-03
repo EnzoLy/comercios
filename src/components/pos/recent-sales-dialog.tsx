@@ -56,7 +56,10 @@ export function RecentSalesDialog({
   const fetchRecentSales = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/stores/${storeId}/pos/recent-sales`)
+      const activeUserId = localStorage.getItem('activeUserId')
+      const queryParam = activeUserId ? `?activeUserId=${activeUserId}` : ''
+
+      const response = await fetch(`/api/stores/${storeId}/pos/recent-sales${queryParam}`)
       if (response.ok) {
         const data = await response.json()
         setSales(data)

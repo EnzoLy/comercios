@@ -50,6 +50,12 @@ export class Employment {
   @Column({ type: 'timestamp', nullable: true })
   endDate?: Date
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  pin?: string
+
+  @Column({ type: 'boolean', default: false })
+  requiresPin!: boolean
+
   @CreateDateColumn()
   createdAt!: Date
 

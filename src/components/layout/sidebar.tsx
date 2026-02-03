@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { usePermission } from '@/hooks/use-permission'
@@ -15,12 +16,14 @@ import {
   Settings,
   Store,
   BarChart3,
+  Clock,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 interface SidebarProps {
   storeSlug: string
   isOwner: boolean
+  role?: string
 }
 
 interface NavItem {
@@ -28,9 +31,10 @@ interface NavItem {
   href: string
   icon: React.ComponentType<{ className?: string }>
   permission?: 'manage_products' | 'manage_inventory' | 'make_sales' | 'view_reports' | 'manage_employees' | 'manage_store'
+  ownerOnly?: boolean
 }
 
-export function Sidebar({ storeSlug, isOwner }: SidebarProps) {
+export function Sidebar({ storeSlug, isOwner, role }: SidebarProps) {
   const pathname = usePathname()
 
   const navItems: NavItem[] = [
@@ -80,14 +84,51 @@ export function Sidebar({ storeSlug, isOwner }: SidebarProps) {
       href: `/dashboard/${storeSlug}/employees`,
       icon: Users,
       permission: 'manage_employees',
+      ownerOnly: false,
+    },
+    {
+      label: 'Turnos',
+      href: `/dashboard/${storeSlug}/shifts`,
+      icon: Clock,
+      permission: 'manage_employees',
+      ownerOnly: false,
     },
     {
       label: 'Configuración',
       href: `/dashboard/${storeSlug}/settings`,
       icon: Settings,
       permission: 'manage_store',
+      ownerOnly: true,
     },
   ]
+
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <aside className="hidden md:flex w-64 border-r bg-gray-50 dark:bg-gray-900 flex-col h-screen">
+        <div className="p-4 border-b">
+          <div className="flex items-center gap-2">
+            <Store className="h-5 w-5" />
+            <div>
+              <h2 className="font-bold text-sm">{storeSlug}</h2>
+              <p className="text-xs text-gray-500">
+                {isOwner ? 'Propietario' : 'Empleado'}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 p-4 space-y-1 overflow-y-auto">
+          {/* Skeleton or empty space to avoid jump */}
+          <div className="h-full w-full bg-transparent" />
+        </div>
+      </aside>
+    )
+  }
 
   return (
     <aside className="hidden md:flex w-64 border-r bg-gray-50 dark:bg-gray-900 flex-col h-screen">
@@ -104,46 +145,65 @@ export function Sidebar({ storeSlug, isOwner }: SidebarProps) {
       </div>
 
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const hasPermission = !item.permission || usePermission(item.permission)
-
-          if (!hasPermission) {
-            return null
-          }
-
-          const isActive = pathname === item.href
-          const Icon = item.icon
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-              )}
-            >
-              <Icon className="h-5 w-5" />
-              {item.label}
-            </Link>
-          )
-        })}
+        {navItems.map((item) => (
+          <SidebarItem
+            key={item.href}
+            item={item}
+            storeSlug={storeSlug}
+            isOwner={isOwner}
+            pathname={pathname}
+          />
+        ))}
       </nav>
 
       <div className="p-4 border-t space-y-2">
-        <Link
-          href="/dashboard/select-store"
-          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          Cambiar Tienda
-        </Link>
         <div className="flex items-center justify-between px-3 py-2">
           <span className="text-sm text-gray-600 dark:text-gray-400">Tema</span>
           <ThemeToggle />
         </div>
       </div>
     </aside>
+  )
+}
+
+function SidebarItem({
+  item,
+  storeSlug,
+  isOwner,
+  pathname,
+}: {
+  item: NavItem
+  storeSlug: string
+  isOwner: boolean
+  pathname: string
+}) {
+  const hasPermission = usePermission(item.permission as any)
+
+  // Check owner-only restriction
+  if (item.ownerOnly && !isOwner) {
+    return null
+  }
+
+  // Check permissions (some items don't need permission)
+  if (item.permission && !hasPermission) {
+    return null
+  }
+
+  const isActive = pathname === item.href
+  const Icon = item.icon
+
+  return (
+    <Link
+      href={item.href}
+      className={cn(
+        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+        isActive
+          ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
+          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+      )}
+    >
+      <Icon className="h-5 w-5" />
+      {item.label}
+    </Link>
   )
 }

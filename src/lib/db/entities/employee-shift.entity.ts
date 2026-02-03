@@ -17,18 +17,23 @@ export enum ShiftStatus {
   COMPLETED = 'COMPLETED',
 }
 
+export enum ShiftType {
+  REGULAR = 'REGULAR',      // Turno normal (hora a hora en el mismo día)
+  SPECIAL = 'SPECIAL',      // Turno especial (abarca múltiples fechas, ej: día libre)
+}
+
 @Entity('employee_shift')
-@Index(['storeId', 'employeeId', 'startTime'])
+@Index(['storeId', 'employeeId', 'date'])
 @Index(['storeId', 'date'])
 export class EmployeeShift {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', name: 'storeId' })
   @Index()
   storeId!: string
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', name: 'employeeId' })
   @Index()
   employeeId!: string
 
@@ -40,6 +45,16 @@ export class EmployeeShift {
 
   @Column({ type: 'time', nullable: true })
   endTime?: string
+
+  @Column({
+    type: 'enum',
+    enum: ShiftType,
+    default: ShiftType.REGULAR,
+  })
+  type!: ShiftType
+
+  @Column({ type: 'date', nullable: true })
+  endDate?: Date
 
   @Column({
     type: 'enum',

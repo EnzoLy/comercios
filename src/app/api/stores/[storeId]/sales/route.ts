@@ -5,12 +5,12 @@ import {
   getStoreIdFromHeaders,
   getUserIdFromHeaders,
 } from '@/lib/auth/permissions'
-import { getDataSource } from '@/lib/db'
+import { getDataSource, getRepository } from '@/lib/db'
 import { Sale, SaleStatus } from '@/lib/db/entities/sale.entity'
 import { SaleItem } from '@/lib/db/entities/sale-item.entity'
 import { Product } from '@/lib/db/entities/product.entity'
 import { StockMovement, MovementType } from '@/lib/db/entities/stock-movement.entity'
-import { EmploymentRole } from '@/lib/db/entities/employment.entity'
+import { EmploymentRole, Employment } from '@/lib/db/entities/employment.entity'
 import { createSaleSchema } from '@/lib/validations/sale.schema'
 
 export async function GET(
@@ -102,6 +102,27 @@ export async function POST(
     const body = await request.json()
     const validated = createSaleSchema.parse(body)
 
+    // NUEVO: Soportar activeUserId para multi-usuario en misma PC
+    let cashierId = userId
+    const { activeUserId } = body
+
+    if (activeUserId && activeUserId !== userId) {
+      // Validar que activeUserId tiene acceso al store
+      const employmentRepo = await getRepository(Employment)
+      const employment = await employmentRepo.findOne({
+        where: { userId: activeUserId, storeId, isActive: true }
+      })
+
+      if (!employment) {
+        return NextResponse.json(
+          { error: 'Active user does not have access to this store' },
+          { status: 403 }
+        )
+      }
+
+      cashierId = activeUserId
+    }
+
     const dataSource = await getDataSource()
 
     // CRITICAL: Atomic transaction - all operations succeed or all fail
@@ -141,7 +162,7 @@ export async function POST(
       const amountPaid = validated.amountPaid || total
       const sale = manager.create(Sale, {
         storeId,
-        cashierId: userId,
+        cashierId,
         paymentMethod: validated.paymentMethod,
         status: SaleStatus.PENDING,
         subtotal,

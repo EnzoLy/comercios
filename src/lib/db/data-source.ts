@@ -12,6 +12,11 @@ import { ProductBarcode } from './entities/product-barcode.entity'
 import { StockMovement } from './entities/stock-movement.entity'
 import { Sale } from './entities/sale.entity'
 import { SaleItem } from './entities/sale-item.entity'
+import { EmployeeShift } from './entities/employee-shift.entity'
+import { ShiftClose } from './entities/shift-close.entity'
+
+// Import migrations
+import { AddPinToEmployment1707000000000 } from './migrations/1707000000000-AddPinToEmployment'
 
 // Singleton instance to prevent multiple connections in Next.js hot reload
 let dataSource: DataSource | null = null
@@ -49,6 +54,8 @@ export async function getDataSource(): Promise<DataSource> {
           StockMovement,
           Sale,
           SaleItem,
+          EmployeeShift,
+          ShiftClose,
         ],
         subscribers: [],
         migrations: [],
@@ -80,6 +87,8 @@ export async function getDataSource(): Promise<DataSource> {
           StockMovement,
           Sale,
           SaleItem,
+          EmployeeShift,
+          ShiftClose,
         ],
         subscribers: [],
         migrations: [],

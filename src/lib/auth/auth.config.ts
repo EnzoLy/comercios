@@ -35,6 +35,16 @@ export const authConfig: NextAuthConfig = {
             return null
           }
 
+          // Check if user has ADMIN or OWNER access (restrict login to these roles)
+          const hasAdminAccess = (user.employments || []).some(
+            (emp: Employment) => emp.isActive && (emp.role === 'ADMIN' || emp.store.ownerId === user.id)
+          )
+
+          if (!hasAdminAccess) {
+            console.warn(`Login denied: ${email} has no ADMIN/OWNER role`)
+            return null
+          }
+
           // Build stores array from employments
           const stores = (user.employments || [])
             .filter((emp: Employment) => emp.isActive)
