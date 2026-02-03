@@ -64,14 +64,17 @@
 
 .dark {
   /* Dark mode - pure black theme */
-  --background: #000000;
-  --foreground: #ffffff;
-  --card: #0a0a0a;
-  --card-foreground: #ffffff;
-  --popover: #0a0a0a;
-  --popover-foreground: #ffffff;
+  /* Header and sidebar - pure black */
   --primary: #ffffff;
   --primary-foreground: #000000;
+
+  /* Pages and main content - slightly lighter black for differentiation */
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --card: #111111;
+  --card-foreground: #ffffff;
+  --popover: #111111;
+  --popover-foreground: #ffffff;
   --secondary: #1a1a1a;
   --secondary-foreground: #ffffff;
   --muted: #1a1a1a;
@@ -84,43 +87,57 @@
   --ring: var(--color-primary);
 }
 
-/* Force dark mode to be pure black everywhere */
-.dark {
-  background-color: #000000 !important;
-  color: #ffffff !important;
-}
-
 html.dark {
-  background-color: #000000 !important;
-  color: #ffffff !important;
+  background-color: #0a0a0a;
+  color: #ffffff;
 }
 
-.dark body {
-  background-color: #000000 !important;
-  color: #ffffff !important;
+/* Force dark mode to be pure black everywhere */
+body.dark,
+html.dark body {
+  background-color: #0a0a0a;
+  color: #ffffff;
 }
 
-/* Override all Tailwind dark backgrounds */
-.dark [class*="bg-"] {
-  --tw-bg-opacity: 1 !important;
-  background-color: #000000 !important;
-}
-
-/* Specific overrides for common elements */
-.dark aside,
+/* Header, sidebar, nav - pure black */
 .dark header,
+.dark header[class*="bg-white"],
+.dark aside,
+.dark aside[class*="bg-white"],
 .dark nav,
-.dark main {
+.dark nav[class*="bg-white"] {
   background-color: #000000 !important;
   color: #ffffff !important;
 }
 
-/* Override gray colors in dark mode */
+/* Main content area - slightly lighter black (#0a0a0a) for differentiation */
+.dark main {
+  background-color: #0a0a0a !important;
+  color: #ffffff !important;
+}
+
+/* Dialog and modals - match content area */
+.dark [role="dialog"],
+.dark [role="alertdialog"] {
+  background-color: #0a0a0a !important;
+  color: #ffffff !important;
+}
+
+/* Override specific gray background utilities in dark mode */
 .dark .bg-gray-50,
-.dark .bg-gray-100,
+.dark .bg-gray-100 {
+  background-color: #111111 !important;
+}
+
 .dark .bg-gray-900,
 .dark .bg-gray-950 {
-  background-color: #000000 !important;
+  background-color: #0a0a0a !important;
+}
+
+/* Ensure cards and containers use the right dark shade */
+.dark .bg-white,
+.dark .bg-slate-50 {
+  background-color: #111111 !important;
 }
 
 @layer base {

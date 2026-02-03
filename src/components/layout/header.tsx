@@ -76,7 +76,7 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
   }
 
   return (
-    <header className="h-16 border-b bg-white dark:bg-gray-950 flex items-center justify-between px-4 md:px-6">
+    <header className="h-16 border-b bg-white flex items-center justify-between px-4 md:px-6">
       <div className="flex items-center gap-3">
         <MobileSidebar storeSlug={storeSlug} isOwner={isOwner} role={role} />
         <h1 className="text-lg md:text-xl font-semibold">Sistema de Gestión Comercial</h1>

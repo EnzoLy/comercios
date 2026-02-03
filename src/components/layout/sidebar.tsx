@@ -110,7 +110,7 @@ export function Sidebar({ storeSlug, isOwner, role }: SidebarProps) {
 
   if (!mounted) {
     return (
-      <aside className="hidden md:flex w-64 border-r bg-white dark:bg-gray-950 flex-col h-screen">
+      <aside className="hidden md:flex w-64 border-r bg-white flex-col h-screen">
         <div className="p-4 border-b">
           <div className="flex items-center gap-2">
             <Store className="h-5 w-5" />
@@ -131,7 +131,7 @@ export function Sidebar({ storeSlug, isOwner, role }: SidebarProps) {
   }
 
   return (
-    <aside className="hidden md:flex w-64 border-r bg-white dark:bg-gray-950 flex-col h-screen">
+    <aside className="hidden md:flex w-64 border-r bg-white flex-col h-screen">
       <div className="p-4 border-b">
         <Link href="/dashboard/select-store" className="flex items-center gap-2 hover:opacity-80">
           <Store className="h-5 w-5" />
