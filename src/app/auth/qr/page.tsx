@@ -46,6 +46,7 @@ function QRLoginContent() {
       const signInResult = await signIn('credentials', {
         email: result.data.email,
         password: '__QR_TOKEN_LOGIN__', // Special flag
+        employmentId: result.data.employmentId, // Specify which employment to log into
         redirect: false,
       })
 
