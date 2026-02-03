@@ -1,0 +1,71 @@
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  Index,
+} from 'typeorm'
+import type { Product } from './product.entity'
+import type { User } from './user.entity'
+import type { Sale } from './sale.entity'
+
+export enum MovementType {
+  PURCHASE = 'PURCHASE',
+  SALE = 'SALE',
+  ADJUSTMENT = 'ADJUSTMENT',
+  RETURN = 'RETURN',
+  DAMAGE = 'DAMAGE',
+}
+
+@Entity('stock_movement')
+@Index(['productId', 'createdAt'])
+export class StockMovement {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string
+
+  @Column({ type: 'uuid' })
+  @Index()
+  productId!: string
+
+  @Column({
+    type: 'enum',
+    enum: MovementType,
+  })
+  type!: MovementType
+
+  @Column({ type: 'int' })
+  quantity!: number
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  unitPrice?: number
+
+  @Column({ type: 'text', nullable: true })
+  notes?: string
+
+  @Column({ type: 'uuid', nullable: true })
+  userId?: string
+
+  @Column({ type: 'uuid', nullable: true })
+  saleId?: string
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  reference?: string
+
+  @CreateDateColumn()
+  createdAt!: Date
+
+  // Relationships
+  @ManyToOne('Product', (product: Product) => product.stockMovements, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'productId' })
+  product!: Product
+
+  @ManyToOne('User', { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'userId' })
+  user?: User
+
+  @ManyToOne('Sale', (sale: Sale) => sale.stockMovements, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'saleId' })
+  sale?: Sale
+}

@@ -1,0 +1,461 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { BarcodeScanner } from '@/components/products/barcode-scanner'
+import { ProductSearch } from '@/components/pos/product-search'
+import { useStore } from '@/hooks/use-store'
+import { formatCurrency } from '@/lib/utils/currency'
+import { LoadingPage } from '@/components/ui/loading'
+import { Camera, Trash2, Plus, Minus, ShoppingCart, Store } from 'lucide-react'
+import { PaymentMethod } from '@/lib/db/entities/sale.entity'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+
+interface CartItem {
+  productId: string
+  name: string
+  sku: string
+  price: number
+  quantity: number
+  stock: number
+  taxRate: number
+}
+
+export default function POSPage() {
+  const router = useRouter()
+  const store = useStore()
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [scannerOpen, setScannerOpen] = useState(false)
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH)
+  const [amountPaid, setAmountPaid] = useState<number>(0)
+  const [taxEnabled, setTaxEnabled] = useState(false)
+  const [defaultTaxRate, setDefaultTaxRate] = useState(0)
+  const [taxName, setTaxName] = useState('IVA')
+
+  // Fetch tax settings from store
+  useEffect(() => {
+    if (!store) return
+
+    const fetchTaxSettings = async () => {
+      try {
+        const response = await fetch(`/api/stores/${store.storeId}/tax-settings`)
+        if (response.ok) {
+          const data = await response.json()
+          setTaxEnabled(data.taxEnabled)
+          setDefaultTaxRate(data.defaultTaxRate)
+          setTaxName(data.taxName)
+        }
+      } catch (error) {
+        console.error('Error fetching tax settings:', error)
+      }
+    }
+
+    fetchTaxSettings()
+  }, [store])
+
+  const handleBarcodeDetected = async (barcode: string) => {
+    if (!store) return
+
+    try {
+      const response = await fetch(
+        `/api/stores/${store.storeId}/products/barcode/${barcode}`
+      )
+
+      if (!response.ok) {
+        toast.error('Producto no encontrado')
+        return
+      }
+
+      const product = await response.json()
+      addToCart(product)
+      toast.success(`Se añadió ${product.name} al carrito`)
+    } catch (error) {
+      toast.error('Error al buscar el producto')
+    }
+  }
+
+  const addToCart = (product: any) => {
+    setCart((prev) => {
+      const existing = prev.find((item) => item.productId === product.id)
+
+      // Determine tax rate: product override or store default
+      let taxRate = defaultTaxRate
+      if (product.overrideTaxRate && product.taxRate !== null && product.taxRate !== undefined) {
+        taxRate = product.taxRate
+      }
+
+      if (existing) {
+        if (existing.quantity >= product.currentStock) {
+          toast.error('Stock insuficiente')
+          return prev
+        }
+        return prev.map((item) =>
+          item.productId === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      }
+
+      return [
+        ...prev,
+        {
+          productId: product.id,
+          name: product.name,
+          sku: product.sku,
+          price: Number(product.sellingPrice),
+          quantity: 1,
+          stock: product.currentStock,
+          taxRate,
+        },
+      ]
+    })
+  }
+
+  const updateQuantity = (productId: string, delta: number) => {
+    setCart((prev) =>
+      prev.map((item) => {
+        if (item.productId === productId) {
+          const newQuantity = item.quantity + delta
+          if (newQuantity <= 0) return item
+          if (newQuantity > item.stock) {
+            toast.error('Stock insuficiente')
+            return item
+          }
+          return { ...item, quantity: newQuantity }
+        }
+        return item
+      })
+    )
+  }
+
+  const removeFromCart = (productId: string) => {
+    setCart((prev) => prev.filter((item) => item.productId !== productId))
+  }
+
+  const clearCart = () => {
+    setCart([])
+  }
+
+  // Calculate totals with dynamic tax rates
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const tax = taxEnabled ? cart.reduce((sum, item) => {
+    const itemSubtotal = item.price * item.quantity
+    const itemTax = (itemSubtotal * item.taxRate) / 100
+    return sum + itemTax
+  }, 0) : 0
+  const total = subtotal + tax
+
+  const handleCheckout = async () => {
+    if (!store || cart.length === 0) return
+
+    setIsProcessing(true)
+
+    try {
+      const saleData = {
+        items: cart.map((item) => {
+          const itemSubtotal = item.price * item.quantity
+          const itemTax = taxEnabled ? (itemSubtotal * item.taxRate) / 100 : 0
+          return {
+            productId: item.productId,
+            quantity: item.quantity,
+            unitPrice: item.price,
+            discount: 0,
+            taxRate: item.taxRate,
+            taxAmount: itemTax,
+          }
+        }),
+        paymentMethod,
+        tax,
+        discount: 0,
+        amountPaid: paymentMethod === PaymentMethod.CASH ? amountPaid : total,
+      }
+
+      const response = await fetch(`/api/stores/${store.storeId}/sales`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(saleData),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        toast.error(result.error || 'Error al completar la venta')
+        return
+      }
+
+      toast.success('¡Venta completada con éxito!')
+      clearCart()
+      setCheckoutOpen(false)
+      setAmountPaid(0)
+
+      // Optionally navigate to sale details
+      // router.push(`/dashboard/${store.slug}/sales/${result.id}`)
+    } catch (error) {
+      toast.error('Error al completar la venta')
+      console.error('Checkout error:', error)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const change = amountPaid > total ? amountPaid - total : 0
+
+  if (!store) {
+    return (
+      <LoadingPage
+        title="Cargando POS"
+        description="Obteniendo información de la tienda..."
+        icon={<Store className="h-8 w-8 text-gray-600" />}
+      />
+    )
+  }
+
+  return (
+    <div className="h-full flex flex-col lg:flex-row">
+      {/* Left: Product Search/Scan */}
+      <div className="flex-1 p-4 md:p-6 overflow-auto">
+        <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Caja</h1>
+
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setScannerOpen(true)}
+              size="lg"
+              className="flex-1 h-14 md:h-12 text-base"
+            >
+              <Camera className="mr-2 h-5 w-5" />
+              Escanear Código de Barras
+            </Button>
+          </div>
+
+          <ProductSearch
+            storeId={store.storeId}
+            onProductSelect={(product) => {
+              addToCart(product)
+              toast.success(`Se añadió ${product.name} al carrito`)
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Right: Cart */}
+      <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l bg-gray-50 dark:bg-gray-900 flex flex-col max-h-[50vh] lg:max-h-none">
+        <div className="p-4 md:p-6 border-b">
+          <h2 className="text-lg md:text-xl font-bold flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            Carrito ({cart.length})
+          </h2>
+        </div>
+
+        <div className="flex-1 overflow-auto p-4 md:p-6 space-y-3 md:space-y-4">
+          {cart.length === 0 ? (
+            <p className="text-center text-gray-500 mt-8">El carrito está vacío</p>
+          ) : (
+            cart.map((item) => (
+              <Card key={item.productId}>
+                <CardContent className="p-3 md:p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <p className="font-medium text-sm md:text-base">{item.name}</p>
+                      <p className="text-xs md:text-sm text-gray-500">{item.sku}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFromCart(item.productId)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateQuantity(item.productId, -1)}
+                        disabled={item.quantity <= 1}
+                        className="h-9 w-9 p-0 md:h-8 md:w-8"
+                      >
+                        <Minus className="h-4 w-4 md:h-3 md:w-3" />
+                      </Button>
+                      <span className="w-10 md:w-8 text-center font-medium">{item.quantity}</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateQuantity(item.productId, 1)}
+                        disabled={item.quantity >= item.stock}
+                        className="h-9 w-9 p-0 md:h-8 md:w-8"
+                      >
+                        <Plus className="h-4 w-4 md:h-3 md:w-3" />
+                      </Button>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="font-semibold text-sm md:text-base">
+                        {formatCurrency(item.price * item.quantity)}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatCurrency(item.price)} c/u
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+
+        <div className="p-4 md:p-6 border-t space-y-4">
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm md:text-base">
+              <span>Subtotal:</span>
+              <span>{formatCurrency(subtotal)}</span>
+            </div>
+            {taxEnabled && (
+              <div className="flex justify-between text-sm md:text-base">
+                <span>{taxName}:</span>
+                <span>{formatCurrency(tax)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-lg md:text-xl font-bold">
+              <span>Total:</span>
+              <span>{formatCurrency(total)}</span>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1 h-12 md:h-10"
+              onClick={clearCart}
+              disabled={cart.length === 0}
+            >
+              Limpiar
+            </Button>
+            <Button
+              className="flex-1 h-12 md:h-10 text-base"
+              onClick={() => setCheckoutOpen(true)}
+              disabled={cart.length === 0}
+            >
+              Pagar
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <BarcodeScanner
+        isOpen={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onDetected={handleBarcodeDetected}
+      />
+
+      {/* Checkout Dialog */}
+      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pagar</DialogTitle>
+            <DialogDescription>
+              Completa la venta seleccionando el método de pago
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Método de Pago</Label>
+              <Select
+                value={paymentMethod}
+                onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={PaymentMethod.CASH}>Efectivo</SelectItem>
+                  <SelectItem value={PaymentMethod.CARD}>Tarjeta</SelectItem>
+                  <SelectItem value={PaymentMethod.MOBILE}>Pago Móvil</SelectItem>
+                  <SelectItem value={PaymentMethod.CREDIT}>Crédito</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {paymentMethod === PaymentMethod.CASH && (
+              <>
+                <div className="space-y-2">
+                  <Label>Monto Pagado</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={amountPaid || ''}
+                    onChange={(e) => setAmountPaid(Number(e.target.value))}
+                    placeholder="0.00"
+                  />
+                </div>
+
+                {amountPaid > 0 && (
+                  <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg space-y-2">
+                    <div className="flex justify-between">
+                      <span>Total:</span>
+                      <span className="font-semibold">{formatCurrency(total)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Pagado:</span>
+                      <span className="font-semibold">{formatCurrency(amountPaid)}</span>
+                    </div>
+                    <div className="flex justify-between text-lg font-bold border-t pt-2">
+                      <span>Cambio:</span>
+                      <span className={change < 0 ? 'text-red-500' : 'text-green-600'}>
+                        {formatCurrency(change)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCheckoutOpen(false)}
+              disabled={isProcessing}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleCheckout}
+              disabled={
+                isProcessing ||
+                (paymentMethod === PaymentMethod.CASH && (amountPaid < total || change < 0))
+              }
+            >
+              {isProcessing ? 'Procesando...' : 'Completar Venta'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
