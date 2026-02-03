@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authConfig } from '@/lib/auth/auth.config'
+import { auth } from '@/lib/auth/auth'
 import { getDataSource } from '@/lib/db'
 import { EmploymentAccessToken, AuditLog } from '@/lib/db'
 import { revokeAccessTokenSchema } from '@/lib/validations/access-token.schema'
@@ -16,7 +15,7 @@ export async function POST(
     requireAuth()
 
     const { storeId } = await params
-    const session = await getServerSession(authConfig)
+    const session = await auth()
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
