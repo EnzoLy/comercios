@@ -60,10 +60,23 @@ function QRLoginContent() {
       setMessage('Acceso concedido. Redirigiendo...')
 
       // Save employment data to localStorage for activeEmployee context
+      console.log('[QR Login] Saving employment data to localStorage:', {
+        employmentId: result.data.employmentId,
+        name: result.data.name,
+        role: result.data.role,
+        storeSlug: result.data.storeSlug,
+      })
       localStorage.setItem('qrEmploymentId', result.data.employmentId)
       localStorage.setItem('qrEmployeeName', result.data.name)
       localStorage.setItem('qrEmployeeRole', result.data.role)
       localStorage.setItem('qrStoreSlug', result.data.storeSlug)
+
+      console.log('[QR Login] Stored in localStorage:', {
+        qrEmploymentId: localStorage.getItem('qrEmploymentId'),
+        qrEmployeeName: localStorage.getItem('qrEmployeeName'),
+        qrEmployeeRole: localStorage.getItem('qrEmployeeRole'),
+        qrStoreSlug: localStorage.getItem('qrStoreSlug'),
+      })
 
       // Redirect to store
       setTimeout(() => {

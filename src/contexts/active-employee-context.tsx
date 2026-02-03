@@ -34,18 +34,31 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
     const qrEmployeeRole = localStorage.getItem('qrEmployeeRole')
     const qrUsed = localStorage.getItem('qrUsed')
 
+    console.log('[ActiveEmployeeProvider] QR data check:', {
+      qrStoreSlug,
+      qrEmployeeName,
+      qrEmployeeRole,
+      qrUsed,
+      storeSlug,
+      hasAllQRData: !!(qrStoreSlug && qrEmployeeName && qrEmployeeRole && !qrUsed),
+    })
+
     // If we have QR data and haven't used it yet
     if (qrStoreSlug && qrEmployeeName && qrEmployeeRole && !qrUsed) {
+      console.log('[ActiveEmployeeProvider] Setting activeEmployee from QR data')
+
       // Set the flag to mark as used
       localStorage.setItem('qrUsed', 'true')
 
       // Set activeEmployee from QR login data
-      setActiveEmployeeState({
-        id: typeof window !== 'undefined' ? (Math.random().toString()) : 'qr-employee', // Temporary ID
+      const activeEmp = {
+        id: session?.user?.id || 'qr-employee',
         name: qrEmployeeName,
         role: qrEmployeeRole,
         isOwner: false,
-      })
+      }
+      console.log('[ActiveEmployeeProvider] Setting activeEmployee:', activeEmp)
+      setActiveEmployeeState(activeEmp)
       return
     }
 
