@@ -9,8 +9,8 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import type { User } from './user.entity'
-import type { Employment } from './employment.entity'
+import { User } from './user.entity'
+import { Employment } from './employment.entity'
 import { Category } from './category.entity'
 import { Product } from './product.entity'
 import { Sale } from './sale.entity'
@@ -87,11 +87,11 @@ export class Store {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('User', (user: User) => user.ownedStores, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user: User) => user.ownedStores, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ownerId' })
   owner!: User
 
-  @OneToMany('Employment', (employment: Employment) => employment.store)
+  @OneToMany(() => Employment, (employment: Employment) => employment.store)
   employments!: Employment[]
 
   @OneToMany(() => Category, (category) => category.store)
