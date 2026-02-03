@@ -87,13 +87,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Token ya usado' }, { status: 401 })
     }
 
-    // Get employment details directly to ensure we have correct data
-    const employment = await employmentRepo.findOne({
-      where: { id: accessToken.employmentId },
-      relations: ['user', 'store'],
-    })
-
-    if (!employment || !employment.isActive) {
+    // Verify employment is active
+    if (!accessToken.employment || !accessToken.employment.isActive) {
       return NextResponse.json(
         { error: 'Empleado inactivo' },
         { status: 403 }
@@ -109,12 +104,12 @@ export async function POST(request: NextRequest) {
     // Audit log of success
     await auditRepo.save({
       event_type: 'ACCESS_TOKEN_USED_SUCCESS',
-      user_id: employment.userId,
-      store_id: employment.storeId,
-      employment_id: accessToken.employmentId,
+      user_id: accessToken.employment.userId,
+      store_id: accessToken.employment.storeId,
+      employment_id: accessToken.employment.id,
       details: JSON.stringify({
         tokenId: accessToken.id,
-        employeeName: employment.user.name,
+        employeeName: accessToken.employment.user.name,
       }),
       ip_address: accessToken.ipAddress,
       user_agent: accessToken.userAgent,
@@ -125,13 +120,13 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         data: {
-          userId: employment.userId,
-          email: employment.user.email,
-          name: employment.user.name,
-          storeSlug: employment.store.slug,
-          storeId: employment.storeId,
-          employmentId: accessToken.employmentId,
-          role: employment.role,
+          userId: accessToken.employment.userId,
+          email: accessToken.employment.user.email,
+          name: accessToken.employment.user.name,
+          storeSlug: accessToken.employment.store.slug,
+          storeId: accessToken.employment.storeId,
+          employmentId: accessToken.employment.id,
+          role: accessToken.employment.role,
         },
       },
       { status: 200 }
