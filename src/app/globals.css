@@ -116,6 +116,15 @@ html.dark body {
   color: #ffffff !important;
 }
 
+/* Border colors - make them visible between pure black and content area */
+.dark header {
+  border-bottom-color: #1a1a1a !important;
+}
+
+.dark aside {
+  border-right-color: #1a1a1a !important;
+}
+
 /* Dialog and modals - match content area */
 .dark [role="dialog"],
 .dark [role="alertdialog"] {
