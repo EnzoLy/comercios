@@ -7,7 +7,10 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(pnpm run build:*)"
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm install)",
+      "Bash(npm install:*)"
     ]
   }
 }
