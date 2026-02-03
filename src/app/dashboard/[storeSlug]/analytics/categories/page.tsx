@@ -143,7 +143,7 @@ export default function CategoriesPage() {
       ) : chartData.length === 0 ? (
         <EmptyState />
       ) : (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-secondary)' }}>
           <CardHeader>
             <CardTitle>Distribución de Ingresos por Categoría</CardTitle>
             <CardDescription>Proporción de ventas de cada categoría</CardDescription>
@@ -170,7 +170,7 @@ export default function CategoriesPage() {
           description="Los productos deben estar asignados a categorías para ver analíticas"
         />
       ) : (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Detalles de Categoría</CardTitle>

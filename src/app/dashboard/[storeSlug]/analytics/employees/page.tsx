@@ -151,7 +151,8 @@ export default function EmployeesPage() {
           {topPerformers.map((employee, idx) => (
             <Card
               key={employee.employeeId}
-              className={idx === 0 ? 'border-yellow-500 md:col-span-2' : ''}
+              className={idx === 0 ? 'md:col-span-2' : ''}
+              style={{ borderColor: idx === 0 ? 'var(--color-primary)' : 'var(--color-secondary)' }}
             >
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between">
@@ -178,7 +179,7 @@ export default function EmployeesPage() {
       ) : chartData.length === 0 ? (
         <EmptyState />
       ) : (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-accent)' }}>
           <CardHeader>
             <CardTitle>Ingresos por Empleado</CardTitle>
             <CardDescription>Ingresos totales generados por cada cajero</CardDescription>
@@ -203,7 +204,7 @@ export default function EmployeesPage() {
       ) : employees.length === 0 ? (
         <EmptyState />
       ) : (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Detalles del Empleado</CardTitle>

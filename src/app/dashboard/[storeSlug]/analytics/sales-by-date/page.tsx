@@ -112,7 +112,7 @@ export default function SalesByDatePage() {
       <DateRangeSelector startDate={startDate} endDate={endDate} onDateChange={handleDateChange} />
 
       {/* Granularity Toggle */}
-      <Card>
+      <Card style={{ borderColor: 'var(--color-primary)' }}>
         <CardContent className="pt-6">
           <div className="flex gap-2">
             <p className="text-sm font-medium mr-4 self-center">Granularidad:</p>
@@ -120,6 +120,7 @@ export default function SalesByDatePage() {
               variant={granularity === 'day' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setGranularity('day')}
+              style={granularity === 'day' ? { backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-primary)' } : {}}
             >
               Diario
             </Button>
@@ -127,6 +128,7 @@ export default function SalesByDatePage() {
               variant={granularity === 'week' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setGranularity('week')}
+              style={granularity === 'week' ? { backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-primary)' } : {}}
             >
               Semanal
             </Button>
@@ -134,6 +136,7 @@ export default function SalesByDatePage() {
               variant={granularity === 'month' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setGranularity('month')}
+              style={granularity === 'month' ? { backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-primary)' } : {}}
             >
               Mensual
             </Button>
@@ -175,7 +178,7 @@ export default function SalesByDatePage() {
       ) : chartData.length === 0 ? (
         <EmptyState />
       ) : (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-secondary)' }}>
           <CardHeader>
             <CardTitle>Tendencia de Ingresos</CardTitle>
             <CardDescription>Ingresos y cantidad de transacciones a lo largo del tiempo</CardDescription>
@@ -209,7 +212,7 @@ export default function SalesByDatePage() {
       ) : tableData.length === 0 ? (
         <EmptyState />
       ) : (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Datos de Ventas</CardTitle>

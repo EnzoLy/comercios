@@ -197,7 +197,7 @@ export default function ProductsPage() {
       ) : chartData.length === 0 ? (
         <EmptyState />
       ) : (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader>
             <CardTitle>Top 10 Productos por Ingresos</CardTitle>
             <CardDescription>Productos más vendidos en el período seleccionado</CardDescription>
@@ -218,7 +218,7 @@ export default function ProductsPage() {
 
       {/* Search and Sort */}
       {!isLoading && products.length > 0 && (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-secondary)' }}>
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -253,7 +253,7 @@ export default function ProductsPage() {
       ) : sortedProducts.length === 0 ? (
         <EmptyState />
       ) : (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-accent)' }}>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Detalles del Producto</CardTitle>
