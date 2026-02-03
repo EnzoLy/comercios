@@ -84,9 +84,10 @@
   --ring: var(--color-primary);
 }
 
-/* Force dark mode to be pure black */
-.dark * {
-  --tw-bg-opacity: 1;
+/* Force dark mode to be pure black everywhere */
+.dark {
+  background-color: #000000 !important;
+  color: #ffffff !important;
 }
 
 html.dark {
@@ -97,6 +98,29 @@ html.dark {
 .dark body {
   background-color: #000000 !important;
   color: #ffffff !important;
+}
+
+/* Override all Tailwind dark backgrounds */
+.dark [class*="bg-"] {
+  --tw-bg-opacity: 1 !important;
+  background-color: #000000 !important;
+}
+
+/* Specific overrides for common elements */
+.dark aside,
+.dark header,
+.dark nav,
+.dark main {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* Override gray colors in dark mode */
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-900,
+.dark .bg-gray-950 {
+  background-color: #000000 !important;
 }
 
 @layer base {
