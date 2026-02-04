@@ -106,9 +106,9 @@ export class Sale {
   @JoinColumn({ name: 'cashierId' })
   cashier!: any
 
-  @OneToMany('SaleItem', (saleItem: any) => saleItem.sale, { cascade: true })
+  @OneToMany('sale_item', (saleItem: any) => saleItem.sale, { cascade: true })
   items!: any[]
 
-  @OneToMany('StockMovement', (movement: any) => movement.sale)
+  @OneToMany('stock_movement', (movement: any) => movement.sale)
   stockMovements!: any[]
 }

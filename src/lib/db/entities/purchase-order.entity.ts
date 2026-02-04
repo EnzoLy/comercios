@@ -97,15 +97,15 @@ export class PurchaseOrder {
   @JoinColumn({ name: 'supplierId' })
   supplier!: Supplier
 
-  @ManyToOne('User')
+  @ManyToOne('user')
   @JoinColumn({ name: 'createdBy' })
   createdByUser?: any
 
-  @ManyToOne('User')
+  @ManyToOne('user')
   @JoinColumn({ name: 'approvedBy' })
   approvedByUser?: any
 
-  @OneToMany('PurchaseOrderItem', (item: any) => item.purchaseOrder, {
+  @OneToMany('purchase_order_item', (item: any) => item.purchaseOrder, {
     cascade: true
   })
   items?: any[]

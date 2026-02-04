@@ -68,10 +68,10 @@ export class SupplierCommercialTerms {
   updatedAt!: Date
 
   // Relationships
-  @OneToOne('Supplier', { onDelete: 'CASCADE' })
+  @OneToOne('supplier', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'supplierId' })
   supplier!: Supplier
 
-  @OneToMany('SupplierVolumeDiscount', (discount: any) => discount.commercialTerms)
+  @OneToMany('supplier_volume_discount', (discount: any) => discount.commercialTerms)
   volumeDiscounts?: any[]
 }
