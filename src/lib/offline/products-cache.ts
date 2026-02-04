@@ -78,29 +78,31 @@ class ProductsCacheManager {
   }
 
   /**
-   * Search products by barcode or SKU
+   * Search products by barcode or SKU (only active products)
    */
   searchByBarcodeOrSKU(query: string): CachedProduct[] {
     const products = this.getProducts()
     const lowerQuery = query.toLowerCase()
 
     return products.filter(p =>
-      p.barcode === query ||
-      p.sku === query ||
-      p.barcode?.toLowerCase().includes(lowerQuery) ||
-      p.sku?.toLowerCase().includes(lowerQuery)
+      p.isActive && (
+        p.barcode === query ||
+        p.sku === query ||
+        p.barcode?.toLowerCase().includes(lowerQuery) ||
+        p.sku?.toLowerCase().includes(lowerQuery)
+      )
     )
   }
 
   /**
-   * Search products by name
+   * Search products by name (only active products)
    */
   searchByName(query: string): CachedProduct[] {
     const products = this.getProducts()
     const lowerQuery = query.toLowerCase()
 
     return products.filter(p =>
-      p.name.toLowerCase().includes(lowerQuery)
+      p.isActive && p.name.toLowerCase().includes(lowerQuery)
     )
   }
 

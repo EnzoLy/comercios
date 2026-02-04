@@ -22,6 +22,7 @@ export async function GET(
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
     const categoryId = searchParams.get('categoryId')
+    const includeInactive = searchParams.get('includeInactive') === 'true'
 
     const dataSource = await getDataSource()
     const productRepo = dataSource.getRepository(Product)
@@ -32,6 +33,11 @@ export async function GET(
       .leftJoinAndSelect('product.supplier', 'supplier')
       .leftJoinAndSelect('product.barcodes', 'barcodes')
       .where('product.storeId = :storeId', { storeId })
+
+    // Only show active products by default
+    if (!includeInactive) {
+      query = query.andWhere('product.isActive = :isActive', { isActive: true })
+    }
 
     if (search) {
       query = query.andWhere(

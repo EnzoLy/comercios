@@ -129,6 +129,7 @@ export async function DELETE(
 
     const dataSource = await getDataSource()
     const productRepo = dataSource.getRepository(Product)
+    const saleItemRepo = dataSource.getRepository('SaleItem')
 
     const product = await productRepo.findOne({
       where: { id: productId, storeId },
@@ -138,13 +139,103 @@ export async function DELETE(
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
+    // Check if product is referenced in any sales
+    const saleItemCount = await saleItemRepo
+      .createQueryBuilder('saleItem')
+      .where('saleItem.productId = :productId', { productId })
+      .getCount()
+
+    if (saleItemCount > 0) {
+      // Product has sales history - use soft delete
+      await productRepo.update({ id: productId }, { isActive: false })
+      return NextResponse.json({
+        message: 'Product deactivated (preserved in sales history)',
+        preserved: true,
+        saleCount: saleItemCount
+      })
+    }
+
+    // No sales history - safe to hard delete
     await productRepo.delete({ id: productId })
 
-    return NextResponse.json({ message: 'Product deleted successfully' })
+    return NextResponse.json({
+      message: 'Product deleted successfully',
+      preserved: false
+    })
   } catch (error) {
     console.error('Delete product error:', error)
+
+    // If foreign key constraint error, fallback to soft delete
+    if (error instanceof Error && error.message.includes('foreign key constraint')) {
+      try {
+        const { productId } = await params
+        const dataSource = await getDataSource()
+        const productRepo = dataSource.getRepository(Product)
+
+        await productRepo.update({ id: productId }, { isActive: false })
+
+        return NextResponse.json({
+          message: 'Product deactivated due to existing references',
+          preserved: true
+        })
+      } catch (fallbackError) {
+        console.error('Fallback soft delete also failed:', fallbackError)
+        return NextResponse.json(
+          { error: 'Failed to delete product - it is referenced in sales' },
+          { status: 409 } // 409 Conflict
+        )
+      }
+    }
+
     return NextResponse.json(
       { error: 'Failed to delete product' },
+      { status: 500 }
+    )
+  }
+}
+
+// Restore a deactivated product
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ storeId: string; productId: string }> }
+) {
+  try {
+    const { storeId, productId } = await params
+    await requireRole(storeId, [EmploymentRole.ADMIN, EmploymentRole.MANAGER])
+
+    const { action } = await request.json()
+
+    if (action !== 'restore') {
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    }
+
+    const dataSource = await getDataSource()
+    const productRepo = dataSource.getRepository(Product)
+
+    const product = await productRepo.findOne({
+      where: { id: productId, storeId },
+    })
+
+    if (!product) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    }
+
+    // Reactivate the product
+    await productRepo.update({ id: productId }, { isActive: true })
+
+    const restored = await productRepo.findOne({
+      where: { id: productId },
+      relations: ['category', 'supplier'],
+    })
+
+    return NextResponse.json({
+      message: 'Product reactivated successfully',
+      product: restored
+    })
+  } catch (error) {
+    console.error('Restore product error:', error)
+    return NextResponse.json(
+      { error: 'Failed to restore product' },
       { status: 500 }
     )
   }
