@@ -54,11 +54,11 @@ export class SaleItem {
   createdAt!: Date
 
   // Relationships
-  @ManyToOne('sale', (sale: any) => sale.items, { onDelete: 'CASCADE' })
+  @ManyToOne('Sale', (sale: any) => sale.items, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'saleId' })
   sale!: any
 
-  @ManyToOne('product', (product: any) => product.saleItems, { onDelete: 'RESTRICT' })
+  @ManyToOne('Product', (product: any) => product.saleItems, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'productId' })
   product!: any
 }

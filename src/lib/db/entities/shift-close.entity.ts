@@ -50,11 +50,11 @@ export class ShiftClose {
   createdAt!: Date
 
   // Relationships
-  @ManyToOne('store', (store: any) => store.shiftCloses, { onDelete: 'CASCADE' })
+  @ManyToOne('Store', (store: any) => store.shiftCloses, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: any
 
-  @ManyToOne('user', { onDelete: 'RESTRICT' })
+  @ManyToOne('User', { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'employeeId' })
   employee!: any
 }

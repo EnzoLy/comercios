@@ -47,17 +47,17 @@ export class Category {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('store', (store: any) => store.categories, { onDelete: 'CASCADE' })
+  @ManyToOne('Store', (store: any) => store.categories, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: any
 
-  @ManyToOne('category', (category: any) => category.children, { onDelete: 'SET NULL' })
+  @ManyToOne('Category', (category: any) => category.children, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'parentId' })
   parent?: any
 
-  @OneToMany('category', (category: any) => category.parent)
+  @OneToMany('Category', (category: any) => category.parent)
   children!: any[]
 
-  @OneToMany('product', (product: any) => product.category)
+  @OneToMany('Product', (product: any) => product.category)
   products!: any[]
 }

@@ -16,6 +16,7 @@ import type { Supplier } from './supplier.entity'
 import type { StockMovement } from './stock-movement.entity'
 import type { SaleItem } from './sale-item.entity'
 import type { ProductBarcode } from './product-barcode.entity'
+import type { SupplierProduct } from './supplier-product.entity'
 
 @Entity('product')
 @Unique(['storeId', 'sku'])
@@ -122,6 +123,6 @@ export class Product {
   @OneToMany('product_barcode', (barcode: any) => barcode.product)
   barcodes!: any[]
 
-  @OneToMany('supplier-product', (sp: any) => sp.product)
+  @OneToMany('SupplierProduct', (sp: any) => sp.product)
   supplierProducts?: any[]
 }

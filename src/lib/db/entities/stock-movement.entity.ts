@@ -57,15 +57,15 @@ export class StockMovement {
   createdAt!: Date
 
   // Relationships
-  @ManyToOne('product', (product: any) => product.stockMovements, { onDelete: 'CASCADE' })
+  @ManyToOne('Product', (product: any) => product.stockMovements, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'productId' })
   product!: any
 
-  @ManyToOne('user', { onDelete: 'SET NULL' })
+  @ManyToOne('User', { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'userId' })
   user?: any
 
-  @ManyToOne('sale', (sale: any) => sale.stockMovements, { onDelete: 'CASCADE' })
+  @ManyToOne('Sale', (sale: any) => sale.stockMovements, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'saleId' })
   sale?: any
 }

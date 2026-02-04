@@ -73,11 +73,11 @@ export class EmployeeShift {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('store', (store: any) => store.employeeShifts, { onDelete: 'CASCADE' })
+  @ManyToOne('Store', (store: any) => store.employeeShifts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: any
 
-  @ManyToOne('user', (user: any) => user.shifts, { onDelete: 'CASCADE' })
+  @ManyToOne('User', (user: any) => user.shifts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'employeeId' })
   employee!: any
 }

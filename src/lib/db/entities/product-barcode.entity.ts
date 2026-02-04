@@ -47,7 +47,7 @@ export class ProductBarcode {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('product', (product: any) => product.barcodes, {
+  @ManyToOne('Product', (product: any) => product.barcodes, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'productId' })

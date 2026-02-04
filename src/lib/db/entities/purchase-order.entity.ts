@@ -87,25 +87,25 @@ export class PurchaseOrder {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('store', { onDelete: 'CASCADE' })
+  @ManyToOne('Store', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: Store
 
-  @ManyToOne('supplier', (supplier: any) => supplier.purchaseOrders, {
+  @ManyToOne('Supplier', (supplier: any) => supplier.purchaseOrders, {
     onDelete: 'RESTRICT'
   })
   @JoinColumn({ name: 'supplierId' })
   supplier!: Supplier
 
-  @ManyToOne('user')
+  @ManyToOne('User')
   @JoinColumn({ name: 'createdBy' })
   createdByUser?: any
 
-  @ManyToOne('user')
+  @ManyToOne('User')
   @JoinColumn({ name: 'approvedBy' })
   approvedByUser?: any
 
-  @OneToMany('purchase-order-item', (item: any) => item.purchaseOrder, {
+  @OneToMany('PurchaseOrderItem', (item: any) => item.purchaseOrder, {
     cascade: true
   })
   items?: any[]

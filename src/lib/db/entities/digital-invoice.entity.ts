@@ -49,11 +49,11 @@ export class DigitalInvoice {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('sale', { onDelete: 'CASCADE' })
+  @ManyToOne('Sale', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'sale_id' })
   sale!: Sale
 
-  @ManyToOne('store', { onDelete: 'CASCADE' })
+  @ManyToOne('Store', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'store_id' })
   store!: Store
 
