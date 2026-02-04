@@ -8,7 +8,7 @@ import {
   Index,
 } from 'typeorm'
 import { Store } from './store.entity'
-import type { Employment } from './employment.entity'
+import { Employment } from './employment.entity'
 
 export enum UserRole {
   SUPER_ADMIN = 'SUPER_ADMIN',

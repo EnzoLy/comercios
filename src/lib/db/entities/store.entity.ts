@@ -10,11 +10,11 @@ import {
   Index,
 } from 'typeorm'
 import { User } from './user.entity'
-import type { Employment } from './employment.entity'
-import type { Category } from './category.entity'
-import type { Product } from './product.entity'
-import type { Sale } from './sale.entity'
-import type { Supplier } from './supplier.entity'
+import { Employment } from './employment.entity'
+import { Category } from './category.entity'
+import { Product } from './product.entity'
+import { Sale } from './sale.entity'
+import { Supplier } from './supplier.entity'
 
 @Entity('store')
 export class Store {
