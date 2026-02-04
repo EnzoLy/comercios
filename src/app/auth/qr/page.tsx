@@ -67,7 +67,7 @@ function QRLoginContent() {
           qrName: result.data.name,
           qrEmploymentId: result.data.employmentId,
         })
-        router.push(`/dashboard/${result.data.storeSlug}?${params.toString()}`)
+        router.push(`/dashboard/${result.data.slug}?${params.toString()}`)
       }, 1500)
     } catch (error) {
       console.error('QR login error:', error)

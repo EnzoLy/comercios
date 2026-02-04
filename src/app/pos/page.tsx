@@ -114,7 +114,7 @@ export default function POSPage() {
       if (result.queued) {
         alert('Venta guardada localmente. Se sincronizará cuando haya conexión.')
       }
-      router.push(`/dashboard/${store?.storeSlug}`)
+      router.push(`/dashboard/${store?.slug}`)
     }
   }
 
