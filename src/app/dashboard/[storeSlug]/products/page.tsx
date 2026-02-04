@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { LoadingPage } from '@/components/ui/loading'
-import { Plus, Package, AlertTriangle, Search, Filter, ChevronDown, Trash2, RefreshCw } from 'lucide-react'
+import { Plus, Package, AlertTriangle, Search, Filter, ChevronDown, ChevronLeft, ChevronRight, Trash2, RefreshCw } from 'lucide-react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 
 interface Product {
@@ -47,10 +47,10 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([])
   const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [hasMore, setHasMore] = useState(false)
+  const [pageLoading, setPageLoading] = useState(false)
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null)
 
   // Filters
@@ -62,7 +62,6 @@ export default function ProductsPage() {
   const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC'>('DESC')
   const [showFilters, setShowFilters] = useState(false)
 
-  const observerTarget = useRef<HTMLDivElement>(null)
   const searchDebounceRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   // Load categories
@@ -98,16 +97,19 @@ export default function ProductsPage() {
   }, [store])
 
   // Load products
-  const loadProducts = useCallback(async (pageNum: number = 1, append: boolean = false) => {
+  const loadProducts = useCallback(async (pageNum: number = 1, isInitial: boolean = false) => {
     if (!store) return
 
-    if (!append) setLoading(true)
-    else setLoadingMore(true)
+    if (isInitial) {
+      setLoading(true)
+    } else {
+      setPageLoading(true)
+    }
 
     try {
       const params = new URLSearchParams()
       params.append('page', pageNum.toString())
-      params.append('pageSize', '20')
+      params.append('pageSize', pageSize.toString())
       if (search) params.append('search', search)
       if (categoryFilter !== 'all') params.append('category', categoryFilter)
       if (stockFilter !== 'all') params.append('stock', stockFilter)
@@ -121,27 +123,24 @@ export default function ProductsPage() {
 
       const data: ProductsResponse = await response.json()
 
-      if (append) {
-        setProducts(prev => [...prev, ...data.products])
-      } else {
-        setProducts(data.products)
-      }
-
+      setProducts(data.products)
       setTotal(data.total)
-      setHasMore(data.hasMore)
       setPage(pageNum)
     } catch (error) {
       console.error('Error loading products:', error)
     } finally {
-      setLoading(false)
-      setLoadingMore(false)
+      if (isInitial) {
+        setLoading(false)
+      } else {
+        setPageLoading(false)
+      }
     }
-  }, [store, search, categoryFilter, stockFilter, statusFilter, sortBy, sortOrder])
+  }, [store, search, categoryFilter, stockFilter, statusFilter, sortBy, sortOrder, pageSize])
 
   // Initial load
   useEffect(() => {
     if (store) {
-      loadProducts(1, false)
+      loadProducts(1, true)
     }
   }, [store])
 
@@ -152,7 +151,8 @@ export default function ProductsPage() {
     }
 
     searchDebounceRef.current = setTimeout(() => {
-      loadProducts(1, false)
+      setPage(1)
+      loadProducts(1, true)
     }, 500)
 
     return () => {
@@ -162,28 +162,11 @@ export default function ProductsPage() {
     }
   }, [search, categoryFilter, stockFilter, statusFilter, sortBy, sortOrder])
 
-  // Infinite scroll
+  // Reset page when pageSize changes
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore) {
-          loadProducts(page + 1, true)
-        }
-      },
-      { threshold: 0.1 }
-    )
-
-    const currentTarget = observerTarget.current
-    if (currentTarget) {
-      observer.observe(currentTarget)
-    }
-
-    return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget)
-      }
-    }
-  }, [hasMore, loadingMore, page, loadProducts])
+    setPage(1)
+    loadProducts(1, true)
+  }, [pageSize])
 
   const handleDelete = async () => {
     if (!deletingProduct || !store) return
@@ -201,9 +184,8 @@ export default function ProductsPage() {
 
       const result = await response.json()
 
-      // Remove from list
-      setProducts(prev => prev.filter(p => p.id !== deletingProduct.id))
-      setTotal(prev => prev - 1)
+      // Reload products to update the list
+      loadProducts(page, true)
 
       if (result.preserved) {
         alert(`Producto desactivado (preservado en ${result.saleCount} ventas)`)
@@ -218,8 +200,16 @@ export default function ProductsPage() {
   }
 
   const handleRefresh = () => {
-    loadProducts(1, false)
+    loadProducts(page, true)
   }
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+    loadProducts(newPage, false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const totalPages = Math.ceil(total / pageSize)
 
   if (!store) {
     return <LoadingPage title="Cargando..." description="Obteniendo información de la tienda..." />
@@ -553,29 +543,85 @@ export default function ProductsPage() {
               </table>
             </div>
 
-            {/* Loading more indicator */}
-            {loadingMore && (
-              <div className="flex justify-center py-4">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  Cargando más productos...
+            {/* Pagination */}
+            {!loading && products.length > 0 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t">
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <span>Mostrando</span>
+                  <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(parseInt(v))}>
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <span>por página</span>
                 </div>
-              </div>
-            )}
 
-            {/* Intersection Observer target */}
-            {hasMore && !loading && (
-              <div ref={observerTarget} className="h-8" />
-            )}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, total)} de {total}
+                  </span>
 
-            {/* End of list */}
-            {!hasMore && products.length > 0 && (
-              <div className="text-center py-4 text-sm text-gray-500">
-                {products.length === total ? (
-                  `Mostrando todos los ${total} productos`
-                ) : (
-                  `Mostrando ${products.length} de ${total} productos`
-                )}
+                  <div className="flex items-center gap-1">
+                    {pageLoading ? (
+                      <div className="flex items-center gap-2 px-3">
+                        <RefreshCw className="h-4 w-4 animate-spin text-gray-600" />
+                        <span className="text-sm text-gray-600">Cargando...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(page - 1)}
+                          disabled={page === 1}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+
+                        {/* Page numbers */}
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNum
+                          if (totalPages <= 5) {
+                            pageNum = i + 1
+                          } else if (page <= 3) {
+                            pageNum = i + 1
+                          } else if (page >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i
+                          } else {
+                            pageNum = page - 2 + i
+                          }
+
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={page === pageNum ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => handlePageChange(pageNum)}
+                              className="w-10"
+                            >
+                              {pageNum}
+                            </Button>
+                          )
+                        })}
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(page + 1)}
+                          disabled={page === totalPages}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </CardContent>
