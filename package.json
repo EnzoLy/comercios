@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "db:test": "ts-node --project tsconfig.ts-node.json scripts/test-supabase-connection.ts",
-    "db:create-admin": "ts-node --project tsconfig.ts-node.json scripts/create-admin-user.ts"
+    "db:create-admin": "ts-node --project tsconfig.ts-node.json scripts/create-admin-user.ts",
+    "db:seed-products": "ts-node --project tsconfig.ts-node.json scripts/seed-products.ts"
   },
   "dependencies": {
     "@ericblade/quagga2": "^1.12.1",
