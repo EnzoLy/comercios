@@ -19,7 +19,7 @@ export async function GET(
 
     const category = await categoryRepo.findOne({
       where: { id: categoryId, storeId },
-      relations: ['parent', 'children', 'products'],
+      relations: ['parent', 'products'],
     })
 
     if (!category) {
@@ -88,7 +88,7 @@ export async function PATCH(
 
     const updated = await categoryRepo.findOne({
       where: { id: categoryId },
-      relations: ['parent', 'children'],
+      relations: ['parent'],
     })
 
     return NextResponse.json(updated)
@@ -123,7 +123,6 @@ export async function DELETE(
 
     const category = await categoryRepo.findOne({
       where: { id: categoryId, storeId },
-      relations: ['children'],
     })
 
     if (!category) {
@@ -142,8 +141,12 @@ export async function DELETE(
       )
     }
 
-    // Check if category has children
-    if (category.children && category.children.length > 0) {
+    // Check if category has children by querying for categories with this as parent
+    const childCount = await categoryRepo.count({
+      where: { parentId: categoryId },
+    })
+
+    if (childCount > 0) {
       return NextResponse.json(
         { error: 'Cannot delete category with subcategories' },
         { status: 400 }
