@@ -186,17 +186,17 @@ export default function InventoryPage() {
             </CardContent>
           </Card>
 
-          <Card style={{ borderColor: 'var(--color-secondary)', backgroundColor: 'rgba(var(--color-secondary), 0.05)' }}>
+          <Card style={{ borderColor: 'var(--color-secondary)' }}>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium" style={{ color: 'var(--color-secondary)' }}>
+              <CardTitle className="text-sm font-medium">
                 Stock Bajo
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold" style={{ color: 'var(--color-secondary)' }}>
+              <div className="text-2xl font-bold">
                 {alerts.summary.lowStockCount}
               </div>
-              <p className="text-xs mt-1" style={{ color: 'var(--color-secondary)' }}>
+              <p className="text-xs mt-1">
                 Bajo el nivel mínimo
               </p>
             </CardContent>
