@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
 import { getDataSource } from '@/lib/db'
 import { DigitalInvoice } from '@/lib/db/entities/digital-invoice.entity'
 import { InvoiceDisplay } from '@/components/invoice/invoice-display'
 import { MoreThan } from 'typeorm'
+import { getBaseUrl } from '@/lib/utils/url'
 
 interface PageProps {
   params: Promise<{
@@ -42,8 +44,9 @@ export default async function InvoicePage({ params }: PageProps) {
     }
   )
 
-  // Generate the invoice URL
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+  // Generate the invoice URL using headers to get the actual host
+  const headersList = await headers()
+  const baseUrl = getBaseUrl({ url: headersList.get('x-url') || `https://${headersList.get('host')}` } as Request)
   const invoiceUrl = `${baseUrl}/invoice/${token}`
 
   // Serialize for Client Component

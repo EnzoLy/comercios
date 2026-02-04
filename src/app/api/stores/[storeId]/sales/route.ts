@@ -13,6 +13,7 @@ import { StockMovement, MovementType } from '@/lib/db/entities/stock-movement.en
 import { EmploymentRole, Employment } from '@/lib/db/entities/employment.entity'
 import { DigitalInvoice } from '@/lib/db/entities/digital-invoice.entity'
 import { createSaleSchema } from '@/lib/validations/sale.schema'
+import { getBaseUrl } from '@/lib/utils/url'
 
 export async function GET(
   request: Request,
@@ -267,7 +268,7 @@ export async function POST(
       await invoiceRepo.save(invoice)
 
       // Generate public URL
-      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+      const baseUrl = getBaseUrl(request)
       invoiceUrl = `${baseUrl}/invoice/${invoice.accessToken}`
     } catch (invoiceError) {
       console.error('Failed to create digital invoice:', invoiceError)

@@ -3,6 +3,7 @@ import { getDataSource } from '@/lib/db'
 import { DigitalInvoice } from '@/lib/db/entities/digital-invoice.entity'
 import { Sale } from '@/lib/db/entities/sale.entity'
 import { requireStoreAccess } from '@/lib/auth/permissions'
+import { getBaseUrl } from '@/lib/utils/url'
 
 export async function POST(
   request: Request,
@@ -40,7 +41,8 @@ export async function POST(
 
     if (existingInvoice) {
       // Return existing invoice with URL
-      const invoiceUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/invoice/${existingInvoice.accessToken}`
+      const baseUrl = getBaseUrl(request)
+      const invoiceUrl = `${baseUrl}/invoice/${existingInvoice.accessToken}`
       return NextResponse.json({
         ...existingInvoice,
         invoiceUrl,
@@ -57,7 +59,8 @@ export async function POST(
     await invoiceRepo.save(invoice)
 
     // Generate public URL
-    const invoiceUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/invoice/${invoice.accessToken}`
+    const baseUrl = getBaseUrl(request)
+    const invoiceUrl = `${baseUrl}/invoice/${invoice.accessToken}`
 
     return NextResponse.json(
       {
@@ -104,7 +107,8 @@ export async function GET(
     }
 
     // Generate public URL
-    const invoiceUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/invoice/${invoice.accessToken}`
+    const baseUrl = getBaseUrl(request)
+    const invoiceUrl = `${baseUrl}/invoice/${invoice.accessToken}`
 
     return NextResponse.json({
       ...invoice,
