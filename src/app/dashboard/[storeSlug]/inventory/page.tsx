@@ -37,7 +37,7 @@ export default function InventoryPage() {
       const [alertsRes, movementsRes, productsRes] = await Promise.all([
         fetch(`/api/stores/${store.storeId}/inventory/alerts`),
         fetch(`/api/stores/${store.storeId}/inventory/movements?limit=30`),
-        fetch(`/api/stores/${store.storeId}/products`),
+        fetch(`/api/stores/${store.storeId}/products?pageSize=1000`),
       ])
 
       if (alertsRes.ok) {
@@ -52,7 +52,8 @@ export default function InventoryPage() {
 
       if (productsRes.ok) {
         const productsData = await productsRes.json()
-        setProducts(productsData)
+        // API returns { products, total, page, pageSize, hasMore }
+        setProducts(productsData.products || productsData)
       }
     } catch (error) {
       toast.error('Error al cargar datos de inventario')
