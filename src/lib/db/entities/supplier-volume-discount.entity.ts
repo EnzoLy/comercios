@@ -52,7 +52,7 @@ export class SupplierVolumeDiscount {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('SupplierCommercialTerms', (terms: any) => terms.volumeDiscounts, {
+  @ManyToOne('supplier-commercial-terms', (terms: any) => terms.volumeDiscounts, {
     onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'commercialTermsId' })

@@ -55,7 +55,7 @@ export class SupplierContact {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('Supplier', (supplier: any) => supplier.contacts, { onDelete: 'CASCADE' })
+  @ManyToOne('supplier', (supplier: any) => supplier.contacts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'supplierId' })
   supplier!: Supplier
 }

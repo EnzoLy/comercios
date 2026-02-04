@@ -78,7 +78,7 @@ export class SupplierDocument {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('Supplier', (supplier: any) => supplier.documents, {
+  @ManyToOne('supplier', (supplier: any) => supplier.documents, {
     onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'supplierId' })

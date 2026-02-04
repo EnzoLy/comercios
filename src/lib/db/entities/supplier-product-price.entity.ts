@@ -68,11 +68,11 @@ export class SupplierProductPrice {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('Supplier', { onDelete: 'CASCADE' })
+  @ManyToOne('supplier', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'supplierId' })
   supplier!: Supplier
 
-  @ManyToOne('Product', { onDelete: 'CASCADE' })
+  @ManyToOne('product', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'productId' })
   product!: Product
 }

@@ -53,11 +53,11 @@ export class PurchaseOrderItem {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('PurchaseOrder', (po: any) => po.items, { onDelete: 'CASCADE' })
+  @ManyToOne('purchase-order', (po: any) => po.items, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'purchaseOrderId' })
   purchaseOrder!: PurchaseOrder
 
-  @ManyToOne('Product', { onDelete: 'RESTRICT' })
+  @ManyToOne('product', { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'productId' })
   product!: Product
 }

@@ -52,15 +52,11 @@ export class EmploymentAccessToken {
   createdAt!: Date
 
   // Relationships
-  @ManyToOne('employment', (employment: any) => employment.accessTokens, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne('employment', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'employment_id' })
   employment!: any
 
-  @ManyToOne('user', (user: any) => user.createdAccessTokens, {
-    onDelete: 'SET NULL',
-  })
+  @ManyToOne('user', { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'created_by' })
   creator!: any
 }

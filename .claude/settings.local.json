@@ -15,7 +15,8 @@
       "Bash(pnpm build:*)",
       "Bash(pnpm tsc:*)",
       "Bash(timeout 30 tail:*)",
-      "Bash(set CI=true)"
+      "Bash(set CI=true)",
+      "Bash(timeout:*)"
     ]
   }
 }

@@ -122,6 +122,6 @@ export class Product {
   @OneToMany('product_barcode', (barcode: any) => barcode.product)
   barcodes!: any[]
 
-  @OneToMany('SupplierProduct', (sp: any) => sp.product)
+  @OneToMany('supplier-product', (sp: any) => sp.product)
   supplierProducts?: any[]
 }
