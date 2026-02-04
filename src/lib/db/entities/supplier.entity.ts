@@ -9,7 +9,7 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Store } from './store.entity'
+import type { Store } from './store.entity'
 import type { Product } from './product.entity'
 
 @Entity('supplier')
@@ -76,11 +76,11 @@ export class Supplier {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne(() => Store, (store: any) => store.suppliers, { onDelete: 'CASCADE' })
+  @ManyToOne('Store', (store: any) => store.suppliers, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: Store
 
-  @OneToMany(() => Product, (product: any) => product.supplier)
+  @OneToMany('Product', (product: any) => product.supplier)
   products!: Product[]
 
   @OneToMany('SupplierContact', (contact: any) => contact.supplier)
