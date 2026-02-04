@@ -11,7 +11,6 @@ import {
   Unique,
 } from 'typeorm'
 import { Store } from './store.entity'
-import type { Product } from './product.entity'
 
 @Entity('category')
 @Unique(['storeId', 'name'])
@@ -58,6 +57,6 @@ export class Category {
   @OneToMany('Category', (category: any) => category.parent)
   children!: any[]
 
-  @OneToMany(() => Product, (product: any) => product.category)
+  @OneToMany('Product', (product: any) => product.category)
   products!: any[]
 }
