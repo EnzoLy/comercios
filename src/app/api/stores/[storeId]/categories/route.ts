@@ -22,14 +22,37 @@ export async function GET(
     const dataSource = await getDataSource()
     const categoryRepo = dataSource.getRepository(Category)
 
-    // Get all categories with their children
+    // Get all categories
     const categories = await categoryRepo.find({
       where: { storeId },
-      relations: ['parent', 'children'],
+      relations: ['parent'],
       order: { sortOrder: 'ASC', name: 'ASC' },
     })
 
-    return NextResponse.json(categories)
+    // Build tree structure manually
+    const categoryMap = new Map<string, any>()
+    const rootCategories: any[] = []
+
+    // First pass: create map and initialize children arrays
+    categories.forEach((category: any) => {
+      categoryMap.set(category.id, { ...category, children: [] })
+    })
+
+    // Second pass: build tree structure
+    categoryMap.forEach((category) => {
+      if (category.parentId) {
+        const parent = categoryMap.get(category.parentId)
+        if (parent) {
+          parent.children.push(category)
+        } else {
+          rootCategories.push(category)
+        }
+      } else {
+        rootCategories.push(category)
+      }
+    })
+
+    return NextResponse.json(rootCategories)
   } catch (error) {
     console.error('Get categories error:', error)
     return NextResponse.json(
