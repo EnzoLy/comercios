@@ -288,7 +288,7 @@ export default function ProductsPage() {
           </div>
 
           <div className={`space-y-4 ${showFilters ? '' : 'hidden'}`}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 a">
               {/* Search */}
               <div className="lg:col-span-2">
                 <div className="relative">
@@ -301,55 +301,58 @@ export default function ProductsPage() {
                   />
                 </div>
               </div>
+              <div className="flex gap-2">
+                {/* Category */}
+                <div>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todas las categorías" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas las categorías</SelectItem>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Category */}
-              <div>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todas las categorías" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas las categorías</SelectItem>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Stock */}
+                <div>
+                  <Select value={stockFilter} onValueChange={(v) => setStockFilter(v as 'all' | 'low' | 'out')}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todo el stock" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todo el stock</SelectItem>
+                      <SelectItem value="low">Stock bajo</SelectItem>
+                      <SelectItem value="out">Agotado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Status */}
+                <div>
+                  <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'active' | 'inactive')}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todos los estados" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los estados</SelectItem>
+                      <SelectItem value="active">Activos</SelectItem>
+                      <SelectItem value="inactive">Inactivos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              {/* Stock */}
-              <div>
-                <Select value={stockFilter} onValueChange={(v) => setStockFilter(v as 'all' | 'low' | 'out')}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todo el stock" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todo el stock</SelectItem>
-                    <SelectItem value="low">Stock bajo</SelectItem>
-                    <SelectItem value="out">Agotado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Status */}
-              <div>
-                <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'active' | 'inactive')}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todos los estados" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="active">Activos</SelectItem>
-                    <SelectItem value="inactive">Inactivos</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             {/* Sort */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="flex gap-2 flex-col align-start">
+              <p>Ordenar por:</p>
               <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
                 const [sort, order] = value.split('-')
                 setSortBy(sort as any)
@@ -490,8 +493,8 @@ export default function ProductsPage() {
                               product.currentStock <= product.minStockLevel
                                 ? 'text-orange-600 font-semibold'
                                 : product.currentStock === 0
-                                ? 'text-red-600 font-semibold'
-                                : ''
+                                  ? 'text-red-600 font-semibold'
+                                  : ''
                             }
                           >
                             {product.currentStock}
