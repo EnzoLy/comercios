@@ -9,7 +9,7 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import type { User } from './user.entity'
+import { User } from './user.entity'
 import type { Employment } from './employment.entity'
 import type { Category } from './category.entity'
 import type { Product } from './product.entity'
@@ -91,22 +91,22 @@ export class Store {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('user', (user: any) => user.ownedStores, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user: any) => user.ownedStores, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ownerId' })
   owner!: any
 
-  @OneToMany('employment', (employment: any) => employment.store)
+  @OneToMany(() => Employment, (employment: any) => employment.store)
   employments!: any[]
 
-  @OneToMany('category', (category: any) => category.store)
+  @OneToMany(() => Category, (category: any) => category.store)
   categories!: any[]
 
-  @OneToMany('product', (product: any) => product.store)
+  @OneToMany(() => Product, (product: any) => product.store)
   products!: any[]
 
-  @OneToMany('sale', (sale: any) => sale.store)
+  @OneToMany(() => Sale, (sale: any) => sale.store)
   sales!: any[]
 
-  @OneToMany('supplier', (supplier: any) => supplier.store)
+  @OneToMany(() => Supplier, (supplier: any) => supplier.store)
   suppliers!: any[]
 }

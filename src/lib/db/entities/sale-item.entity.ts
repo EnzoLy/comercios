@@ -7,8 +7,8 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import type { Sale } from './sale.entity'
-import type { Product } from './product.entity'
+import { Sale } from './sale.entity'
+import { Product } from './product.entity'
 
 @Entity('sale_item')
 export class SaleItem {
@@ -54,11 +54,11 @@ export class SaleItem {
   createdAt!: Date
 
   // Relationships
-  @ManyToOne('Sale', (sale: any) => sale.items, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Sale, (sale: any) => sale.items, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'saleId' })
   sale!: any
 
-  @ManyToOne('Product', (product: any) => product.saleItems, { onDelete: 'RESTRICT' })
+  @ManyToOne(() => Product, (product: any) => product.saleItems, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'productId' })
   product!: any
 }

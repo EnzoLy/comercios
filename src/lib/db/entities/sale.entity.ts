@@ -9,8 +9,8 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import type { Store } from './store.entity'
-import type { User } from './user.entity'
+import { Store } from './store.entity'
+import { User } from './user.entity'
 import type { SaleItem } from './sale-item.entity'
 import type { StockMovement } from './stock-movement.entity'
 
@@ -98,11 +98,11 @@ export class Sale {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('Store', (store: any) => store.sales, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Store, (store: any) => store.sales, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: any
 
-  @ManyToOne('User', { onDelete: 'RESTRICT' })
+  @ManyToOne(() => User, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'cashierId' })
   cashier!: any
 

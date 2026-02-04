@@ -7,7 +7,7 @@ import {
   OneToMany,
   Index,
 } from 'typeorm'
-import type { Store } from './store.entity'
+import { Store } from './store.entity'
 import type { Employment } from './employment.entity'
 
 export enum UserRole {
@@ -58,9 +58,9 @@ export class User {
   updatedAt!: Date
 
   // Relationships
-  @OneToMany('store', (store: any) => store.owner)
+  @OneToMany(() => Store, (store: any) => store.owner)
   ownedStores!: any[]
 
-  @OneToMany('employment', (employment: any) => employment.user)
+  @OneToMany(() => Employment, (employment: any) => employment.user)
   employments!: any[]
 }

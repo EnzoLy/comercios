@@ -10,7 +10,7 @@ import {
   Index,
   Unique,
 } from 'typeorm'
-import type { Store } from './store.entity'
+import { Store } from './store.entity'
 import type { Product } from './product.entity'
 
 @Entity('category')
@@ -47,7 +47,7 @@ export class Category {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('Store', (store: any) => store.categories, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Store, (store: any) => store.categories, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: any
 
@@ -58,6 +58,6 @@ export class Category {
   @OneToMany('Category', (category: any) => category.parent)
   children!: any[]
 
-  @OneToMany('Product', (product: any) => product.category)
+  @OneToMany(() => Product, (product: any) => product.category)
   products!: any[]
 }

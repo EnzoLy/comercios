@@ -9,8 +9,8 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import type { Store } from './store.entity'
-import type { Supplier } from './supplier.entity'
+import { Store } from './store.entity'
+import { Supplier } from './supplier.entity'
 
 export enum PurchaseOrderStatus {
   DRAFT = 'DRAFT',
@@ -87,11 +87,11 @@ export class PurchaseOrder {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('Store', { onDelete: 'CASCADE' })
+  @ManyToOne(() => Store, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: Store
 
-  @ManyToOne('Supplier', (supplier: any) => supplier.purchaseOrders, {
+  @ManyToOne(() => Supplier, (supplier: any) => supplier.purchaseOrders, {
     onDelete: 'RESTRICT'
   })
   @JoinColumn({ name: 'supplierId' })

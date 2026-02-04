@@ -10,9 +10,9 @@ import {
   Index,
   Unique,
 } from 'typeorm'
-import type { Store } from './store.entity'
-import type { Category } from './category.entity'
-import type { Supplier } from './supplier.entity'
+import { Store } from './store.entity'
+import { Category } from './category.entity'
+import { Supplier } from './supplier.entity'
 import type { StockMovement } from './stock-movement.entity'
 import type { SaleItem } from './sale-item.entity'
 import type { ProductBarcode } from './product-barcode.entity'
@@ -102,25 +102,25 @@ export class Product {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('store', (store: any) => store.products, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Store, (store: any) => store.products, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: any
 
-  @ManyToOne('category', (category: any) => category.products, { onDelete: 'SET NULL' })
+  @ManyToOne(() => Category, (category: any) => category.products, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'categoryId' })
   category?: any
 
-  @ManyToOne('supplier', (supplier: any) => supplier.products, { onDelete: 'SET NULL' })
+  @ManyToOne(() => Supplier, (supplier: any) => supplier.products, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'supplierId' })
   supplier?: any
 
-  @OneToMany('stock_movement', (movement: any) => movement.product)
+  @OneToMany('StockMovement', (movement: any) => movement.product)
   stockMovements!: any[]
 
-  @OneToMany('sale_item', (saleItem: any) => saleItem.product)
+  @OneToMany('SaleItem', (saleItem: any) => saleItem.product)
   saleItems!: any[]
 
-  @OneToMany('product_barcode', (barcode: any) => barcode.product)
+  @OneToMany('ProductBarcode', (barcode: any) => barcode.product)
   barcodes!: any[]
 
   @OneToMany('SupplierProduct', (sp: any) => sp.product)

@@ -7,8 +7,8 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import type { Store } from './store.entity'
-import type { User } from './user.entity'
+import { Store } from './store.entity'
+import { User } from './user.entity'
 
 @Entity('shift_close')
 @Index(['storeId', 'createdAt'])
@@ -50,11 +50,11 @@ export class ShiftClose {
   createdAt!: Date
 
   // Relationships
-  @ManyToOne('Store', (store: any) => store.shiftCloses, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Store, (store: any) => store.shiftCloses, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: any
 
-  @ManyToOne('User', { onDelete: 'RESTRICT' })
+  @ManyToOne(() => User, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'employeeId' })
   employee!: any
 }

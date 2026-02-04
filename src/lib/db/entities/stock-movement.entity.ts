@@ -7,9 +7,9 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import type { Product } from './product.entity'
-import type { User } from './user.entity'
-import type { Sale } from './sale.entity'
+import { Product } from './product.entity'
+import { User } from './user.entity'
+import { Sale } from './sale.entity'
 
 export enum MovementType {
   PURCHASE = 'PURCHASE',
@@ -57,15 +57,15 @@ export class StockMovement {
   createdAt!: Date
 
   // Relationships
-  @ManyToOne('Product', (product: any) => product.stockMovements, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Product, (product: any) => product.stockMovements, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'productId' })
   product!: any
 
-  @ManyToOne('User', { onDelete: 'SET NULL' })
+  @ManyToOne(() => User, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'userId' })
   user?: any
 
-  @ManyToOne('Sale', (sale: any) => sale.stockMovements, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Sale, (sale: any) => sale.stockMovements, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'saleId' })
   sale?: any
 }

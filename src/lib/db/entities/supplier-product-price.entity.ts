@@ -8,8 +8,8 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import type { Supplier } from './supplier.entity'
-import type { Product } from './product.entity'
+import { Supplier } from './supplier.entity'
+import { Product } from './product.entity'
 
 @Entity('supplier_product_price')
 @Index(['supplierId', 'productId', 'effectiveDate'])
@@ -68,11 +68,11 @@ export class SupplierProductPrice {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('supplier', { onDelete: 'CASCADE' })
+  @ManyToOne(() => Supplier, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'supplierId' })
   supplier!: Supplier
 
-  @ManyToOne('product', { onDelete: 'CASCADE' })
+  @ManyToOne(() => Product, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'productId' })
   product!: Product
 }

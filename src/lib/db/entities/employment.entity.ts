@@ -9,8 +9,8 @@ import {
   Index,
   Unique,
 } from 'typeorm'
-import type { User } from './user.entity'
-import type { Store } from './store.entity'
+import { User } from './user.entity'
+import { Store } from './store.entity'
 
 export enum EmploymentRole {
   ADMIN = 'ADMIN',
@@ -63,11 +63,11 @@ export class Employment {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('User', (user: any) => user.employments, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user: any) => user.employments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user!: any
 
-  @ManyToOne('Store', (store: any) => store.employments, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Store, (store: any) => store.employments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: any
 }

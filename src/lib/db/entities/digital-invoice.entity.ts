@@ -9,8 +9,8 @@ import {
   Index,
   BeforeInsert,
 } from 'typeorm'
-import type { Sale } from './sale.entity'
-import type { Store } from './store.entity'
+import { Sale } from './sale.entity'
+import { Store } from './store.entity'
 
 @Entity('digital_invoice')
 @Index(['accessToken'], { unique: true })
@@ -49,11 +49,11 @@ export class DigitalInvoice {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('Sale', { onDelete: 'CASCADE' })
+  @ManyToOne(() => Sale, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'sale_id' })
   sale!: Sale
 
-  @ManyToOne('Store', { onDelete: 'CASCADE' })
+  @ManyToOne(() => Store, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'store_id' })
   store!: Store
 
