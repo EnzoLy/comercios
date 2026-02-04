@@ -50,11 +50,11 @@ export class Category {
   @JoinColumn({ name: 'storeId' })
   store!: any
 
-  @ManyToOne('Category', (category: any) => category.children, { onDelete: 'SET NULL' })
+  @ManyToOne('Category')
   @JoinColumn({ name: 'parentId' })
   parent?: any
 
-  @OneToMany('Category', (category: any) => category.parent)
+  @OneToMany('Category', 'parent')
   children!: any[]
 
   @OneToMany('Product', (product: any) => product.category)
