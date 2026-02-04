@@ -20,13 +20,20 @@ export async function GET(
     await requireStoreAccess(storeId)
 
     const { searchParams } = new URL(request.url)
-    const search = searchParams.get('search')
-    const categoryId = searchParams.get('categoryId')
+    const search = searchParams.get('search') || undefined
+    const categoryId = searchParams.get('category') || undefined
     const includeInactive = searchParams.get('includeInactive') === 'true'
+    const stockFilter = searchParams.get('stock') || undefined
+    const statusFilter = searchParams.get('status') || undefined
+    const sortBy = searchParams.get('sortBy') || 'createdAt'
+    const sortOrder = (searchParams.get('sortOrder') || 'DESC').toUpperCase()
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const pageSize = parseInt(searchParams.get('pageSize') || '20', 10)
 
     const dataSource = await getDataSource()
     const productRepo = dataSource.getRepository(Product)
 
+    // Build query
     let query = productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
@@ -34,9 +41,13 @@ export async function GET(
       .leftJoinAndSelect('product.barcodes', 'barcodes')
       .where('product.storeId = :storeId', { storeId })
 
-    // Only show active products by default
+    // Apply filters
     if (!includeInactive) {
       query = query.andWhere('product.isActive = :isActive', { isActive: true })
+    } else if (statusFilter === 'active') {
+      query = query.andWhere('product.isActive = :isActive', { isActive: true })
+    } else if (statusFilter === 'inactive') {
+      query = query.andWhere('product.isActive = :isActive', { isActive: false })
     }
 
     if (search) {
@@ -50,11 +61,34 @@ export async function GET(
       query = query.andWhere('product.categoryId = :categoryId', { categoryId })
     }
 
-    const products = await query
-      .orderBy('product.createdAt', 'DESC')
-      .getMany()
+    if (stockFilter === 'low') {
+      query = query.andWhere('product.currentStock <= product.minStockLevel')
+    } else if (stockFilter === 'out') {
+      query = query.andWhere('product.currentStock = 0')
+    }
 
-    return NextResponse.json(products)
+    // Get total count before pagination
+    const totalQuery = query.clone()
+    const [_, totalCount] = await totalQuery.getManyAndCount()
+
+    // Apply pagination and sorting
+    query = query
+      .orderBy(`product.${sortBy}`, sortOrder as 'ASC' | 'DESC')
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+
+    const products = await query.getMany()
+
+    // Calculate if there are more pages
+    const hasMore = page * pageSize < totalCount
+
+    return NextResponse.json({
+      products,
+      total: totalCount,
+      page,
+      pageSize,
+      hasMore
+    })
   } catch (error) {
     console.error('Get products error:', error)
     return NextResponse.json(
