@@ -25,13 +25,19 @@ export class Supplier {
   name!: string
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  contactPerson?: string
+  contactPerson?: string // Deprecated: use SupplierContact instead
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  email?: string
+  email?: string // Deprecated: use SupplierContact instead
 
   @Column({ type: 'varchar', length: 20, nullable: true })
-  phone?: string
+  phone?: string // Deprecated: use SupplierContact instead
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  taxId?: string // RFC/Tax ID
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  website?: string
 
   @Column({ type: 'text', nullable: true })
   address?: string
@@ -48,6 +54,15 @@ export class Supplier {
   @Column({ type: 'varchar', length: 100, nullable: true })
   country?: string
 
+  @Column({ type: 'varchar', length: 3, default: 'USD' })
+  currency!: string // ISO 4217
+
+  @Column({ type: 'decimal', precision: 3, scale: 1, nullable: true })
+  rating?: number // 1-5
+
+  @Column({ type: 'boolean', default: false })
+  isPreferred!: boolean
+
   @Column({ type: 'text', nullable: true })
   notes?: string
 
@@ -61,10 +76,25 @@ export class Supplier {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('store', (store: any) => store.suppliers, { onDelete: 'CASCADE' })
+  @ManyToOne('Store', (store: any) => store.suppliers, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
-  store!: any
+  store!: Store
 
-  @OneToMany('product', (product: any) => product.supplier)
-  products!: any[]
+  @OneToMany('Product', (product: any) => product.supplier)
+  products!: Product[]
+
+  @OneToMany('SupplierContact', (contact: any) => contact.supplier)
+  contacts?: any[]
+
+  @OneToMany('SupplierProduct', (sp: any) => sp.supplier)
+  supplierProducts?: any[]
+
+  @OneToMany('SupplierDocument', (doc: any) => doc.supplier)
+  documents?: any[]
+
+  @OneToMany('SupplierDeliverySchedule', (schedule: any) => schedule.supplier)
+  deliverySchedules?: any[]
+
+  @OneToMany('PurchaseOrder', (po: any) => po.supplier)
+  purchaseOrders?: any[]
 }

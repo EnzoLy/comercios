@@ -128,9 +128,10 @@ export function ProductSearch({ storeId, onProductSelect, categoryId }: ProductS
   }
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full" >
       <div className="relative">
         <Input
+          style={{ borderColor: 'var(--color-primary)' }}
           ref={inputRef}
           type="text"
           placeholder="Buscar por nombre, SKU o código..."
@@ -178,11 +179,10 @@ export function ProductSearch({ storeId, onProductSelect, categoryId }: ProductS
                 key={product.id}
                 onClick={() => handleSelectProduct(product)}
                 onMouseEnter={() => setSelectedIndex(index)}
-                className={`p-3 cursor-pointer border-b last:border-0 transition-colors ${
-                  isSelected
-                    ? 'bg-blue-50 dark:bg-blue-900/20'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                } ${!inStock ? 'opacity-50' : ''}`}
+                className={`p-3 cursor-pointer border-b last:border-0 transition-colors ${isSelected
+                  ? 'bg-blue-50 dark:bg-blue-900/20'
+                  : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                  } ${!inStock ? 'opacity-50' : ''}`}
               >
                 <div className="flex items-center gap-3">
                   {product.imageUrl ? (

@@ -11,6 +11,7 @@ import { SaleItem } from '@/lib/db/entities/sale-item.entity'
 import { Product } from '@/lib/db/entities/product.entity'
 import { StockMovement, MovementType } from '@/lib/db/entities/stock-movement.entity'
 import { EmploymentRole, Employment } from '@/lib/db/entities/employment.entity'
+import { DigitalInvoice } from '@/lib/db/entities/digital-invoice.entity'
 import { createSaleSchema } from '@/lib/validations/sale.schema'
 
 export async function GET(
@@ -254,7 +255,26 @@ export async function POST(
       relations: ['items', 'cashier'],
     })
 
-    return NextResponse.json(completeSale, { status: 201 })
+    // Create digital invoice automatically
+    let invoiceUrl: string | undefined
+    try {
+      const invoiceRepo = dataSource.getRepository(DigitalInvoice)
+      const invoice = invoiceRepo.create({
+        saleId: sale.id,
+        storeId,
+        invoiceNumber: `INV-${sale.id.substring(0, 8).toUpperCase()}`,
+      })
+      await invoiceRepo.save(invoice)
+
+      // Generate public URL
+      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+      invoiceUrl = `${baseUrl}/invoice/${invoice.accessToken}`
+    } catch (invoiceError) {
+      console.error('Failed to create digital invoice:', invoiceError)
+      // Don't fail the sale if invoice creation fails
+    }
+
+    return NextResponse.json({ ...completeSale, invoiceUrl }, { status: 201 })
   } catch (error) {
     console.error('Create sale error:', error)
 

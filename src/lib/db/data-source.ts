@@ -16,6 +16,16 @@ import { EmployeeShift } from './entities/employee-shift.entity'
 import { ShiftClose } from './entities/shift-close.entity'
 import { AuditLog } from './entities/audit-log.entity'
 import { EmploymentAccessToken } from './entities/employment-access-token.entity'
+import { SupplierContact } from './entities/supplier-contact.entity'
+import { SupplierCommercialTerms } from './entities/supplier-commercial-terms.entity'
+import { SupplierVolumeDiscount } from './entities/supplier-volume-discount.entity'
+import { SupplierProductPrice } from './entities/supplier-product-price.entity'
+import { SupplierDeliverySchedule } from './entities/supplier-delivery-schedule.entity'
+import { SupplierDocument } from './entities/supplier-document.entity'
+import { SupplierProduct } from './entities/supplier-product.entity'
+import { PurchaseOrder } from './entities/purchase-order.entity'
+import { PurchaseOrderItem } from './entities/purchase-order-item.entity'
+import { DigitalInvoice } from './entities/digital-invoice.entity'
 
 // Import migrations
 import { AddPinToEmployment1707000000000 } from './migrations/1707000000000-AddPinToEmployment'
@@ -43,7 +53,7 @@ export async function getDataSource(): Promise<DataSource> {
         type: 'postgres',
         url: process.env.DATABASE_URL,
         ssl: { rejectUnauthorized: false }, // Required for Supabase
-        synchronize: false,
+        synchronize: false, // Use manual migrations for Supabase
         logging: false, // Disable SQL query logging
         entities: [
           User,
@@ -53,6 +63,13 @@ export async function getDataSource(): Promise<DataSource> {
           AuditLog,
           Category,
           Supplier,
+          SupplierContact,
+          SupplierCommercialTerms,
+          SupplierVolumeDiscount,
+          SupplierProductPrice,
+          SupplierDeliverySchedule,
+          SupplierDocument,
+          SupplierProduct,
           Product,
           ProductBarcode,
           StockMovement,
@@ -60,6 +77,9 @@ export async function getDataSource(): Promise<DataSource> {
           SaleItem,
           EmployeeShift,
           ShiftClose,
+          PurchaseOrder,
+          PurchaseOrderItem,
+          DigitalInvoice,
         ],
         subscribers: [],
         migrations: [],
@@ -88,6 +108,13 @@ export async function getDataSource(): Promise<DataSource> {
           AuditLog,
           Category,
           Supplier,
+          SupplierContact,
+          SupplierCommercialTerms,
+          SupplierVolumeDiscount,
+          SupplierProductPrice,
+          SupplierDeliverySchedule,
+          SupplierDocument,
+          SupplierProduct,
           Product,
           ProductBarcode,
           StockMovement,
@@ -95,6 +122,9 @@ export async function getDataSource(): Promise<DataSource> {
           SaleItem,
           EmployeeShift,
           ShiftClose,
+          PurchaseOrder,
+          PurchaseOrderItem,
+          DigitalInvoice,
         ],
         subscribers: [],
         migrations: [],

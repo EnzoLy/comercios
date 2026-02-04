@@ -17,6 +17,7 @@ import { ShiftReportDialog } from '@/components/pos/shift-report-dialog'
 import { PersonalStats } from '@/components/pos/personal-stats'
 import { ShiftSwitcher } from '@/components/pos/shift-switcher'
 import { EmployeeSelector } from '@/components/pos/employee-selector'
+import { SaleSuccessDialog } from '@/components/pos/sale-success-dialog'
 import { useActiveEmployee } from '@/contexts/active-employee-context'
 import { useStore } from '@/hooks/use-store'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -70,6 +71,8 @@ export default function POSPage() {
   const [statRefreshTrigger, setStatRefreshTrigger] = useState(0)
   const [currentShift, setCurrentShift] = useState<any>(null)
   const [showEmployeeSelector, setShowEmployeeSelector] = useState(false)
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false)
+  const [lastSale, setLastSale] = useState<any>(null)
   const { activeEmployee, setActiveEmployee } = useActiveEmployee()
 
   // Fetch tax settings and current shift from store
@@ -326,15 +329,24 @@ export default function POSPage() {
       }
 
       toast.success('¡Venta completada con éxito!')
+
+      // Store sale data for success dialog
+      setLastSale({
+        id: result.id,
+        total: result.total,
+        invoiceUrl: result.invoiceUrl,
+      })
+
       clearCart()
       setCheckoutOpen(false)
       setAmountPaid(undefined)
       setCartDiscount(0)
+
+      // Show success dialog with invoice
+      setSuccessDialogOpen(true)
+
       // Refresh stats
       setStatRefreshTrigger((prev) => prev + 1)
-
-      // Optionally navigate to sale details
-      // router.push(`/dashboard/${store.slug}/sales/${result.id}`)
     } catch (error) {
       toast.error('Error al completar la venta')
       console.error('Checkout error:', error)
@@ -484,8 +496,8 @@ export default function POSPage() {
       </div>
 
       {/* Right: Cart */}
-      <div className="w-full lg:w-96 flex flex-col max-h-[50vh] lg:max-h-none" style={{ borderTop: '1px solid var(--color-primary)', borderLeft: '1px solid var(--color-primary)' }}>
-        <div className="p-4 md:p-6" style={{ borderBottom: '1px solid var(--color-primary)' }}>
+      <div className="w-full lg:w-96 flex flex-col max-h-[50vh] lg:max-h-none">
+        <div className="p-4 md:p-6">
           <h2 className="text-lg md:text-xl font-bold flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
             Carrito ({cart.length})
@@ -698,11 +710,21 @@ export default function POSPage() {
         isOpen={showEmployeeSelector}
         onClose={() => setShowEmployeeSelector(false)}
         onEmployeeSelected={(employeeId, name) => {
-          // No need to manually set localStorage here, 
+          // No need to manually set localStorage here,
           // EmployeeSelector now uses setActiveEmployee correctly
           toast.success(`Empleado activo: ${name}`)
           router.refresh()
         }}
+      />
+
+      {/* Sale Success Dialog with Invoice */}
+      <SaleSuccessDialog
+        isOpen={successDialogOpen}
+        onClose={() => {
+          setSuccessDialogOpen(false)
+          setLastSale(null)
+        }}
+        sale={lastSale}
       />
     </div>
   )

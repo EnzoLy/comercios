@@ -87,14 +87,14 @@ export default function CategoriesPage() {
     setEndDate(newEndDate)
   }
 
-  // Sort by revenue descending
+  // Sort by quantity descending
   const sortedCategories = [...categories].sort(
-    (a, b) => parseFloat(b.revenue) - parseFloat(a.revenue)
+    (a, b) => b.quantitySold - a.quantitySold
   )
 
   const chartData = sortedCategories.map((c) => ({
     name: c.categoryName,
-    revenue: parseFloat(c.revenue),
+    quantity: c.quantitySold,
   }))
 
   return (
@@ -145,17 +145,17 @@ export default function CategoriesPage() {
       ) : (
         <Card style={{ borderColor: 'var(--color-secondary)' }}>
           <CardHeader>
-            <CardTitle>Distribución de Ingresos por Categoría</CardTitle>
-            <CardDescription>Proporción de ventas de cada categoría</CardDescription>
+            <CardTitle>Distribución por Cantidad Vendida por Categoría</CardTitle>
+            <CardDescription>Proporción de unidades vendidas de cada categoría</CardDescription>
           </CardHeader>
           <CardContent>
             <PieDistributionChart
               data={chartData}
-              dataKey="revenue"
+              dataKey="quantity"
               nameKey="name"
               variant="donut"
               height={400}
-              formatValue={(value) => formatCurrency(value)}
+              formatValue={(value) => formatNumber(value)}
             />
           </CardContent>
         </Card>

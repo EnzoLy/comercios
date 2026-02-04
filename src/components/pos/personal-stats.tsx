@@ -57,7 +57,7 @@ export function PersonalStats({ storeId, refreshTrigger }: PersonalStatsProps) {
 
   if (isLoading || !stats) {
     return (
-      <Card className="mb-4">
+      <Card className="mb-4" style={{ borderColor: 'var(--color-primary)' }}>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Mi Desempeño Hoy</CardTitle>
         </CardHeader>
@@ -76,7 +76,7 @@ export function PersonalStats({ storeId, refreshTrigger }: PersonalStatsProps) {
   }
 
   return (
-    <Card className="mb-4">
+    <Card className="mb-4" style={{ borderColor: 'var(--color-primary)' }}>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <TrendingUp className="h-4 w-4" />
@@ -149,19 +149,6 @@ export function PersonalStats({ storeId, refreshTrigger }: PersonalStatsProps) {
               </p>
             </div>
           )}
-
-          {/* Ranking */}
-          <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded flex items-center gap-2">
-            <Trophy className="h-4 w-4 text-yellow-600" />
-            <div>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Posición
-              </p>
-              <p className="text-sm font-semibold text-yellow-600">
-                #{stats.ranking.rank} de {stats.ranking.total}
-              </p>
-            </div>
-          </div>
         </div>
       </CardContent>
     </Card>

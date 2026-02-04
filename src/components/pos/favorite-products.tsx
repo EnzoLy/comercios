@@ -73,7 +73,7 @@ export function FavoriteProducts({
   }
 
   return (
-    <Card className="mb-4">
+    <Card className="mb-4" style={{ borderColor: 'var(--color-primary)' }}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -138,11 +138,10 @@ export function FavoriteProducts({
                           {formatCurrency(favorite.price)}
                         </p>
                         <p
-                          className={`text-xs ${
-                            favorite.currentStock > 0
-                              ? 'text-green-600'
-                              : 'text-red-500'
-                          }`}
+                          className={`text-xs ${favorite.currentStock > 0
+                            ? 'text-green-600'
+                            : 'text-red-500'
+                            }`}
                         >
                           {favorite.currentStock > 0
                             ? `Stock: ${favorite.currentStock}`

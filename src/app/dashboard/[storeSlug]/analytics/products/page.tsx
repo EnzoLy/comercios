@@ -51,7 +51,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<ProductAnalytics[]>([])
   const [summary, setSummary] = useState<ProductSummary | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortBy, setSortBy] = useState<'revenue' | 'margin' | 'quantity'>('revenue')
+  const [sortBy, setSortBy] = useState<'revenue' | 'margin' | 'quantity'>('quantity')
 
   // Initialize date range (last 30 days)
   useEffect(() => {
@@ -121,7 +121,7 @@ export default function ProductsPage() {
 
   const chartData = topProducts.map((p) => ({
     name: p.productName,
-    revenue: parseFloat(p.revenue),
+    quantity: p.quantitySold,
   }))
 
   const getMarginBadge = (margin: string) => {
@@ -199,18 +199,18 @@ export default function ProductsPage() {
       ) : (
         <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader>
-            <CardTitle>Top 10 Productos por Ingresos</CardTitle>
-            <CardDescription>Productos más vendidos en el período seleccionado</CardDescription>
+            <CardTitle>Top 10 Productos por Cantidad Vendida</CardTitle>
+            <CardDescription>Productos con más unidades vendidas en el período seleccionado</CardDescription>
           </CardHeader>
           <CardContent>
             <BarComparisonChart
               data={chartData}
-              dataKey="revenue"
+              dataKey="quantity"
               nameKey="name"
               color="#3b82f6"
               layout="vertical"
               height={Math.max(300, topProducts.length * 35)}
-              formatValue={(value) => formatCurrency(value)}
+              formatValue={(value) => formatNumber(value)}
             />
           </CardContent>
         </Card>

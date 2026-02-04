@@ -8,6 +8,7 @@ import { DollarSign, ShoppingCart, Package, AlertTriangle } from 'lucide-react'
 import { SalesChart } from '@/components/dashboard/sales-chart'
 import { TopProducts } from '@/components/dashboard/top-products'
 import { StockAlertsWidget } from '@/components/dashboard/stock-alerts-widget'
+import { PriceAlertsWidget } from '@/components/suppliers/price-alerts-widget'
 
 export default async function StoreDashboard({
   params,
@@ -97,7 +98,7 @@ export default async function StoreDashboard({
         AND s.status = $2
         AND s."createdAt" >= $3
       GROUP BY p.id, p.name, p.sku
-      ORDER BY revenue DESC
+      ORDER BY "quantitySold" DESC
       LIMIT 5
     `,
       [context.storeId, SaleStatus.COMPLETED, thirtyDaysAgo]
@@ -168,7 +169,7 @@ export default async function StoreDashboard({
 
         {/* Total de Productos - Links to Products */}
         <Link href={`/dashboard/${storeSlug}/products`}>
-          <Card className="cursor-pointer transition-all hover:shadow-lg" style={{ borderColor: 'var(--color-secondary)' }}>
+          <Card className="cursor-pointer transition-all hover:shadow-lg" style={{ borderColor: 'var(--color-primary)' }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Total de Productos
@@ -184,7 +185,7 @@ export default async function StoreDashboard({
 
         {/* Alertas de Stock Bajo - Links to Inventory */}
         <Link href={`/dashboard/${storeSlug}/inventory`}>
-          <Card className="cursor-pointer transition-all hover:shadow-lg" style={{ borderColor: 'var(--color-accent)' }}>
+          <Card className="cursor-pointer transition-all hover:shadow-lg" style={{ borderColor: 'var(--color-primary)' }}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Alertas de Stock Bajo
@@ -209,12 +210,12 @@ export default async function StoreDashboard({
         </div>
       </div>
 
-      {/* Stock Alerts and Recent Sales Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+      {/* Stock Alerts, Price Alerts, and Recent Sales Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
         <StockAlertsWidget alerts={lowStockProducts} storeSlug={storeSlug} />
 
         <Link href={`/dashboard/${storeSlug}/sales`}>
-          <Card className="cursor-pointer transition-all hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600 h-full">
+          <Card style={{ borderColor: 'var(--color-primary)' }} className="cursor-pointer transition-all hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600 h-full">
             <CardHeader>
               <CardTitle>Ventas Recientes</CardTitle>
               <CardDescription>Últimas transacciones de tu tienda</CardDescription>
@@ -246,6 +247,11 @@ export default async function StoreDashboard({
             </CardContent>
           </Card>
         </Link>
+      </div>
+
+      {/* Price Alerts Widget */}
+      <div className="mb-6 md:mb-8">
+        <PriceAlertsWidget storeId={context.storeId} storeSlug={storeSlug} limit={5} />
       </div>
     </div>
   )

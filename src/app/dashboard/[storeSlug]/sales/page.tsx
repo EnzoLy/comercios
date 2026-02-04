@@ -64,7 +64,7 @@ export default async function SalesPage({
           </CardContent>
         </Card>
 
-        <Card style={{ borderColor: 'var(--color-secondary)' }}>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Ingresos de Hoy
@@ -79,7 +79,7 @@ export default async function SalesPage({
           </CardContent>
         </Card>
 
-        <Card style={{ borderColor: 'var(--color-accent)' }}>
+        <Card style={{ borderColor: 'var(--color-primary)' }}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Venta Promedio
@@ -154,8 +154,8 @@ export default async function SalesPage({
                             sale.status === SaleStatus.COMPLETED
                               ? 'default'
                               : sale.status === SaleStatus.CANCELLED
-                              ? 'destructive'
-                              : 'secondary'
+                                ? 'destructive'
+                                : 'secondary'
                           }
                           className="text-xs"
                         >

@@ -151,6 +151,23 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Protect /admin routes - SUPER_ADMIN only
+  if (pathname.startsWith('/admin')) {
+    if (!session || session.user.role !== 'SUPER_ADMIN') {
+      return NextResponse.redirect(new URL('/auth/signin', request.url))
+    }
+  }
+
+  // Protect /api/admin routes
+  if (pathname.startsWith('/api/admin')) {
+    if (!session || session.user.role !== 'SUPER_ADMIN') {
+      return NextResponse.json(
+        { error: 'Super admin access required' },
+        { status: 403 }
+      )
+    }
+  }
+
   // Redirect authenticated users away from auth pages
   if (isPublicRoute && session?.user && pathname.startsWith('/auth')) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
@@ -163,5 +180,7 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/api/stores/:path*',
+    '/admin/:path*',
+    '/api/admin/:path*',
   ],
 }

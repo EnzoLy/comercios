@@ -19,7 +19,7 @@ interface StockAlertsWidgetProps {
 
 export function StockAlertsWidget({ alerts, storeSlug }: StockAlertsWidgetProps) {
   return (
-    <Card>
+    <Card style={{ borderColor: 'var(--color-primary)' }}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

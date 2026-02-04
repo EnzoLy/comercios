@@ -18,6 +18,8 @@ import {
   BarChart3,
   Clock,
   QrCode,
+  Truck,
+  ClipboardList,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 

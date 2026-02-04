@@ -147,3 +147,21 @@ export async function validateActiveUser(
 
   return activeUserId
 }
+
+/**
+ * Requires SUPER_ADMIN role
+ * Throws ForbiddenError if user is not SUPER_ADMIN
+ */
+export async function requireSuperAdmin() {
+  const session = await auth()
+
+  if (!session?.user) {
+    throw new UnauthorizedError('Authentication required')
+  }
+
+  if (session.user.role !== 'SUPER_ADMIN') {
+    throw new ForbiddenError('Super admin access required')
+  }
+
+  return session
+}

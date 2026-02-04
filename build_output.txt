@@ -1,0 +1,36 @@
+
+> commerce-management-system@0.1.0 build C:\Users\david\Desktop\web-projects\commerce-management-system
+> next build
+
+ÔÜá Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\david\pnpm-lock.yaml as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\david\Desktop\web-projects\commerce-management-system\pnpm-lock.yaml
+
+Ôû▓ Next.js 16.1.5 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 21.5s
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+Error: .partial() cannot be used on object schemas containing refinements
+    at Module.H (C:\Users\david\Desktop\web-projects\commerce-management-system\.next\server\chunks\b8166_zod_v4_classic_external_4098880b.js:1:6958)
+    at e.partial (C:\Users\david\Desktop\web-projects\commerce-management-system\.next\server\chunks\b8166_zod_v4_classic_external_4098880b.js:37:29456)
+    at module evaluation (C:\Users\david\Desktop\web-projects\commerce-management-system\.next\server\chunks\[root-of-the-server]__3aa36f73._.js:1:13805)
+    at instantiateModule (C:\Users\david\Desktop\web-projects\commerce-management-system\.next\server\chunks\[turbopack]_runtime.js:740:9)
+    at getOrInstantiateModuleFromParent (C:\Users\david\Desktop\web-projects\commerce-management-system\.next\server\chunks\[turbopack]_runtime.js:763:12)
+    at Context.esmImport [as i] (C:\Users\david\Desktop\web-projects\commerce-management-system\.next\server\chunks\[turbopack]_runtime.js:228:20)
+    at module evaluation (C:\Users\david\Desktop\web-projects\commerce-management-system\.next\server\chunks\[root-of-the-server]__3aa36f73._.js:1:14382)
+    at instantiateModule (C:\Users\david\Desktop\web-projects\commerce-management-system\.next\server\chunks\[turbopack]_runtime.js:740:9)
+    at instantiateRuntimeModule (C:\Users\david\Desktop\web-projects\commerce-management-system\.next\server\chunks\[turbopack]_runtime.js:768:12)
+    at getOrInstantiateRuntimeModule (C:\Users\david\Desktop\web-projects\commerce-management-system\.next\server\chunks\[turbopack]_runtime.js:781:12)
+
+> Build error occurred
+Error: Failed to collect page data for /api/stores/[storeId]/suppliers/[supplierId]/commercial-terms
+    at ignore-listed frames {
+  type: 'Error'
+}
+ÔÇëELIFECYCLEÔÇë Command failed with exit code 1.

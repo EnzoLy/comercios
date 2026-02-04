@@ -17,7 +17,7 @@ interface TopProductsProps {
 
 export function TopProducts({ products, storeSlug }: TopProductsProps) {
   const content = (
-    <Card className={storeSlug ? 'cursor-pointer transition-all hover:shadow-lg' : ''} style={storeSlug ? { borderColor: 'var(--color-secondary)' } : {}}>
+    <Card className={storeSlug ? 'cursor-pointer transition-all hover:shadow-lg' : ''} style={{ borderColor: 'var(--color-primary)' }}>
       <CardHeader>
         <div className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5" style={{ color: 'var(--color-secondary)' }} />
@@ -46,10 +46,10 @@ export function TopProducts({ products, storeSlug }: TopProductsProps) {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold" style={{ color: 'var(--color-primary)' }}>
-                    ${product.revenue.toFixed(2)}
+                    {product.quantitySold} unidades
                   </p>
                   <p className="text-xs text-gray-500">
-                    {product.quantitySold} vendidos
+                    ${product.revenue.toFixed(2)}
                   </p>
                 </div>
               </div>

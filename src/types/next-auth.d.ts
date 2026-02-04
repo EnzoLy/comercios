@@ -11,6 +11,7 @@ declare module 'next-auth' {
       colorTheme: string
       stores: Array<{
         storeId: string
+        name: string
         slug: string
         employmentRole: string
         isOwner: boolean
@@ -27,6 +28,7 @@ declare module 'next-auth' {
     colorTheme: string
     stores: Array<{
       storeId: string
+      name: string
       slug: string
       employmentRole: string
       isOwner: boolean
@@ -44,6 +46,7 @@ declare module 'next-auth/jwt' {
     colorTheme: string
     stores: Array<{
       storeId: string
+      name: string
       slug: string
       employmentRole: string
       isOwner: boolean

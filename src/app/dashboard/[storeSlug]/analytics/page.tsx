@@ -167,7 +167,7 @@ export default function AnalyticsHub() {
             value={overview.topEmployee?.employeeName || 'N/A'}
             description={
               overview.topEmployee
-                ? `${formatCurrency(overview.topEmployee.revenue)}`
+                ? `${overview.topEmployee.transactions} transacciones`
                 : 'Sin ventas'
             }
             icon="👤"

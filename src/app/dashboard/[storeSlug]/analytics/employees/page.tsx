@@ -41,7 +41,7 @@ export default function EmployeesPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [employees, setEmployees] = useState<EmployeePerformance[]>([])
   const [summary, setSummary] = useState<EmployeeSummary | null>(null)
-  const [sortBy, setSortBy] = useState<'revenue' | 'transactions'>('revenue')
+  const [sortBy, setSortBy] = useState<'revenue' | 'transactions'>('transactions')
 
   // Initialize date range (last 30 days)
   useEffect(() => {
@@ -102,7 +102,7 @@ export default function EmployeesPage() {
 
   const chartData = sortedEmployees.map((e) => ({
     name: e.employeeName,
-    revenue: parseFloat(e.revenue),
+    transactions: e.transactions,
   }))
 
   return (
@@ -181,18 +181,18 @@ export default function EmployeesPage() {
       ) : (
         <Card style={{ borderColor: 'var(--color-accent)' }}>
           <CardHeader>
-            <CardTitle>Ingresos por Empleado</CardTitle>
-            <CardDescription>Ingresos totales generados por cada cajero</CardDescription>
+            <CardTitle>Transacciones por Empleado</CardTitle>
+            <CardDescription>Número total de ventas realizadas por cada cajero</CardDescription>
           </CardHeader>
           <CardContent>
             <BarComparisonChart
               data={chartData}
-              dataKey="revenue"
+              dataKey="transactions"
               nameKey="name"
               color="#3b82f6"
               layout="vertical"
               height={Math.max(300, employees.length * 40)}
-              formatValue={(value) => formatCurrency(value)}
+              formatValue={(value) => formatNumber(value)}
             />
           </CardContent>
         </Card>

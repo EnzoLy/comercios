@@ -83,7 +83,7 @@ export default function ProductPerformancePage() {
   }, {})
 
   const performanceList = Object.values(productPerformance)
-    .sort((a: any, b: any) => b.revenue - a.revenue)
+    .sort((a: any, b: any) => b.quantitySold - a.quantitySold)
 
   const totalRevenue = performanceList.reduce((sum: number, p: any) => sum + p.revenue, 0)
   const totalQuantity = performanceList.reduce((sum: number, p: any) => sum + p.quantitySold, 0)
@@ -228,7 +228,7 @@ export default function ProductPerformancePage() {
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>Top 10 Best Sellers</CardTitle>
-          <CardDescription>Products ranked by revenue</CardDescription>
+          <CardDescription>Productos ordenados por cantidad vendida</CardDescription>
         </CardHeader>
         <CardContent>
           {performanceList.length === 0 ? (
@@ -288,7 +288,7 @@ export default function ProductPerformancePage() {
 
       {/* Products with No Sales */}
       {noSales.length > 0 && (
-        <Card>
+        <Card style={{ borderColor: 'var(--color-accent)' }}>
           <CardHeader>
             <CardTitle>Products with No Sales</CardTitle>
             <CardDescription>{noSales.length} products haven&apos;t sold in the last {days} days</CardDescription>

@@ -45,7 +45,7 @@ export class Product {
   categoryId?: string
 
   @Column({ type: 'uuid', nullable: true })
-  supplierId?: string
+  supplierId?: string // Deprecated: primary supplier, use supplierProducts for multi-supplier support
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   costPrice!: number
@@ -121,4 +121,7 @@ export class Product {
 
   @OneToMany('product_barcode', (barcode: any) => barcode.product)
   barcodes!: any[]
+
+  @OneToMany('SupplierProduct', (sp: any) => sp.product)
+  supplierProducts?: any[]
 }

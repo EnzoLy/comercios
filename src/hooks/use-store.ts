@@ -50,6 +50,7 @@ export function useStore() {
         } else {
           return {
             storeId: store.storeId,
+            name: localStorage.getItem('activeUserName') || store.name,
             slug: store.slug,
             isOwner: activeUserIsOwner === 'true',
             role: activeUserRole,
@@ -60,6 +61,7 @@ export function useStore() {
 
     return {
       storeId: store.storeId,
+      name: store.name,
       slug: store.slug,
       isOwner: store.isOwner,
       role: store.employmentRole,

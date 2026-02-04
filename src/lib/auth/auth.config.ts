@@ -80,6 +80,7 @@ export const authConfig: NextAuthConfig = {
             .filter((emp: Employment) => emp.isActive)
             .map((emp: Employment) => ({
               storeId: emp.storeId,
+              name: emp.store.name,
               slug: emp.store.slug,
               employmentRole: emp.role,
               isOwner: emp.store.ownerId === user.id,
@@ -131,6 +132,7 @@ export const authConfig: NextAuthConfig = {
         session.user.colorTheme = token.colorTheme as string
         session.user.stores = token.stores as Array<{
           storeId: string
+          name: string
           slug: string
           employmentRole: string
           isOwner: boolean

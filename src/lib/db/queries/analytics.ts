@@ -178,7 +178,7 @@ export async function getEmployeePerformance(
       totalRevenue: data.totalRevenue,
       lastSaleDate: data.lastSaleDate,
     }))
-    .sort((a, b) => b.totalRevenue - a.totalRevenue)
+    .sort((a, b) => b.transactions - a.transactions)
 
   return results.map((r) => ({
     employeeId: r.employeeId,
@@ -256,7 +256,7 @@ export async function getProductAnalytics(
 
   // Convert to results array
   const results = Array.from(productMap.values())
-    .sort((a, b) => b.totalRevenue - a.totalRevenue)
+    .sort((a, b) => b.totalQuantity - a.totalQuantity)
     .map((data) => {
       const revenue = data.totalRevenue
       const quantitySold = data.totalQuantity
@@ -312,7 +312,7 @@ export async function getCategoryAnalytics(
     .andWhere('category.id IS NOT NULL')
     .groupBy('category.id')
     .addGroupBy('category.name')
-    .orderBy('revenue', 'DESC')
+    .orderBy('quantitySold', 'DESC')
     .getRawMany()
 
   // Calculate total revenue for percentage calculation

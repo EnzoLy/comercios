@@ -10,7 +10,12 @@
       "Bash(pnpm run build:*)",
       "Bash(pnpm add:*)",
       "Bash(pnpm install)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(dir:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(timeout 30 tail:*)",
+      "Bash(set CI=true)"
     ]
   }
 }

@@ -58,7 +58,7 @@ export function SalesChart({ data }: SalesChartProps) {
   }
 
   return (
-    <Card>
+    <Card style={{ borderColor: 'var(--color-primary)' }}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
