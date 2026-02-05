@@ -442,6 +442,7 @@ export default function POSPage() {
               onClick={() => setRecentSalesOpen(true)}
               title="F2"
               className="w-full md:w-auto"
+              style={{ borderColor: 'var(--color-primary)' }}
             >
               Últimas Ventas
             </Button>
@@ -450,6 +451,7 @@ export default function POSPage() {
               size="sm"
               onClick={() => setShiftReportOpen(true)}
               className="w-full md:w-auto"
+              style={{ borderColor: 'var(--color-primary)' }}
             >
               <Clock className="h-4 w-4 mr-2" />
               Cerrar Turno

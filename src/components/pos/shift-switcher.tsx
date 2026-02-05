@@ -251,6 +251,7 @@ export function ShiftSwitcher({
             : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 border-blue-200'
           : ''
           } ${canSwitch ? '' : 'opacity-50'}`}
+        style={!currentShift?.endTime ? { borderColor: 'var(--color-primary)' } : undefined}
         title={canSwitch ? "Cambiar de turno" : "No hay turnos asignados"}
       >
         <Clock className="h-4 w-4 mr-2" />

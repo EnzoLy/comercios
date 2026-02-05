@@ -76,8 +76,9 @@ export function AddExistingProductDialog({
       if (!response.ok) throw new Error('Failed to load products')
 
       const data = await response.json()
-      // Filter products that are NOT in this category
-      const availableProducts = data.filter((p: Product) => p.categoryId !== categoryId)
+      // Extract products array from response object and filter products that are NOT in this category
+      const allProducts = data.products || []
+      const availableProducts = allProducts.filter((p: Product) => p.categoryId !== categoryId)
       setProducts(availableProducts)
     } catch (error) {
       toast.error('Error al cargar los productos')
@@ -174,7 +175,7 @@ export function AddExistingProductDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+      <DialogContent className="!max-w-6xl !max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PackagePlus className="h-5 w-5" />
@@ -198,7 +199,7 @@ export function AddExistingProductDialog({
           </div>
 
           {/* Products Table */}
-          <div className="flex-1 overflow-auto border rounded-md">
+          <div className="flex-1 overflow-auto border rounded-md w-full">
             {isLoading ? (
               <div className="flex items-center justify-center h-64">
                 <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
@@ -218,10 +219,10 @@ export function AddExistingProductDialog({
                 )}
               </div>
             ) : (
-              <Table>
+              <Table className="w-full min-w-max">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[50px]">
+                    <TableHead className="w-16">
                       <Checkbox
                         checked={allVisibleSelected}
                         data-state={someVisibleSelected ? 'indeterminate' : undefined}

@@ -89,12 +89,13 @@ export function CategoryProductsDialog({
     setIsLoading(true)
     try {
       const response = await fetch(
-        `/api/stores/${storeId}/products?categoryId=${categoryId}`
+        `/api/stores/${storeId}/products?category=${categoryId}`
       )
       if (!response.ok) throw new Error('Failed to load products')
 
       const data = await response.json()
-      setProducts(data)
+      // Extract products array from response object
+      setProducts(data.products || [])
     } catch (error) {
       toast.error('Error al cargar los productos')
       console.error('Load products error:', error)
@@ -153,9 +154,9 @@ export function CategoryProductsDialog({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+        <DialogContent className="!max-w-3xl !max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between p-2">
               <DialogTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
                 Productos: {categoryName}
@@ -198,7 +199,7 @@ export function CategoryProductsDialog({
             </div>
 
             {/* Products Table */}
-            <div className="flex-1 overflow-auto border rounded-md">
+            <div className="flex-1 overflow-auto border rounded-md w-full p-2">
               {isLoading ? (
                 <div className="flex items-center justify-center h-64">
                   <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
@@ -213,10 +214,10 @@ export function CategoryProductsDialog({
                   </p>
                 </div>
               ) : (
-                <Table>
+                <Table className="w-full min-w-max">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[50px]">
+                      <TableHead className="w-16">
                         <Checkbox
                           checked={allVisibleSelected}
                           data-state={someVisibleSelected ? 'indeterminate' : undefined}
