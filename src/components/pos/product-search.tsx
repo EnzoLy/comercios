@@ -77,7 +77,8 @@ export function ProductSearch({ storeId, onProductSelect, categoryId }: ProductS
           return
         }
 
-        const products = await response.json()
+        const data = await response.json()
+        const products = data.products || data // Support both {products: []} and [] response formats
         setSuggestions(products.slice(0, 8)) // Limit to 8 suggestions
         setIsOpen(true)
         setSelectedIndex(-1)
