@@ -4,7 +4,9 @@ import { getDataSource } from '@/lib/db'
 import { PurchaseOrder, PurchaseOrderStatus } from '@/lib/db/entities/purchase-order.entity'
 import { PurchaseOrderItem } from '@/lib/db/entities/purchase-order-item.entity'
 import { Product } from '@/lib/db/entities/product.entity'
+import { ProductBatch } from '@/lib/db/entities/product-batch.entity'
 import { StockMovement, MovementType } from '@/lib/db/entities/stock-movement.entity'
+import { BatchStockMovement } from '@/lib/db/entities/batch-stock-movement.entity'
 import { EmploymentRole } from '@/lib/db/entities/employment.entity'
 import { receiveItemsSchema } from '@/lib/validations/purchase-order.schema'
 
@@ -70,6 +72,11 @@ export async function POST(
       const itemUpdates: Array<{
         item: PurchaseOrderItem
         quantityToReceive: number
+        batches?: Array<{
+          batchNumber?: string
+          expirationDate: string
+          quantity: number
+        }>
       }> = []
 
       for (const receiveItem of validated.items) {
@@ -94,9 +101,31 @@ export async function POST(
           continue
         }
 
+        // Validate batches if product tracks expiration dates
+        if (poItem.product.trackExpirationDates) {
+          if (!receiveItem.batches || receiveItem.batches.length === 0) {
+            throw new Error(
+              `El producto "${poItem.product.name}" requiere información de lotes con fechas de vencimiento`
+            )
+          }
+
+          // Validar que la suma de lotes = cantidad a recibir
+          const totalBatchQuantity = receiveItem.batches.reduce(
+            (sum, batch) => sum + batch.quantity,
+            0
+          )
+
+          if (totalBatchQuantity !== receiveItem.quantityReceived) {
+            throw new Error(
+              `La suma de cantidades de lotes (${totalBatchQuantity}) debe ser igual a la cantidad a recibir (${receiveItem.quantityReceived}) para el producto "${poItem.product.name}"`
+            )
+          }
+        }
+
         itemUpdates.push({
           item: poItem,
-          quantityToReceive: receiveItem.quantityReceived
+          quantityToReceive: receiveItem.quantityReceived,
+          batches: receiveItem.batches,
         })
       }
 
@@ -105,7 +134,7 @@ export async function POST(
       }
 
       // Step 3: Update items, create stock movements, and update product stock
-      for (const { item, quantityToReceive } of itemUpdates) {
+      for (const { item, quantityToReceive, batches } of itemUpdates) {
         // Update quantityReceived
         item.quantityReceived += quantityToReceive
         await manager.save(item)
@@ -131,6 +160,38 @@ export async function POST(
         })
 
         await manager.save(movement)
+
+        // If product tracks expiration dates, create batches
+        if (product.trackExpirationDates && batches) {
+          for (const batchData of batches) {
+            // Create batch
+            const batch = manager.create(ProductBatch, {
+              productId: product.id,
+              batchNumber: batchData.batchNumber,
+              expirationDate: new Date(batchData.expirationDate),
+              initialQuantity: batchData.quantity,
+              currentQuantity: batchData.quantity,
+              unitCost: item.unitPrice,
+              purchaseOrderId: purchaseOrder.id,
+              purchaseOrderItemId: item.id,
+            })
+
+            await manager.save(batch)
+
+            // Create batch stock movement
+            const batchMovement = manager.create(BatchStockMovement, {
+              batchId: batch.id,
+              productId: product.id,
+              stockMovementId: movement.id,
+              type: MovementType.PURCHASE,
+              quantity: batchData.quantity,
+              unitPrice: item.unitPrice,
+              userId,
+            })
+
+            await manager.save(batchMovement)
+          }
+        }
 
         // Update product stock (only if product tracks stock)
         if (product.trackStock) {

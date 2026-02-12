@@ -10,8 +10,10 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { LoadingPage } from '@/components/ui/loading'
-import { Plus, Package, AlertTriangle, Search, Filter, ChevronDown, ChevronLeft, ChevronRight, Trash2, RefreshCw } from 'lucide-react'
+import { Plus, Package, AlertTriangle, Search, Filter, ChevronDown, ChevronLeft, ChevronRight, Trash2, RefreshCw, Calendar } from 'lucide-react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
+import { BulkExpirationToggleDialog } from '@/components/products/bulk-expiration-toggle-dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 
 interface Product {
   id: string
@@ -25,10 +27,17 @@ interface Product {
   maxStockLevel: number
   isActive: boolean
   trackStock: boolean
+  trackExpirationDates?: boolean
   imageUrl?: string
   category?: { id: string; name: string }
   supplier?: { id: string; name: string }
   barcodes?: Array<{ id: string; barcode: string; isPrimary: boolean }>
+  expirationStatus?: {
+    hasExpired: boolean
+    hasExpiringSoon: boolean
+    nearestExpirationDays: number
+    nearestExpirationDate: string
+  }
 }
 
 interface ProductsResponse {
@@ -52,6 +61,8 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null)
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([])
+  const [bulkExpirationDialogOpen, setBulkExpirationDialogOpen] = useState(false)
 
   // Filters
   const [search, setSearch] = useState(searchParams.get('search') || '')
@@ -209,6 +220,27 @@ export default function ProductsPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const toggleProductSelection = (productId: string) => {
+    setSelectedProducts((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    )
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedProducts.length === products.length) {
+      setSelectedProducts([])
+    } else {
+      setSelectedProducts(products.map((p) => p.id))
+    }
+  }
+
+  const clearSelection = () => {
+    setSelectedProducts([])
+    setBulkExpirationDialogOpen(false)
+  }
+
   const totalPages = Math.ceil(total / pageSize)
 
   if (!store) {
@@ -229,6 +261,16 @@ export default function ProductsPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            {selectedProducts.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={() => setBulkExpirationDialogOpen(true)}
+                size="sm"
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                Vencimientos ({selectedProducts.length})
+              </Button>
+            )}
             <Button variant="outline" onClick={handleRefresh} size="sm">
               <RefreshCw className="h-4 w-4" />
             </Button>
@@ -430,6 +472,12 @@ export default function ProductsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
+                    <th className="text-center py-3 px-2 w-12">
+                      <Checkbox
+                        checked={selectedProducts.length === products.length && products.length > 0}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </th>
                     <th className="text-left py-3 px-4">Nombre</th>
                     <th className="text-left py-3 px-4 hidden md:table-cell">SKU</th>
                     <th className="text-left py-3 px-4 hidden lg:table-cell">Código de Barras</th>
@@ -442,6 +490,12 @@ export default function ProductsPage() {
                 <tbody>
                   {products.map((product, index) => (
                     <tr key={`${product.id}-${index}`} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <td className="py-3 px-2 text-center">
+                        <Checkbox
+                          checked={selectedProducts.includes(product.id)}
+                          onCheckedChange={() => toggleProductSelection(product.id)}
+                        />
+                      </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
                           {product.imageUrl ? (
@@ -462,6 +516,23 @@ export default function ProductsPage() {
                                 {product.category.name}
                               </p>
                             )}
+                            <div className="flex gap-1 mt-1 flex-wrap">
+                              {product.trackExpirationDates && (
+                                <Badge variant="secondary" className="text-xs">
+                                  🗓️ Vencimientos
+                                </Badge>
+                              )}
+                              {product.expirationStatus?.hasExpired && (
+                                <Badge variant="destructive" className="text-xs">
+                                  ⚠️ Vencido
+                                </Badge>
+                              )}
+                              {product.expirationStatus?.hasExpiringSoon && !product.expirationStatus?.hasExpired && (
+                                <Badge className="bg-yellow-600 hover:bg-yellow-700 text-xs">
+                                  ⏰ Por vencer
+                                </Badge>
+                              )}
+                            </div>
                             <p className="text-xs text-gray-500 md:hidden mt-1">
                               {product.sku}
                             </p>
@@ -664,6 +735,20 @@ export default function ProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Expiration Toggle Dialog */}
+      <BulkExpirationToggleDialog
+        isOpen={bulkExpirationDialogOpen}
+        onClose={clearSelection}
+        selectedProductIds={selectedProducts}
+        selectedProducts={products
+          .filter((p) => selectedProducts.includes(p.id))
+          .map((p) => ({
+            id: p.id,
+            name: p.name,
+            currentStock: p.currentStock,
+          }))}
+      />
     </div>
   )
 }

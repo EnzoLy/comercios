@@ -10,7 +10,9 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LoadingPage } from '@/components/ui/loading'
-import { AlertTriangle, TrendingUp, TrendingDown, Package, Search, Loader2 } from 'lucide-react'
+import { AlertTriangle, TrendingUp, TrendingDown, Package, Search, Loader2, Calendar } from 'lucide-react'
+import { BatchesTable } from '@/components/batches/batches-table'
+import { ExpiringProductsReport } from '@/components/inventory/expiring-products-report'
 
 export default function InventoryPage() {
   const router = useRouter()
@@ -227,6 +229,14 @@ export default function InventoryPage() {
           <TabsTrigger value="movements">Movimientos Recientes</TabsTrigger>
           <TabsTrigger value="adjust">Ajustar Stock</TabsTrigger>
           <TabsTrigger value="alerts">Alertas de Stock</TabsTrigger>
+          <TabsTrigger value="batches">
+            <Calendar className="h-4 w-4 mr-2" />
+            Gestión de Lotes
+          </TabsTrigger>
+          <TabsTrigger value="expiring">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            Productos por Vencer
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="movements" className="space-y-4">
@@ -457,6 +467,40 @@ export default function InventoryPage() {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="batches" className="space-y-4">
+          <Card style={{ borderColor: 'var(--color-primary)' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Gestión de Lotes con Fechas de Vencimiento
+              </CardTitle>
+              <CardDescription>
+                Administra lotes de productos perecederos con fechas de vencimiento
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {store && <BatchesTable storeSlug={store.slug} />}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="expiring" className="space-y-4">
+          <Card style={{ borderColor: 'var(--color-primary)' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                Reporte de Productos por Vencer
+              </CardTitle>
+              <CardDescription>
+                Productos con lotes próximos a vencer o ya vencidos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ExpiringProductsReport />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

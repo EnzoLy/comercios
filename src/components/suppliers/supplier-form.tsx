@@ -79,7 +79,7 @@ export function SupplierForm({ supplier, mode }: SupplierFormProps) {
 
   const onSubmit = async (data: SupplierFormData) => {
     if (!store) {
-      toast.error('Store context not found')
+      toast.error('Contexto de tienda no encontrado')
       return
     }
 

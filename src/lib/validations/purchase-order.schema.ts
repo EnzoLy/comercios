@@ -44,6 +44,11 @@ export const receiveItemsSchema = z.object({
   items: z.array(z.object({
     itemId: z.string().uuid('Invalid item ID'),
     quantityReceived: z.number().int().min(0, 'Quantity received must be non-negative'),
+    batches: z.array(z.object({
+      batchNumber: z.string().optional(),
+      expirationDate: z.string().date('Fecha de vencimiento inválida'),
+      quantity: z.number().int().positive('La cantidad del lote debe ser positiva'),
+    })).optional(), // Solo requerido si producto.trackExpirationDates = true (validado en API)
   })).min(1, 'At least one item is required'),
 })
 

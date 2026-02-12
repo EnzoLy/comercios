@@ -22,10 +22,10 @@ export default function Error({
         <CardHeader>
           <div className="flex items-center gap-2 text-red-600 mb-2">
             <AlertTriangle className="h-6 w-6" />
-            <CardTitle>Something went wrong</CardTitle>
+            <CardTitle>Algo salió mal</CardTitle>
           </div>
           <CardDescription>
-            An unexpected error occurred. Please try again.
+            Ocurrió un error inesperado. Por favor intenta de nuevo.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -39,14 +39,14 @@ export default function Error({
 
           <div className="flex gap-2">
             <Button onClick={reset} className="flex-1">
-              Try Again
+              Intentar de Nuevo
             </Button>
             <Button
               variant="outline"
               onClick={() => window.location.href = '/'}
               className="flex-1"
             >
-              Go Home
+              Ir al Inicio
             </Button>
           </div>
         </CardContent>

@@ -10,15 +10,15 @@ export default function NotFound() {
         <CardHeader>
           <div className="flex items-center gap-2 text-gray-600 mb-2">
             <FileQuestion className="h-6 w-6" />
-            <CardTitle>Page Not Found</CardTitle>
+            <CardTitle>Página no Encontrada</CardTitle>
           </div>
           <CardDescription>
-            The page you&apos;re looking for doesn&apos;t exist or has been moved.
+            La página que buscas no existe o ha sido movida.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button asChild className="w-full">
-            <Link href="/">Go Back Home</Link>
+            <Link href="/">Volver al Inicio</Link>
           </Button>
         </CardContent>
       </Card>

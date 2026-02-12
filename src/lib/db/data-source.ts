@@ -9,7 +9,9 @@ import { Category } from '@/lib/db/entities/category.entity'
 import { Supplier } from '@/lib/db/entities/supplier.entity'
 import { Product } from '@/lib/db/entities/product.entity'
 import { ProductBarcode } from '@/lib/db/entities/product-barcode.entity'
+import { ProductBatch } from '@/lib/db/entities/product-batch.entity'
 import { StockMovement } from '@/lib/db/entities/stock-movement.entity'
+import { BatchStockMovement } from '@/lib/db/entities/batch-stock-movement.entity'
 import { Sale } from '@/lib/db/entities/sale.entity'
 import { SaleItem } from '@/lib/db/entities/sale-item.entity'
 import { EmployeeShift } from '@/lib/db/entities/employee-shift.entity'
@@ -26,9 +28,6 @@ import { SupplierProduct } from '@/lib/db/entities/supplier-product.entity'
 import { PurchaseOrder } from '@/lib/db/entities/purchase-order.entity'
 import { PurchaseOrderItem } from '@/lib/db/entities/purchase-order-item.entity'
 import { DigitalInvoice } from '@/lib/db/entities/digital-invoice.entity'
-
-// Import migrations
-import { AddPinToEmployment1707000000000 } from './migrations/1707000000000-AddPinToEmployment'
 
 // Singleton instance to prevent multiple connections in Next.js hot reload
 let dataSource: DataSource | null = null
@@ -72,7 +71,9 @@ export async function getDataSource(): Promise<DataSource> {
           SupplierProduct,
           Product,
           ProductBarcode,
+          ProductBatch,
           StockMovement,
+          BatchStockMovement,
           Sale,
           SaleItem,
           EmployeeShift,
@@ -117,7 +118,9 @@ export async function getDataSource(): Promise<DataSource> {
           SupplierProduct,
           Product,
           ProductBarcode,
+          ProductBatch,
           StockMovement,
+          BatchStockMovement,
           Sale,
           SaleItem,
           EmployeeShift,

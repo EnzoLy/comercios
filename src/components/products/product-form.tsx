@@ -79,6 +79,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
       currentStock: product.currentStock ?? 0,
       minStockLevel: product.minStockLevel ?? 10,
       trackStock: product.trackStock ?? true,
+      trackExpirationDates: product.trackExpirationDates ?? false,
       isActive: product.isActive ?? true,
       isWeighedProduct: product.isWeighedProduct ?? false,
       description: product.description,
@@ -93,6 +94,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
       currentStock: 0,
       minStockLevel: 10,
       trackStock: true,
+      trackExpirationDates: false,
       isActive: true,
       isWeighedProduct: false,
     },
@@ -609,6 +611,23 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
               {errors.unit?.message && (
                 <p className="text-sm text-red-500">{String(errors.unit.message)}</p>
               )}
+            </div>
+
+            <div className="space-y-3 border-t pt-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="trackExpirationDates"
+                  checked={watch('trackExpirationDates')}
+                  onCheckedChange={(checked) => setValue('trackExpirationDates', checked as boolean)}
+                  disabled={isLoading}
+                />
+                <Label htmlFor="trackExpirationDates" className="cursor-pointer">
+                  Rastrear fechas de vencimiento (productos perecederos)
+                </Label>
+              </div>
+              <p className="text-xs text-gray-500">
+                Habilita el seguimiento de lotes con fechas de vencimiento para productos como alimentos, medicinas o cosméticos.
+              </p>
             </div>
           </CardContent>
         </Card>

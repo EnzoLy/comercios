@@ -16,6 +16,7 @@ const baseProductSchema = z.object({
   unit: z.string().optional(),
   imageUrl: z.string().url('URL de imagen inválida').optional().or(z.literal('')),
   trackStock: z.boolean().default(true),
+  trackExpirationDates: z.boolean().default(false),
   isActive: z.boolean().default(true),
   isWeighedProduct: z.boolean().default(false),
   weightUnit: z.string().optional(),
@@ -50,7 +51,13 @@ export const bulkPriceAdjustmentSchema = z.object({
   { message: 'Para reemplazo, el valor debe ser positivo', path: ['adjustmentValue'] }
 )
 
+export const bulkExpirationToggleSchema = z.object({
+  productIds: z.array(z.string().uuid()).min(1, 'Selecciona al menos un producto'),
+  trackExpirationDates: z.boolean(),
+})
+
 export type CreateProductInput = z.infer<typeof createProductSchema>
 export type UpdateProductInput = z.infer<typeof updateProductSchema>
 export type BarcodeSearchInput = z.infer<typeof barcodeSearchSchema>
 export type BulkPriceAdjustmentInput = z.infer<typeof bulkPriceAdjustmentSchema>
+export type BulkExpirationToggleInput = z.infer<typeof bulkExpirationToggleSchema>

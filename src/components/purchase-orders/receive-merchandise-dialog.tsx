@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dialog'
 import { receiveItemsSchema, type ReceiveItemsInput } from '@/lib/validations/purchase-order.schema'
 import { useStore } from '@/hooks/use-store'
-import { Loader2, Package } from 'lucide-react'
+import { Loader2, Package, Plus, X } from 'lucide-react'
 
 interface ReceiveMerchandiseDialogProps {
   purchaseOrder: any
@@ -34,6 +34,13 @@ export function ReceiveMerchandiseDialog({
   const store = useStore()
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  // Estado para gestionar lotes por item
+  const [batches, setBatches] = useState<Record<number, Array<{
+    batchNumber?: string
+    expirationDate: string
+    quantity: number
+  }>>>({})
 
   const {
     register,
@@ -52,11 +59,78 @@ export function ReceiveMerchandiseDialog({
 
   const items = watch('items')
 
+  // Funciones para manejar batches
+  const addBatch = (itemIndex: number) => {
+    setBatches((prev) => ({
+      ...prev,
+      [itemIndex]: [
+        ...(prev[itemIndex] || []),
+        { expirationDate: '', quantity: 0 },
+      ],
+    }))
+  }
+
+  const removeBatch = (itemIndex: number, batchIndex: number) => {
+    setBatches((prev) => ({
+      ...prev,
+      [itemIndex]: prev[itemIndex].filter((_, i) => i !== batchIndex),
+    }))
+  }
+
+  const updateBatch = (
+    itemIndex: number,
+    batchIndex: number,
+    field: 'batchNumber' | 'expirationDate' | 'quantity',
+    value: string | number
+  ) => {
+    setBatches((prev) => ({
+      ...prev,
+      [itemIndex]: prev[itemIndex].map((batch, i) =>
+        i === batchIndex ? { ...batch, [field]: value } : batch
+      ),
+    }))
+  }
+
+  const getBatchSum = (itemIndex: number) => {
+    return (batches[itemIndex] || []).reduce((sum, batch) => sum + (batch.quantity || 0), 0)
+  }
+
   const onSubmit = async (data: ReceiveItemsInput) => {
     if (!store) {
       toast.error('Store context not found')
       return
     }
+
+    // Validar batches para productos que requieren tracking
+    const itemsWithBatches = data.items.map((item, index) => {
+      const poItem = purchaseOrder.items?.find((i: any) => i.id === item.itemId)
+
+      if (poItem?.product?.trackExpirationDates) {
+        const itemBatches = batches[index] || []
+
+        // Validar que hay batches
+        if (item.quantityReceived > 0 && itemBatches.length === 0) {
+          toast.error(`${poItem.product.name} requiere información de lotes`)
+          throw new Error('Missing batches')
+        }
+
+        // Validar que la suma coincide
+        const batchSum = getBatchSum(index)
+        if (item.quantityReceived > 0 && batchSum !== item.quantityReceived) {
+          toast.error(
+            `${poItem.product.name}: La suma de lotes (${batchSum}) debe ser igual a la cantidad recibida (${item.quantityReceived})`
+          )
+          throw new Error('Batch sum mismatch')
+        }
+
+        return {
+          ...item,
+          batches: itemBatches.length > 0 ? itemBatches : undefined,
+        }
+      }
+
+      return item
+    })
 
     setIsLoading(true)
 
@@ -66,7 +140,7 @@ export function ReceiveMerchandiseDialog({
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
+          body: JSON.stringify({ items: itemsWithBatches }),
         }
       )
 
@@ -177,6 +251,83 @@ export function ReceiveMerchandiseDialog({
                               </p>
                             )}
                           </div>
+
+                          {/* Sección de lotes para productos con tracking */}
+                          {item.product?.trackExpirationDates && currentValue > 0 && (
+                            <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md space-y-2">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs font-semibold">Lotes con fechas de vencimiento:</Label>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => addBatch(index)}
+                                  disabled={isLoading}
+                                >
+                                  <Plus className="h-3 w-3 mr-1" />
+                                  Lote
+                                </Button>
+                              </div>
+
+                              {batches[index]?.map((batch, bIdx) => (
+                                <div key={bIdx} className="flex gap-2 items-start">
+                                  <div className="flex-1 space-y-1">
+                                    <Input
+                                      placeholder="# Lote (opcional)"
+                                      value={batch.batchNumber || ''}
+                                      onChange={(e) => updateBatch(index, bIdx, 'batchNumber', e.target.value)}
+                                      className="text-xs h-8"
+                                      disabled={isLoading}
+                                    />
+                                  </div>
+                                  <div className="flex-1 space-y-1">
+                                    <Input
+                                      type="date"
+                                      value={batch.expirationDate}
+                                      onChange={(e) => updateBatch(index, bIdx, 'expirationDate', e.target.value)}
+                                      className="text-xs h-8"
+                                      disabled={isLoading}
+                                      required
+                                    />
+                                  </div>
+                                  <div className="w-20 space-y-1">
+                                    <Input
+                                      type="number"
+                                      min="1"
+                                      placeholder="Cant."
+                                      value={batch.quantity || ''}
+                                      onChange={(e) => updateBatch(index, bIdx, 'quantity', parseInt(e.target.value) || 0)}
+                                      className="text-xs h-8 text-center"
+                                      disabled={isLoading}
+                                      required
+                                    />
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => removeBatch(index, bIdx)}
+                                    disabled={isLoading}
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    <X className="h-4 w-4 text-red-500" />
+                                  </Button>
+                                </div>
+                              ))}
+
+                              {batches[index]?.length > 0 && getBatchSum(index) !== currentValue && (
+                                <p className="text-xs text-red-500">
+                                  ⚠️ Los lotes deben sumar {currentValue} unidades (actualmente: {getBatchSum(index)})
+                                </p>
+                              )}
+
+                              {(!batches[index] || batches[index].length === 0) && (
+                                <p className="text-xs text-yellow-600">
+                                  ⚠️ Debes agregar al menos un lote con fecha de vencimiento
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </td>
                       </tr>
                     )

@@ -22,7 +22,7 @@ import { useActiveEmployee } from '@/contexts/active-employee-context'
 import { useStore } from '@/hooks/use-store'
 import { formatCurrency } from '@/lib/utils/currency'
 import { LoadingPage } from '@/components/ui/loading'
-import { Camera, Trash2, Plus, Minus, ShoppingCart, Store, Clock, BarChart3 } from 'lucide-react'
+import { Camera, Trash2, Plus, Minus, ShoppingCart, Store, Clock, BarChart3, AlertTriangle } from 'lucide-react'
 import { PaymentMethod } from '@/lib/db/entities/sale.entity'
 import {
   Dialog,
@@ -50,6 +50,9 @@ interface CartItem {
   stock: number
   taxRate: number
   discount?: number
+  trackExpirationDates?: boolean
+  nearestExpirationDate?: string
+  hasExpiredBatches?: boolean
 }
 
 export default function POSPage() {
@@ -73,6 +76,8 @@ export default function POSPage() {
   const [showEmployeeSelector, setShowEmployeeSelector] = useState(false)
   const [successDialogOpen, setSuccessDialogOpen] = useState(false)
   const [lastSale, setLastSale] = useState<any>(null)
+  const [expiredWarningOpen, setExpiredWarningOpen] = useState(false)
+  const [expiredWarningProduct, setExpiredWarningProduct] = useState<any>(null)
   const { activeEmployee, setActiveEmployee } = useActiveEmployee()
 
   // Fetch tax settings and current shift from store
@@ -160,7 +165,42 @@ export default function POSPage() {
     }
   }
 
-  const addToCart = (product: any) => {
+  const addToCart = async (product: any) => {
+    // Check for expiration dates if product tracks them
+    let nearestExpirationDate: string | undefined
+    let hasExpiredBatches = false
+
+    if (product.trackExpirationDates && store) {
+      try {
+        // Fetch nearest expiring batch using FEFO service
+        const response = await fetch(
+          `/api/stores/${store.storeId}/products/${product.id}/batches?sortBy=expirationDate&sortOrder=asc&limit=1`
+        )
+
+        if (response.ok) {
+          const data = await response.json()
+          if (data.batches && data.batches.length > 0) {
+            const nearestBatch = data.batches[0]
+            nearestExpirationDate = nearestBatch.expirationDate
+
+            // Check if expired
+            const expirationDate = new Date(nearestBatch.expirationDate)
+            const now = new Date()
+            hasExpiredBatches = expirationDate < now
+
+            // Show warning if expired
+            if (hasExpiredBatches) {
+              setExpiredWarningProduct({ ...product, nearestExpirationDate })
+              setExpiredWarningOpen(true)
+              return // Don't add to cart yet, wait for confirmation
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking expiration:', error)
+      }
+    }
+
     setCart((prev) => {
       const existing = prev.find((item) => item.productId === product.id)
 
@@ -193,9 +233,62 @@ export default function POSPage() {
           stock: product.currentStock,
           taxRate,
           discount: 0,
+          trackExpirationDates: product.trackExpirationDates,
+          nearestExpirationDate,
+          hasExpiredBatches,
         },
       ]
     })
+  }
+
+  const confirmAddExpiredProduct = () => {
+    if (!expiredWarningProduct) return
+
+    const product = expiredWarningProduct
+    setCart((prev) => {
+      const existing = prev.find((item) => item.productId === product.id)
+
+      let taxRate = Number(defaultTaxRate) || 0
+      if (product.overrideTaxRate && product.taxRate !== null && product.taxRate !== undefined) {
+        taxRate = Number(product.taxRate) || 0
+      }
+
+      if (existing) {
+        if (existing.quantity >= product.currentStock) {
+          toast.error('Stock insuficiente')
+          return prev
+        }
+        return prev.map((item) =>
+          item.productId === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      }
+
+      return [
+        ...prev,
+        {
+          productId: product.id,
+          name: product.name,
+          sku: product.sku,
+          price: Number(product.sellingPrice) || 0,
+          quantity: 1,
+          stock: product.currentStock,
+          taxRate,
+          discount: 0,
+          trackExpirationDates: product.trackExpirationDates,
+          nearestExpirationDate: product.nearestExpirationDate,
+          hasExpiredBatches: true,
+        },
+      ]
+    })
+
+    toast.success(`Se añadió ${product.name} al carrito (con lote vencido)`, {
+      description: 'Advertencia: Este producto tiene lotes vencidos',
+    })
+
+    setExpiredWarningOpen(false)
+    setExpiredWarningProduct(null)
   }
 
   const duplicateSaleToCart = (items: any[]) => {
@@ -523,6 +616,12 @@ export default function POSPage() {
                     <div className="flex-1">
                       <p className="font-medium text-sm md:text-base">{item.name}</p>
                       <p className="text-xs md:text-sm text-gray-500">{item.sku}</p>
+                      {item.trackExpirationDates && item.nearestExpirationDate && (
+                        <p className={`text-xs mt-1 font-semibold ${item.hasExpiredBatches ? 'text-red-600' : 'text-yellow-600'}`}>
+                          {item.hasExpiredBatches ? '⚠️ Vencido: ' : '📅 Vence: '}
+                          {new Date(item.nearestExpirationDate).toLocaleDateString('es-ES')}
+                        </p>
+                      )}
                       {item.discount && item.discount > 0 && (
                         <p className="text-xs mt-1" style={{ color: 'var(--color-primary)' }}>
                           Descuento: {formatCurrency(item.discount)}
@@ -728,6 +827,63 @@ export default function POSPage() {
         }}
         sale={lastSale}
       />
+
+      {/* Expired Product Warning Dialog */}
+      <Dialog open={expiredWarningOpen} onOpenChange={setExpiredWarningOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="h-5 w-5" />
+              Advertencia: Producto Vencido
+            </DialogTitle>
+            <DialogDescription>
+              Este producto tiene lotes vencidos. ¿Deseas continuar con la venta?
+            </DialogDescription>
+          </DialogHeader>
+
+          {expiredWarningProduct && (
+            <div className="space-y-4">
+              <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-md">
+                <p className="font-semibold text-sm">{expiredWarningProduct.name}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  SKU: {expiredWarningProduct.sku}
+                </p>
+                {expiredWarningProduct.nearestExpirationDate && (
+                  <p className="text-sm mt-2 text-red-600 font-semibold">
+                    Fecha de vencimiento:{' '}
+                    {new Date(expiredWarningProduct.nearestExpirationDate).toLocaleDateString('es-ES')}
+                  </p>
+                )}
+              </div>
+
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-md">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <strong>Nota:</strong> La venta de productos vencidos puede estar regulada.
+                  Asegúrate de cumplir con las normativas locales.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setExpiredWarningOpen(false)
+                setExpiredWarningProduct(null)
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmAddExpiredProduct}
+            >
+              Confirmar Venta
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

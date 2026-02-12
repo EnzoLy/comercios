@@ -9,11 +9,14 @@ import { getDataSource, getRepository } from '@/lib/db'
 import { Sale, SaleStatus } from '@/lib/db/entities/sale.entity'
 import { SaleItem } from '@/lib/db/entities/sale-item.entity'
 import { Product } from '@/lib/db/entities/product.entity'
+import { ProductBatch } from '@/lib/db/entities/product-batch.entity'
 import { StockMovement, MovementType } from '@/lib/db/entities/stock-movement.entity'
+import { BatchStockMovement } from '@/lib/db/entities/batch-stock-movement.entity'
 import { EmploymentRole, Employment } from '@/lib/db/entities/employment.entity'
 import { DigitalInvoice } from '@/lib/db/entities/digital-invoice.entity'
 import { createSaleSchema } from '@/lib/validations/sale.schema'
 import { getBaseUrl } from '@/lib/utils/url'
+import { FEFOService } from '@/lib/services/fefo.service'
 
 export async function GET(
   request: Request,
@@ -213,6 +216,8 @@ export async function POST(
       }
 
       // Step 5: Create stock movements and update product stock
+      const fefoService = new FEFOService()
+
       for (const item of validated.items) {
         const product = await manager.findOne(Product, {
           where: { id: item.productId },
@@ -233,7 +238,55 @@ export async function POST(
 
         await manager.save(movement)
 
-        // Decrement product stock
+        // If product tracks expiration dates, use FEFO to select batches
+        if (product.trackExpirationDates) {
+          try {
+            // Try to get batches using FEFO (excluding expired by default)
+            const batchAllocations = await fefoService.selectBatchesForQuantity(
+              product.id,
+              item.quantity,
+              manager,
+              false // Don't include expired batches initially
+            )
+
+            // Decrement from each selected batch
+            for (const allocation of batchAllocations) {
+              await manager.decrement(
+                ProductBatch,
+                { id: allocation.batchId },
+                'currentQuantity',
+                allocation.quantity
+              )
+
+              // Create batch stock movement
+              const batchMovement = manager.create(BatchStockMovement, {
+                batchId: allocation.batchId,
+                productId: product.id,
+                stockMovementId: movement.id,
+                type: MovementType.SALE,
+                quantity: -allocation.quantity, // Negative for sale
+                unitPrice: item.unitPrice,
+                saleId: sale.id,
+                userId,
+              })
+
+              await manager.save(batchMovement)
+            }
+          } catch (fefoError: any) {
+            // If FEFO fails due to insufficient valid stock but there are expired batches,
+            // try again including expired batches
+            if (fefoError.message.includes('Stock vigente insuficiente')) {
+              // Re-throw with more context for UI to handle (show warning dialog)
+              throw new Error(
+                `${product.name}: ${fefoError.message}. ` +
+                `Requiere confirmación para vender lotes vencidos.`
+              )
+            }
+            throw fefoError
+          }
+        }
+
+        // Decrement product stock (aggregated)
         await manager.decrement(
           Product,
           { id: item.productId },

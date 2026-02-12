@@ -88,6 +88,13 @@ export class Product {
   @Column({ type: 'boolean', default: true })
   trackStock!: boolean
 
+  /**
+   * Indica si este producto requiere seguimiento de fechas de vencimiento
+   * Para productos perecederos como alimentos, medicinas, cosméticos, etc.
+   */
+  @Column({ type: 'boolean', default: false })
+  trackExpirationDates!: boolean
+
   // Tax Configuration
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   taxRate?: number
@@ -125,4 +132,7 @@ export class Product {
 
   @OneToMany('supplier_product', (sp: any) => sp.product)
   supplierProducts?: any[]
+
+  @OneToMany('product_batch', (batch: any) => batch.product)
+  batches!: any[]
 }
