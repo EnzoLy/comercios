@@ -230,11 +230,9 @@ export default function InventoryPage() {
           <TabsTrigger value="adjust">Ajustar Stock</TabsTrigger>
           <TabsTrigger value="alerts">Alertas de Stock</TabsTrigger>
           <TabsTrigger value="batches">
-            <Calendar className="h-4 w-4 mr-2" />
             Gestión de Lotes
           </TabsTrigger>
           <TabsTrigger value="expiring">
-            <AlertTriangle className="h-4 w-4 mr-2" />
             Productos por Vencer
           </TabsTrigger>
         </TabsList>

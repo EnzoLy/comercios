@@ -26,11 +26,11 @@ export class Employment {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', name: 'user_id' })
   @Index()
   userId!: string
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', name: 'store_id' })
   @Index()
   storeId!: string
 
@@ -41,33 +41,33 @@ export class Employment {
   })
   role!: EmploymentRole
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: 'boolean', default: true, name: 'is_active' })
   isActive!: boolean
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamp', nullable: true, name: 'start_date' })
   startDate?: Date
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamp', nullable: true, name: 'end_date' })
   endDate?: Date
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   pin?: string
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false, name: 'requires_pin' })
   requiresPin!: boolean
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date
 
   // Relationships
   @ManyToOne(() => User, (user: any) => user.employments, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'user_id' })
   user!: any
 
   @ManyToOne(() => Store, (store: any) => store.employments, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'storeId' })
+  @JoinColumn({ name: 'store_id' })
   store!: any
 }

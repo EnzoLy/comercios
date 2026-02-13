@@ -35,6 +35,19 @@ export async function middleware(request: NextRequest) {
         return NextResponse.json({ error: 'Access denied to this store' }, { status: 403 })
       }
 
+      // Check subscription status (bypass for SUPER_ADMIN)
+      if (session.user.role !== 'SUPER_ADMIN') {
+        const { SubscriptionService } = await import('@/lib/services/subscription.service')
+        const accessCheck = await SubscriptionService.checkStoreAccess(storeId)
+
+        if (!accessCheck.hasAccess) {
+          return NextResponse.json({
+            error: accessCheck.reason || 'Access denied',
+            subscriptionExpired: true
+          }, { status: 403 })
+        }
+      }
+
       // Attach store and user info to request headers (for future use)
       const requestHeaders = new Headers(request.headers)
       requestHeaders.set('x-store-id', store.storeId)
@@ -76,6 +89,22 @@ export async function middleware(request: NextRequest) {
       // Find the storeId for this slug
       const store = session.user.stores.find((s) => s.slug === storeSlug)
       if (store) {
+        // Check subscription status (bypass for SUPER_ADMIN and subscription-expired page)
+        if (
+          session.user.role !== 'SUPER_ADMIN' &&
+          !pathname.includes('/subscription-expired')
+        ) {
+          const { SubscriptionService } = await import('@/lib/services/subscription.service')
+          const accessCheck = await SubscriptionService.checkStoreAccess(store.storeId)
+
+          if (!accessCheck.hasAccess) {
+            // Redirect to subscription expired page
+            return NextResponse.redirect(
+              new URL(`/dashboard/${storeSlug}/subscription-expired`, request.url)
+            )
+          }
+        }
+
         // Check role-based access for specific routes
         const role = store.employmentRole || ''
         const isOwner = store.isOwner

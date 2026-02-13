@@ -5,6 +5,7 @@ import { Store } from '@/lib/db/entities/store.entity'
 import { User } from '@/lib/db/entities/user.entity'
 import { Employment, EmploymentRole } from '@/lib/db/entities/employment.entity'
 import { createStoreSchema } from '@/lib/validations/admin-store.schema'
+import { SubscriptionService } from '@/lib/services/subscription.service'
 
 export async function GET() {
   try {
@@ -18,19 +19,30 @@ export async function GET() {
       order: { createdAt: 'DESC' },
     })
 
-    const formatted = stores.map(store => ({
-      id: store.id,
-      name: store.name,
-      slug: store.slug,
-      isActive: store.isActive,
-      owner: {
-        id: store.owner.id,
-        name: store.owner.name,
-        email: store.owner.email,
-      },
-      createdAt: store.createdAt,
-      employmentCount: store.employments?.length || 0,
-    }))
+    const formatted = stores.map(store => {
+      const daysRemaining = SubscriptionService.calculateDaysRemaining(store.subscriptionEndDate)
+
+      return {
+        id: store.id,
+        name: store.name,
+        slug: store.slug,
+        isActive: store.isActive,
+        owner: {
+          id: store.owner.id,
+          name: store.owner.name,
+          email: store.owner.email,
+        },
+        createdAt: store.createdAt,
+        employmentCount: store.employments?.length || 0,
+        subscription: {
+          status: store.subscriptionStatus,
+          startDate: store.subscriptionStartDate,
+          endDate: store.subscriptionEndDate,
+          isPermanent: store.isPermanent,
+          daysRemaining,
+        },
+      }
+    })
 
     return NextResponse.json(formatted)
   } catch (error) {

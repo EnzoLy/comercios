@@ -28,6 +28,7 @@ import { SupplierProduct } from '@/lib/db/entities/supplier-product.entity'
 import { PurchaseOrder } from '@/lib/db/entities/purchase-order.entity'
 import { PurchaseOrderItem } from '@/lib/db/entities/purchase-order-item.entity'
 import { DigitalInvoice } from '@/lib/db/entities/digital-invoice.entity'
+import { SubscriptionPayment } from '@/lib/db/entities/subscription-payment.entity'
 
 // Singleton instance to prevent multiple connections in Next.js hot reload
 let dataSource: DataSource | null = null
@@ -81,6 +82,7 @@ export async function getDataSource(): Promise<DataSource> {
           PurchaseOrder,
           PurchaseOrderItem,
           DigitalInvoice,
+          SubscriptionPayment,
         ],
         subscribers: [],
         migrations: [],
@@ -128,6 +130,7 @@ export async function getDataSource(): Promise<DataSource> {
           PurchaseOrder,
           PurchaseOrderItem,
           DigitalInvoice,
+          SubscriptionPayment,
         ],
         subscribers: [],
         migrations: [],
