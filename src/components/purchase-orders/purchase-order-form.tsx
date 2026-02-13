@@ -17,11 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { createPurchaseOrderSchema, type CreatePurchaseOrderInput, type PurchaseOrderItemInput } from '@/lib/validations/purchase-order.schema'
+import { createPurchaseOrderSchema, type CreatePurchaseOrderInput } from '@/lib/validations/purchase-order.schema'
 import { PurchaseOrderStatus } from '@/lib/db/entities/purchase-order.entity'
 import { useStore } from '@/hooks/use-store'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/currency'
+import { ProductSearchInput } from '@/components/products/product-search-input'
 
 interface PurchaseOrderFormProps {
   mode: 'create' | 'edit'
@@ -301,84 +302,76 @@ export function PurchaseOrderForm({
               <table className="w-full min-w-[640px]">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 px-2">Producto</th>
-                    <th className="text-center py-2 px-2">Cantidad</th>
-                    <th className="text-right py-2 px-2">Precio Unit.</th>
-                    <th className="text-right py-2 px-2">Descuento %</th>
-                    <th className="text-right py-2 px-2">Subtotal</th>
-                    <th className="text-center py-2 px-2 w-12"></th>
+                    <th className="text-left py-2 px-2 w-[40%]">Producto</th>
+                    <th className="text-center py-2 px-2 w-[80px]">Cantidad</th>
+                    <th className="text-right py-2 px-2 w-[96px]">Precio Unit.</th>
+                    <th className="text-right py-2 px-2 w-[80px]">Descuento %</th>
+                    <th className="text-right py-2 px-2 w-[100px]">Subtotal</th>
+                    <th className="py-2 px-2 w-12"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {fields.map((field, index) => {
                     const item = items[index]
                     const itemSubtotal = calculateItemSubtotal(item)
+                    const selectedProduct = products.find(p => p.id === item.productId)
+                    const excludeIds = items
+                      .map((i, idx) => idx !== index ? i.productId : null)
+                      .filter(Boolean) as string[]
 
                     return (
                       <tr key={field.id} className="border-b">
-                        <td className="py-2 px-2">
-                          <Select
-                            value={item.productId}
-                            onValueChange={(value) => handleProductChange(index, value)}
+                        <td className="py-2 px-2 w-[40%]">
+                          <ProductSearchInput
+                            value={item.productId || ''}
+                            onChange={(value) => handleProductChange(index, value)}
+                            storeId={store?.storeId || ''}
                             disabled={isLoading}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Seleccionar" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {products.map((product) => (
-                                <SelectItem key={product.id} value={product.id}>
-                                  {product.name} - {product.sku}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          {errors.items?.[index]?.productId && (
-                            <p className="text-xs text-red-500 mt-1">
-                              {errors.items[index]?.productId?.message}
-                            </p>
-                          )}
+                            placeholder="Buscar producto..."
+                            excludeIds={excludeIds}
+                            error={errors.items?.[index]?.productId?.message}
+                          />
                         </td>
-                        <td className="py-2 px-2">
+                        <td className="py-2 px-2 w-[80px]">
                           <Input
                             type="number"
                             min="1"
-                            className="w-20"
+                            className="w-full text-center"
                             {...register(`items.${index}.quantityOrdered`, {
                               valueAsNumber: true,
                             })}
                             disabled={isLoading}
                           />
                         </td>
-                        <td className="py-2 px-2">
+                        <td className="py-2 px-2 w-[96px]">
                           <Input
                             type="number"
                             step="0.01"
                             min="0"
-                            className="w-24 text-right"
+                            className="w-full text-right"
                             {...register(`items.${index}.unitPrice`, {
                               valueAsNumber: true,
                             })}
                             disabled={isLoading}
                           />
                         </td>
-                        <td className="py-2 px-2">
+                        <td className="py-2 px-2 w-[80px]">
                           <Input
                             type="number"
                             step="0.01"
                             min="0"
                             max="100"
-                            className="w-20 text-right"
+                            className="w-full text-right"
                             {...register(`items.${index}.discountPercentage`, {
                               valueAsNumber: true,
                             })}
                             disabled={isLoading}
                           />
                         </td>
-                        <td className="py-2 px-2 text-right font-medium">
+                        <td className="py-2 px-2 w-[100px] text-right font-medium">
                           {formatCurrency(itemSubtotal)}
                         </td>
-                        <td className="py-2 px-2 text-center">
+                        <td className="py-2 px-2 w-12 text-center">
                           <Button
                             type="button"
                             variant="ghost"

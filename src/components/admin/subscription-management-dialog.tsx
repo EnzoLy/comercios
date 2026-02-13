@@ -186,14 +186,13 @@ export function SubscriptionManagementDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-3xl max-h-[95vh] sm:max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 flex-shrink-0">
           <DialogTitle>Gestionar Suscripción - {store.name}</DialogTitle>
         </DialogHeader>
 
-        {/* Current Status */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-4 sm:pb-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-medium text-gray-500">Estado Actual</h3>
               <div className="mt-1">
@@ -205,7 +204,7 @@ export function SubscriptionManagementDialog({
             </div>
 
             {store.subscription.endDate && !store.subscription.isPermanent && (
-              <div className="text-right">
+              <div className="sm:text-right">
                 <h3 className="text-sm font-medium text-gray-500">Fecha de Expiración</h3>
                 <p className="text-lg font-semibold flex items-center gap-2 mt-1">
                   <Calendar className="h-4 w-4" />
@@ -218,7 +217,7 @@ export function SubscriptionManagementDialog({
           <Separator />
 
           {/* Permanent Toggle */}
-          <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <div>
               <h3 className="font-medium flex items-center gap-2">
                 <Infinity className="h-5 w-5 text-blue-600" />
@@ -234,9 +233,10 @@ export function SubscriptionManagementDialog({
               variant={store.subscription.isPermanent ? 'outline' : 'default'}
               onClick={handleTogglePermanent}
               disabled={isTogglingPermanent}
+              className="shrink-0"
             >
               {isTogglingPermanent && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {store.subscription.isPermanent ? 'Convertir a Temporal' : 'Marcar como Permanente'}
+              {store.subscription.isPermanent ? 'Convertir a Temporal' : 'Marcar Permanente'}
             </Button>
           </div>
 
@@ -295,45 +295,80 @@ export function SubscriptionManagementDialog({
                 No hay pagos registrados
               </p>
             ) : (
-              <div className="border rounded-lg overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead>Monto</TableHead>
-                      <TableHead>Método</TableHead>
-                      <TableHead>Duración</TableHead>
-                      <TableHead>Período</TableHead>
-                      <TableHead>Registrado por</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paymentHistory.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell className="whitespace-nowrap">
-                          {formatDate(payment.paymentDate)}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {formatCurrency(payment.amount, payment.currency)}
-                        </TableCell>
-                        <TableCell>
-                          {paymentMethodLabels[payment.paymentMethod] || payment.paymentMethod}
-                        </TableCell>
-                        <TableCell>
-                          {payment.durationMonths >= 12
-                            ? `${Math.floor(payment.durationMonths / 12)} año${Math.floor(payment.durationMonths / 12) !== 1 ? 's' : ''}`
-                            : `${payment.durationMonths} mes${payment.durationMonths !== 1 ? 'es' : ''}`}
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {formatDate(payment.periodStartDate)} -{' '}
-                          {formatDate(payment.periodEndDate)}
-                        </TableCell>
-                        <TableCell className="text-sm">{payment.recordedBy.name}</TableCell>
+              <>
+                {/* Desktop Table */}
+                <div className="hidden sm:block border rounded-lg overflow-hidden overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Fecha</TableHead>
+                        <TableHead>Monto</TableHead>
+                        <TableHead>Método</TableHead>
+                        <TableHead>Duración</TableHead>
+                        <TableHead>Período</TableHead>
+                        <TableHead>Registrado por</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {paymentHistory.map((payment) => (
+                        <TableRow key={payment.id}>
+                          <TableCell className="whitespace-nowrap">
+                            {formatDate(payment.paymentDate)}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {formatCurrency(payment.amount, payment.currency)}
+                          </TableCell>
+                          <TableCell>
+                            {paymentMethodLabels[payment.paymentMethod] || payment.paymentMethod}
+                          </TableCell>
+                          <TableCell>
+                            {payment.durationMonths >= 12
+                              ? `${Math.floor(payment.durationMonths / 12)} año${Math.floor(payment.durationMonths / 12) !== 1 ? 's' : ''}`
+                              : `${payment.durationMonths} mes${payment.durationMonths !== 1 ? 'es' : ''}`}
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {formatDate(payment.periodStartDate)} -{' '}
+                            {formatDate(payment.periodEndDate)}
+                          </TableCell>
+                          <TableCell className="text-sm">{payment.recordedBy.name}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="sm:hidden space-y-3">
+                  {paymentHistory.map((payment) => (
+                    <div key={payment.id} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex justify-between items-start">
+                        <div className="text-sm text-gray-500">{formatDate(payment.paymentDate)}</div>
+                        <div className="font-semibold text-lg">
+                          {formatCurrency(payment.amount, payment.currency)}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <span className="text-gray-500">Método: </span>
+                          {paymentMethodLabels[payment.paymentMethod] || payment.paymentMethod}
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Duración: </span>
+                          {payment.durationMonths >= 12
+                            ? `${Math.floor(payment.durationMonths / 12)} año(s)`
+                            : `${payment.durationMonths} mes(es)`}
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Período: {formatDate(payment.periodStartDate)} - {formatDate(payment.periodEndDate)}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        Registrado por: {payment.recordedBy.name}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>

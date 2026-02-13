@@ -70,6 +70,18 @@ export function Sidebar({ storeSlug, isOwner, role }: SidebarProps) {
       permission: 'manage_inventory',
     },
     {
+      label: 'Proveedores',
+      href: `/dashboard/${storeSlug}/suppliers`,
+      icon: Truck,
+      permission: 'manage_products',
+    },
+    {
+      label: 'Órdenes de Compra',
+      href: `/dashboard/${storeSlug}/purchase-orders`,
+      icon: ClipboardList,
+      permission: 'manage_products',
+    },
+    {
       label: 'Caja',
       href: `/dashboard/${storeSlug}/pos`,
       icon: ShoppingCart,

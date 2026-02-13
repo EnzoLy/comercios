@@ -18,6 +18,9 @@ import {
   Store,
   Menu,
   Clock,
+  QrCode,
+  Truck,
+  ClipboardList,
 } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
@@ -47,6 +50,11 @@ export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) 
       icon: LayoutDashboard,
     },
     {
+      label: 'Mi Acceso',
+      href: `/dashboard/${storeSlug}/my-access`,
+      icon: QrCode,
+    },
+    {
       label: 'Productos',
       href: `/dashboard/${storeSlug}/products`,
       icon: Package,
@@ -63,6 +71,18 @@ export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) 
       href: `/dashboard/${storeSlug}/inventory`,
       icon: Warehouse,
       permission: 'manage_inventory',
+    },
+    {
+      label: 'Proveedores',
+      href: `/dashboard/${storeSlug}/suppliers`,
+      icon: Truck,
+      permission: 'manage_products',
+    },
+    {
+      label: 'Órdenes de Compra',
+      href: `/dashboard/${storeSlug}/purchase-orders`,
+      icon: ClipboardList,
+      permission: 'manage_products',
     },
     {
       label: 'Caja',
