@@ -17,6 +17,7 @@ interface Product {
   costPrice: number | string
   currentStock: number
   imageUrl?: string
+  isActive?: boolean
 }
 
 interface ProductSearchProps {

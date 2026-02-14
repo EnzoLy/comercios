@@ -21,6 +21,7 @@ interface SaleItem {
   quantity: number
   unitPrice: number
   discount: number
+  isActive: boolean
 }
 
 interface RecentSale {
@@ -89,6 +90,7 @@ export function RecentSalesDialog({
       stock: 0, // Will be checked when adding to cart
       taxRate: 0,
       discount: item.discount,
+      isActive: item.isActive,
     }))
 
     onDuplicateSale(cartItems)

@@ -194,6 +194,12 @@ export default function POSPage() {
   }
 
   const addToCart = async (product: any) => {
+    // Prevent adding inactive products
+    if (product.isActive === false) {
+      toast.error(`El producto ${product.name} está inactivo y no se puede vender`)
+      return
+    }
+
     let nearestExpirationDate: string | undefined
     let hasExpiredBatches = false
 
@@ -309,6 +315,13 @@ export default function POSPage() {
     setCart((prev) => {
       let newCart = [...prev]
       for (const item of items) {
+        // Prevent adding inactive products during duplication
+        if (item.isActive === false) {
+          toast.warning(`${item.name}: Producto inactivo, omitido`)
+          allAdded = false
+          continue
+        }
+
         const existing = newCart.find((i) => i.productId === item.productId)
         if (existing) {
           if (existing.quantity + item.quantity > existing.stock) {

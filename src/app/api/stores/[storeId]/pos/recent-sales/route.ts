@@ -51,6 +51,7 @@ export async function GET(
       .getRepository(Sale)
       .createQueryBuilder('sale')
       .leftJoinAndSelect('sale.items', 'items')
+      .leftJoinAndSelect('items.product', 'product')
       .where('sale.storeId = :storeId', { storeId })
       .andWhere('sale.cashierId = :userId', { userId: filterUserId })
       .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
@@ -72,6 +73,7 @@ export async function GET(
         quantity: item.quantity,
         unitPrice: Number(item.unitPrice),
         discount: Number(item.discount || 0),
+        isActive: item.product?.isActive ?? true, // Default to true if product was deleted but sale item remains
       })) || [],
     }))
 

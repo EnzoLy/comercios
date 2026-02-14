@@ -78,21 +78,26 @@ export async function GET(
       .getRepository(Product)
       .createQueryBuilder('product')
       .where('product.id IN (:...productIds)', { productIds })
-      .select(['product.id', 'product.name', 'product.sku', 'product.sellingPrice', 'product.currentStock', 'product.imageUrl'])
+      .andWhere('product.isActive = :isActive', { isActive: true })
+      .select(['product.id', 'product.name', 'product.sku', 'product.sellingPrice', 'product.currentStock', 'product.imageUrl', 'product.isActive'])
       .getMany()
 
-    const result = favorites.map((fav: any) => {
-      const product = products.find((p) => p.id === fav.productId)
-      return {
-        productId: fav.productId,
-        name: fav.productName,
-        sku: fav.productSku,
-        price: Number(fav.price),
-        quantitySold: Number(fav.quantitySold),
-        currentStock: product?.currentStock || 0,
-        imageUrl: product?.imageUrl || null,
-      }
-    })
+    const result = favorites
+      .map((fav: any) => {
+        const product = products.find((p) => p.id === fav.productId)
+        if (!product) return null
+
+        return {
+          productId: fav.productId,
+          name: fav.productName,
+          sku: fav.productSku,
+          price: Number(fav.price),
+          quantitySold: Number(fav.quantitySold),
+          currentStock: product.currentStock || 0,
+          imageUrl: product.imageUrl || null,
+        }
+      })
+      .filter((item) => item !== null)
 
     return NextResponse.json(result)
   } catch (error) {

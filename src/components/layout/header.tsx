@@ -82,7 +82,7 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
         <MobileSidebar storeSlug={storeSlug} isOwner={isOwner} role={role} />
         <div className="flex items-center gap-2">
           <Image src="/logo-processed.png" alt="Logo" width={32} height={32} className="rounded-lg object-cover" />
-          <h1 className="text-lg md:text-xl font-semibold">Orbit Gestión</h1>
+          <h1 className="text-lg md:text-xl font-semibold">Orbitus Gestión</h1>
         </div>
       </div>
 
