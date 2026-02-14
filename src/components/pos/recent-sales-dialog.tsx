@@ -152,8 +152,8 @@ export function RecentSalesDialog({
 
                 <div className="mb-2 space-y-1">
                   {sale.items.slice(0, 3).map((item) => (
-                    <p key={item.id} className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                      {item.quantity}x {item.productName}
+                    <p key={item.id} className={`text-xs truncate ${!item.isActive ? 'text-red-500 font-medium' : 'text-gray-600 dark:text-gray-400'}`}>
+                      {item.quantity}x {item.productName} {!item.isActive && '(Inactivo)'}
                     </p>
                   ))}
                   {sale.items.length > 3 && (

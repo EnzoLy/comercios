@@ -49,6 +49,9 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
 } from '@/components/ui/sheet'
 import { MoreVertical, Menu, LayoutGrid, Smartphone, ChevronUp } from 'lucide-react'
 
@@ -573,7 +576,7 @@ export default function POSPage() {
         )}
       </div>
 
-      <div className="p-4 lg:p-6 bg-card border-t border-border shadow-[0_-10px_40px_rgba(0,0,0,0.05)] space-y-4">
+      <div className="p-4 lg:p-6 border-t border-border shadow-[0_-10px_40px_rgba(0,0,0,0.05)] space-y-4">
         <div className="space-y-2">
           <div className="flex justify-between text-[11px] text-muted-foreground font-black uppercase tracking-widest">
             <span>Subtotal</span>
@@ -715,7 +718,7 @@ export default function POSPage() {
           </div>
         </div>
 
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-xl border-t border-border/50 z-40 flex items-center justify-between gap-4 shadow-[0_-15px_40px_rgba(0,0,0,0.1)] px-6 rounded-t-[2.5rem]">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 backdrop-blur-xl border-t border-border/50 z-40 flex items-center justify-between gap-4 shadow-[0_-15px_40px_rgba(0,0,0,0.1)] px-6 rounded-t-[2.5rem]">
           <div className="flex flex-col">
             <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none mb-1">Total</span>
             <span className="text-2xl font-black text-primary leading-none">{formatCurrency(total)}</span>
@@ -734,6 +737,10 @@ export default function POSPage() {
 
       <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
         <SheetContent side="right" className="w-full sm:max-w-md p-0 overflow-hidden flex flex-col border-none shadow-2xl">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Carrito de Compras</SheetTitle>
+            <SheetDescription>Visualizar y gestionar los productos en el carrito</SheetDescription>
+          </SheetHeader>
           <CartContent />
         </SheetContent>
       </Sheet>

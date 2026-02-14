@@ -23,7 +23,7 @@ import {
   Truck,
   ClipboardList,
 } from 'lucide-react'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 
 interface MobileSidebarProps {
@@ -148,6 +148,9 @@ export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) 
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-64 p-0">
+        <SheetHeader className="sr-only">
+          <SheetTitle>Menú de Navegación</SheetTitle>
+        </SheetHeader>
         <div className="flex flex-col h-full">
           <div className="p-4 border-b">
             <Link
