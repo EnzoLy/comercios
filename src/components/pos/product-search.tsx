@@ -163,7 +163,7 @@ export function ProductSearch({ storeId, onProductSelect, categoryId }: ProductS
       {isOpen && suggestions.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-4 bg-card border border-border rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+          className="absolute z-50 w-full md:w-[500px] lg:w-[600px] mt-4 bg-card border border-border rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
         >
           <div className="p-3 px-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/30 border-b border-border/50">
             {suggestions.length} resultado{suggestions.length !== 1 ? 's' : ''}
@@ -208,7 +208,7 @@ export function ProductSearch({ storeId, onProductSelect, categoryId }: ProductS
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
-                          <p className="font-bold text-base leading-tight truncate group-hover:text-primary transition-colors">
+                          <p className="font-bold text-base leading-tight group-hover:text-primary transition-colors">
                             {product.name}
                           </p>
                           <p className="text-xs font-mono text-muted-foreground mt-1 uppercase tracking-tighter">SKU: {product.sku}</p>
