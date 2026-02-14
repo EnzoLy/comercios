@@ -454,7 +454,7 @@ export default function POSPage() {
   const change = amountPaid ? (amountPaid > total ? amountPaid - total : 0) : 0
 
   const CartContent = () => (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full">
       <div className="p-4 lg:p-6 border-b border-border/50 flex items-center justify-between bg-primary/5">
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">
@@ -620,9 +620,9 @@ export default function POSPage() {
   }
 
   return (
-    <div className={`h-full flex flex-col lg:flex-row transition-all duration-300 bg-background ${isFullscreen ? 'fixed inset-0 z-50 overflow-hidden' : ''}`}>
+    <div className={`h-full flex flex-col lg:flex-row transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-50 overflow-hidden' : ''}`}>
       <div className="flex-1 min-h-0 flex flex-col h-full relative">
-        <div className="p-4 md:p-6 pb-2 md:pb-6 flex flex-col gap-4 bg-background">
+        <div className="p-4 md:p-6 pb-2 md:pb-6 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-primary/10 rounded-lg">
