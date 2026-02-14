@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
-import { TrendingUp, Trophy, Target } from 'lucide-react'
+import { TrendingUp, Trophy, Target, Zap, Box } from 'lucide-react'
 import { toast } from 'sonner'
 import { useActiveEmployee } from '@/contexts/active-employee-context'
 
@@ -76,80 +76,76 @@ export function PersonalStats({ storeId, refreshTrigger }: PersonalStatsProps) {
   }
 
   return (
-    <Card className="mb-4" style={{ borderColor: 'var(--color-primary)' }}>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <TrendingUp className="h-4 w-4" />
-          Mi Desempeño Hoy
+    <Card style={{ borderColor: 'var(--color-primary)' }} className="shadow-none p-4 md:p-8">
+      <CardHeader className="px-0 pb-4">
+        <CardTitle className="text-xl font-bold flex items-center gap-2">
+          <TrendingUp className="h-5 w-5 text-primary" />
+          Mi Rendimiento
+          <span className="text-xs font-normal text-muted-foreground ml-auto bg-primary/5 px-2 py-1 rounded-full uppercase tracking-widest font-bold">Hoy</span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {/* Sales Count and Revenue */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
-              <p className="text-xs text-gray-600 dark:text-gray-400">Ventas</p>
-              <p className="text-lg font-bold text-blue-600">
-                {stats.totalSales}
-              </p>
+      <CardContent className="px-0 space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 bg-card border border-border/50 rounded-3xl shadow-sm hover:shadow-md transition-all">
+            <div className="p-2 bg-blue-500/10 rounded-xl w-fit mb-3">
+              <Trophy className="h-4 w-4 text-blue-600" />
             </div>
-            <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded">
-              <p className="text-xs text-gray-600 dark:text-gray-400">Ingresos</p>
-              <p className="text-lg font-bold text-green-600">
-                {formatCurrency(stats.totalRevenue)}
-              </p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Ventas</p>
+            <p className="text-2xl font-black text-blue-600">
+              {stats.totalSales}
+            </p>
+          </div>
+          <div className="p-4 bg-card border border-border/50 rounded-3xl shadow-sm hover:shadow-md transition-all">
+            <div className="p-2 bg-emerald-500/10 rounded-xl w-fit mb-3">
+              <Zap className="h-4 w-4 text-emerald-600" />
+            </div>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Ingresos</p>
+            <p className="text-2xl font-black text-emerald-600">
+              {formatCurrency(stats.totalRevenue)}
+            </p>
+          </div>
+        </div>
+
+        <div className={`p-5 rounded-3xl border transition-all ${stats.isAboveAverage
+          ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800'
+          : 'bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800'
+          }`}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-2 bg-background rounded-xl">
+              <Target className={`h-4 w-4 ${stats.isAboveAverage ? 'text-emerald-600' : 'text-amber-600'}`} />
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Media Tienda</p>
+              <p className="text-xs font-bold">{formatCurrency(stats.storeAverageTransaction)}</p>
             </div>
           </div>
 
-          {/* Average Transaction */}
-          <div
-            className={`p-2 rounded ${stats.isAboveAverage
-              ? 'bg-emerald-50 dark:bg-emerald-900/20'
-              : 'bg-orange-50 dark:bg-orange-900/20'
-              }`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Promedio por Venta
-                </p>
-                <p
-                  className={`text-sm font-semibold ${stats.isAboveAverage
-                    ? 'text-emerald-600'
-                    : 'text-orange-600'
-                    }`}
-                >
-                  {formatCurrency(stats.averageTransaction)}
-                </p>
-              </div>
-              <p className="text-xs text-gray-500">
-                Tienda: {formatCurrency(stats.storeAverageTransaction)}
-              </p>
-            </div>
-            {stats.isAboveAverage && (
-              <p className="text-xs text-emerald-600 mt-1">
-                ✓ Arriba del promedio
-              </p>
-            )}
-          </div>
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Tu Promedio</p>
+          <p className={`text-2xl font-black ${stats.isAboveAverage ? 'text-emerald-600' : 'text-amber-600'}`}>
+            {formatCurrency(stats.averageTransaction)}
+          </p>
 
-          {/* Top Product */}
-          {stats.topProduct && (
-            <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded">
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Mejor Vendido
-              </p>
-              <p className="text-sm font-semibold text-purple-600 truncate">
-                {stats.topProduct.name}
-              </p>
-              <p className="text-xs text-gray-500">
-                {stats.topProduct.quantity} vendido{
-                  stats.topProduct.quantity !== 1 ? 's' : ''
-                }
-              </p>
-            </div>
+          {stats.isAboveAverage && (
+            <p className="text-[10px] font-black text-emerald-600 mt-2 bg-emerald-500/10 w-fit px-2 py-0.5 rounded-full uppercase tracking-tighter">
+              ✓ Superando el promedio!
+            </p>
           )}
         </div>
+
+        {stats.topProduct && (
+          <div className="p-5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl text-white shadow-lg shadow-indigo-500/20">
+            <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest mb-4">Top Producto</p>
+            <p className="text-lg font-bold leading-tight line-clamp-2 mb-2">
+              {stats.topProduct.name}
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium bg-white/20 px-2 py-1 rounded-lg">
+                {stats.topProduct.quantity} vendidos
+              </span>
+              <Trophy className="h-5 w-5 text-white/50" />
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

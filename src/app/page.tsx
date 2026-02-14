@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth/auth'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import Image from 'next/image'
 import { Store, BarChart, Package, ShoppingCart } from 'lucide-react'
 
 export default async function Home() {
@@ -19,7 +20,7 @@ export default async function Home() {
       <header className="border-b bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Store className="h-6 w-6 text-blue-600" />
+            <Image src="/logo-processed.png" alt="Logo" width={32} height={32} className="rounded-lg object-cover" />
             <h1 className="text-xl font-bold">Commerce System</h1>
           </div>
           <div className="flex gap-2">

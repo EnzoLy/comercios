@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useStore } from '@/hooks/use-store'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -10,7 +10,15 @@ import { Badge } from '@/components/ui/badge'
 import { CategoryForm } from '@/components/categories/category-form'
 import { CategoryProductsDialog } from '@/components/categories/category-products-dialog'
 import { LoadingPage } from '@/components/ui/loading'
-import { Plus, FolderTree, Edit, Trash2, ChevronRight, ChevronDown, Package } from 'lucide-react'
+import { Plus, ChevronRight, Trash2, Box, Pencil, FolderTree, AlertTriangle, ChevronDown, Package, RefreshCw } from 'lucide-react'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -105,7 +113,7 @@ export default function CategoriesPage() {
   }
 
   const toggleExpand = (categoryId: string) => {
-    setExpandedCategories((prev) => {
+    setExpandedCategories((prev: Set<string>) => {
       const next = new Set(prev)
       if (next.has(categoryId)) {
         next.delete(categoryId)
@@ -116,130 +124,184 @@ export default function CategoriesPage() {
     })
   }
 
-  const renderCategory = (category: Category, level: number = 0) => {
+  const topLevelCategories = categories.filter((c: Category) => !c.parentId)
+
+  const renderCategoryRows = (category: Category, level: number = 0): React.ReactNode[] => {
     const hasChildren = category.children && category.children.length > 0
-    const isExpanded = expandedCategories.has(category.id)
+    const rows = []
 
-    return (
-      <div key={category.id} className="border-b last:border-0">
-        <div
-          className="flex items-center justify-between py-3 hover:bg-gray-50 dark:hover:bg-gray-800"
-          style={{ paddingLeft: `${level * 24 + 16}px` }}
-        >
-          <div className="flex items-center gap-2 flex-1">
-            {hasChildren ? (
-              <button
-                onClick={() => toggleExpand(category.id)}
-                className="hover:bg-gray-200 dark:hover:bg-gray-700 rounded p-1"
-              >
-                {isExpanded ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
-              </button>
-            ) : (
-              <div className="w-6" />
-            )}
-
-            <FolderTree className="h-4 w-4 text-gray-500" />
-
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="font-medium">{category.name}</span>
-                {!category.isActive && <Badge variant="secondary">Inactivo</Badge>}
-              </div>
-              {category.description && (
-                <p className="text-sm text-gray-500">{category.description}</p>
+    rows.push(
+      <TableRow key={category.id} className="group hover:bg-muted/50 transition-colors border-border/40">
+        <TableCell className="py-4">
+          <div className="flex items-center gap-3" style={{ paddingLeft: `${level * 24}px` }}>
+            <div className={`p-2 rounded-lg border border-border/50 ${level === 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+              <FolderTree className="h-4 w-4" />
+            </div>
+            <div className="flex flex-col">
+              <span className={`font-semibold tracking-tight ${level === 0 ? 'text-base' : 'text-sm opacity-90'}`}>
+                {category.name}
+              </span>
+              {level > 0 && (
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                  Nivel {level + 1}
+                </span>
               )}
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
+        </TableCell>
+        <TableCell>
+          <p className="text-sm text-muted-foreground line-clamp-1 max-w-[300px]">
+            {category.description || '—'}
+          </p>
+        </TableCell>
+        <TableCell className="text-center">
+          <Badge variant="outline" className="font-mono bg-background/50 border-border/50">
+            {category._count?.products || 0}
+          </Badge>
+        </TableCell>
+        <TableCell>
+          <div className="flex justify-center">
+            {category.isActive ? (
+              <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20 text-[10px] font-bold uppercase px-2">
+                Activo
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="opacity-50 text-[10px] font-bold uppercase px-2">
+                Inactivo
+              </Badge>
+            )}
+          </div>
+        </TableCell>
+        <TableCell className="text-right">
+          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => setViewingCategoryProducts(category)}
-              title="Ver productos de esta categoría"
+              className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+              title="Ver productos"
             >
               <Package className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => handleEdit(category)}>
-              <Edit className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleEdit(category)}
+              className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+            >
+              <Pencil className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => setDeletingCategory(category)}
+              className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
             >
-              <Trash2 className="h-4 w-4" style={{ color: '#ef4444' }} />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-
-        {hasChildren && isExpanded && (
-          <div>
-            {category.children!.map((child) => renderCategory(child, level + 1))}
-          </div>
-        )}
-      </div>
+        </TableCell>
+      </TableRow>
     )
-  }
 
-  const topLevelCategories = categories.filter((c) => !c.parentId)
+    if (hasChildren) {
+      category.children!.forEach((child) => {
+        rows.push(...renderCategoryRows(child, level + 1))
+      })
+    }
+
+    return rows
+  }
 
   if (isLoading) {
     return (
       <LoadingPage
-        title="Cargando categorías"
-        description="Obteniendo lista de categorías..."
-        icon={<FolderTree className="h-8 w-8 text-gray-600" />}
+        title="Cargando Estructura"
+        description="Sincronizando el árbol de categorías..."
+        icon={<FolderTree className="h-8 w-8 text-primary animate-pulse" />}
       />
     )
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="p-4 md:p-8 space-y-6">
+      {/* Professional Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-border/40 pb-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Categorías</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Organiza tus productos en categorías jerárquicas
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Gestión de Categorías
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Administre la jerarquía de productos y la organización del catálogo.
           </p>
         </div>
-        <Button onClick={handleCreate}>
-          <Plus className="mr-2 h-4 w-4" />
-          Agregar Categoría
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={loadCategories} className="h-10 rounded-xl font-medium">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Actualizar
+          </Button>
+          <Button onClick={handleCreate} className="h-10 rounded-xl px-6 font-bold shadow-sm active:scale-95 transition-all">
+            <Plus className="mr-2 h-4 w-4" />
+            Nueva Categoría
+          </Button>
+        </div>
       </div>
 
-      {categories.length === 0 ? (
-        <Card style={{ borderColor: 'var(--color-primary)' }}>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <FolderTree className="h-16 w-16 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No hay categorías aún</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Crea categorías para organizar tus productos
-            </p>
-            <Button onClick={handleCreate}>
-              <Plus className="mr-2 h-4 w-4" />
-              Crear Categoría
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card style={{ borderColor: 'var(--color-primary)' }}>
-          <CardHeader>
-            <CardTitle>Todas las Categorías ({categories.length})</CardTitle>
-            <CardDescription>
-              Haz clic en las flechas para expandir/contraer subcategorías
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            {topLevelCategories.map((category) => renderCategory(category))}
-          </CardContent>
-        </Card>
-      )}
+      {/* Analytical Tiles (Serious Style) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Total Categorías</p>
+          <p className="text-2xl font-bold">{categories.length}</p>
+        </div>
+        <div className="p-4 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Ramas Principales</p>
+          <p className="text-2xl font-bold text-primary">{topLevelCategories.length}</p>
+        </div>
+        <div className="p-4 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Productos Asignados</p>
+          <p className="text-2xl font-bold">
+            {categories.reduce((sum, c) => sum + (c._count?.products || 0), 0)}
+          </p>
+        </div>
+      </div>
+
+      {/* Main Content Area: Table */}
+      <Card className="border-border/40 shadow-sm overflow-hidden bg-card/50 backdrop-blur-sm">
+        <CardHeader className="bg-muted/30 border-b border-border/40 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <FolderTree className="h-4 w-4" />
+              Catálogo Jerárquico
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {categories.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <FolderTree className="h-12 w-12 text-muted-foreground/30 mb-4" />
+              <p className="text-muted-foreground font-medium">No hay categorías configuradas.</p>
+              <Button variant="link" onClick={handleCreate} className="mt-2 text-primary font-bold">
+                Crear la primera ahora
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader className="bg-muted/20">
+                <TableRow className="border-border/40 hover:bg-transparent">
+                  <TableHead className="py-4">Nombre de Categoría</TableHead>
+                  <TableHead>Descripción</TableHead>
+                  <TableHead className="text-center">Productos</TableHead>
+                  <TableHead className="text-center">Estado</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {topLevelCategories.map((category) => renderCategoryRows(category))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       <CategoryForm
         isOpen={formOpen}
@@ -254,20 +316,26 @@ export default function CategoriesPage() {
 
       <AlertDialog
         open={!!deletingCategory}
-        onOpenChange={(open) => !open && setDeletingCategory(null)}
+        onOpenChange={(open: boolean) => !open && setDeletingCategory(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl border-border/50 shadow-2xl p-6">
           <AlertDialogHeader>
-            <AlertDialogTitle>Eliminar Categoría</AlertDialogTitle>
-            <AlertDialogDescription>
-              ¿Estás seguro de que deseas eliminar &quot;{deletingCategory?.name}&quot;? Esta acción
-              no se puede deshacer.
+            <AlertDialogTitle className="text-xl font-bold">Confirmar Eliminación</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm pt-2">
+              ¿Está seguro que desea eliminar la categoría <span className="font-bold text-foreground">"{deletingCategory?.name}"</span>?
+              <div className="mt-4 p-3 bg-destructive/5 text-destructive rounded-xl border border-destructive/10 text-xs font-medium flex gap-2">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                Esta acción es irreversible y afectará la organización de los productos vinculados.
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Eliminar
+          <AlertDialogFooter className="mt-6 gap-2">
+            <AlertDialogCancel className="h-10 rounded-xl font-medium">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="h-10 rounded-xl font-bold bg-destructive hover:bg-destructive/90 text-white"
+            >
+              Eliminar Permanentemente
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -283,3 +351,4 @@ export default function CategoriesPage() {
     </div>
   )
 }
+

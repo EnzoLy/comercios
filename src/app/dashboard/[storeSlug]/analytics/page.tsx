@@ -135,7 +135,10 @@ export default function AnalyticsHub() {
       </div>
 
       {/* Date Range Selector */}
-      <DateRangeSelector startDate={startDate} endDate={endDate} onDateChange={handleDateChange} />
+      <div className="flex justify-center">
+        <DateRangeSelector startDate={startDate} endDate={endDate} onDateChange={handleDateChange} />
+      </div>
+
 
       {/* Summary Metrics */}
       {isLoading ? (

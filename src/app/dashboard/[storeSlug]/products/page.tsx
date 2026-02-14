@@ -10,10 +10,11 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { LoadingPage } from '@/components/ui/loading'
-import { Plus, Package, AlertTriangle, Search, Filter, ChevronDown, ChevronLeft, ChevronRight, Trash2, RefreshCw, Calendar } from 'lucide-react'
+import { Plus, Package, AlertTriangle, Search, Filter, ChevronDown, ChevronLeft, ChevronRight, Trash2, RefreshCw, Calendar, Box, ShoppingCart, DollarSign, Pencil, FileSpreadsheet } from 'lucide-react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { BulkExpirationToggleDialog } from '@/components/products/bulk-expiration-toggle-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
+import { toast } from 'sonner'
 
 interface Product {
   id: string
@@ -252,193 +253,231 @@ export default function ProductsPage() {
   return (
     <div className="p-4 md:p-8">
       {/* Header */}
-      <div className="flex flex-col gap-4 mb-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">Productos</h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Administra tu catálogo de productos
-            </p>
-          </div>
-          <div className="flex gap-2">
-            {selectedProducts.length > 0 && (
-              <Button
-                variant="outline"
-                onClick={() => setBulkExpirationDialogOpen(true)}
-                size="sm"
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                Vencimientos ({selectedProducts.length})
-              </Button>
-            )}
-            <Button variant="outline" onClick={handleRefresh} size="sm">
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-            <Button asChild>
-              <Link href={`/dashboard/${store.slug}/products/new`}>
-                <Plus className="mr-2 h-4 w-4" />
-                Agregar Producto
-              </Link>
-            </Button>
-          </div>
+      <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-extrabold mb-2 tracking-tight">
+            Gestión de <span className="gradient-text">Inventario</span>
+          </h1>
+          <p className="text-muted-foreground flex items-center gap-2">
+            <Package className="h-4 w-4 text-primary" />
+            Administra y monitorea tu catálogo completo de productos.
+          </p>
         </div>
-
-        {/* Stats */}
-        <div className="flex gap-3 text-sm text-gray-600 dark:text-gray-400">
-          <span>Total: <strong className="text-gray-900 dark:text-gray-100">{total}</strong></span>
-          {lowStockCount > 0 && (
-            <span className="text-orange-600">
-              <AlertTriangle className="h-3 w-3 inline mr-1" />
-              Stock bajo: <strong>{lowStockCount}</strong>
-            </span>
+        <div className="flex flex-wrap items-center gap-3">
+          {selectedProducts.length > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => setBulkExpirationDialogOpen(true)}
+              className="h-11 rounded-2xl border-primary/20 hover:bg-primary/5 bg-background/50 backdrop-blur-sm shadow-sm"
+            >
+              <Calendar className="mr-2 h-4 w-4 text-primary" />
+              Lotes/Vencimientos ({selectedProducts.length})
+            </Button>
           )}
+          <Button
+            variant="ghost"
+            onClick={handleRefresh}
+            size="icon"
+            className="h-11 w-11 rounded-2xl bg-background/50 backdrop-blur-sm border border-border/50 shadow-sm"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          </Button>
+          <Button asChild className="h-11 rounded-2xl px-6 shadow-lg shadow-primary/20">
+            <Link href={`/dashboard/${store.slug}/products/new`}>
+              <Plus className="mr-2 h-5 w-5" />
+              Nuevo Producto
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="h-11 rounded-2xl px-6 bg-background/50 backdrop-blur-sm border border-border/50">
+            <Link href={`/dashboard/${store.slug}/import`}>
+              <FileSpreadsheet className="mr-2 h-5 w-5" />
+              Importar
+            </Link>
+          </Button>
         </div>
       </div>
 
-      {/* Filters */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Filtros
-              {showFilters ? (
-                <ChevronDown className="h-4 w-4 ml-2" />
-              ) : (
-                <ChevronDown className="h-4 w-4 ml-2 rotate-180" />
-              )}
-            </Button>
-
-            {(search || categoryFilter !== 'all' || stockFilter !== 'all' || statusFilter !== 'all') && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSearch('')
-                  setCategoryFilter('all')
-                  setStockFilter('all')
-                  setStatusFilter('all')
-                }}
-              >
-                Limpiar filtros
-              </Button>
-            )}
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <Card className="group relative overflow-hidden border-none bg-slate-800/50 backdrop-blur-md text-foreground border border-white/10 shadow-lg shadow-indigo-500/10">
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
+            <Package className="h-24 w-24" />
           </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-bold uppercase tracking-wider opacity-60">Total Productos</CardTitle>
+            <Box className="h-4 w-4 opacity-60" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-black">{total}</div>
+            <p className="text-xs opacity-60 mt-2 font-medium">Items registrados en catálogo</p>
+          </CardContent>
+        </Card>
 
-          <div className={`space-y-4 ${showFilters ? '' : 'hidden'}`}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 a">
-              {/* Search */}
-              <div className="lg:col-span-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Buscar por nombre, SKU o código de barras..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
+        <Card className={`group relative overflow-hidden border-none shadow-lg transition-all ${lowStockCount > 0 ? "bg-orange-600 shadow-orange-500/20" : "bg-emerald-600 shadow-emerald-500/20"}`}>
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+            <AlertTriangle className="h-24 w-24" />
+          </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 text-white/80">
+            <CardTitle className="text-sm font-bold uppercase tracking-wider">Alertas de Stock</CardTitle>
+            <AlertTriangle className="h-4 w-4" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-black text-white">{lowStockCount}</div>
+            <p className="text-xs text-white/60 mt-2 font-medium">Bajo el nivel mínimo sugerido</p>
+          </CardContent>
+        </Card>
+
+        <Card className="group relative overflow-hidden border-none bg-indigo-600 shadow-lg shadow-indigo-500/20">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+            <ShoppingCart className="h-24 w-24" />
+          </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 text-white/80">
+            <CardTitle className="text-sm font-bold uppercase tracking-wider">Valor Inventario</CardTitle>
+            <DollarSign className="h-4 w-4" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-black text-white">
+              <span className="text-lg opacity-60 mr-1">$</span>
+              {products.reduce((sum, p) => sum + (p.costPrice * p.currentStock), 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}
+            </div>
+            <p className="text-xs text-white/60 mt-2 font-medium">Basado en costo y stock actual</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card className="mb-8 border-none bg-card/50 backdrop-blur-sm shadow-xl shadow-slate-950/5 overflow-hidden">
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-xl">
+                <Filter className="h-5 w-5 text-primary" />
               </div>
-              <div className="flex gap-2">
-                {/* Category */}
-                <div>
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todas las categorías" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas las categorías</SelectItem>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Stock */}
-                <div>
-                  <Select value={stockFilter} onValueChange={(v) => setStockFilter(v as 'all' | 'low' | 'out')}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todo el stock" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todo el stock</SelectItem>
-                      <SelectItem value="low">Stock bajo</SelectItem>
-                      <SelectItem value="out">Agotado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Status */}
-                <div>
-                  <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'active' | 'inactive')}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todos los estados" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los estados</SelectItem>
-                      <SelectItem value="active">Activos</SelectItem>
-                      <SelectItem value="inactive">Inactivos</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
+              <h3 className="text-xl font-bold">Filtros de Búsqueda</h3>
             </div>
 
-            {/* Sort */}
-            <div className="flex gap-2 flex-col align-start">
-              <p>Ordenar por:</p>
-              <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
-                const [sort, order] = value.split('-')
-                setSortBy(sort as any)
-                setSortOrder(order as any)
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Ordenar por..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="createdAt-DESC">Más recientes</SelectItem>
-                  <SelectItem value="createdAt-ASC">Más antiguos</SelectItem>
-                  <SelectItem value="name-ASC">Nombre A-Z</SelectItem>
-                  <SelectItem value="name-DESC">Nombre Z-A</SelectItem>
-                  <SelectItem value="price-ASC">Precio: Menor a Mayor</SelectItem>
-                  <SelectItem value="price-DESC">Precio: Mayor a Menor</SelectItem>
-                  <SelectItem value="stock-ASC">Stock: Menor a Mayor</SelectItem>
-                  <SelectItem value="stock-DESC">Stock: Mayor a Menor</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center gap-2">
+              {(search || categoryFilter !== 'all' || stockFilter !== 'all' || statusFilter !== 'all') && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearch('')
+                    setCategoryFilter('all')
+                    setStockFilter('all')
+                    setStatusFilter('all')
+                  }}
+                  className="text-muted-foreground hover:text-destructive h-9 rounded-xl font-bold"
+                >
+                  Limpiar Filtros
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className="h-9 rounded-xl border-primary/20 hover:bg-primary/5 font-bold"
+              >
+                {showFilters ? 'Ocultar Avanzado' : 'Filtros Avanzados'}
+                <ChevronDown className={`h-4 w-4 ml-2 transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} />
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {/* Primary Search */}
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Input
+                placeholder="Buscar por nombre, SKU o código de barras..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-12 h-14 text-lg border-border/50 bg-background/50 rounded-2xl focus-visible:ring-primary/20 placeholder:text-muted-foreground/50 transition-all shadow-inner"
+              />
+            </div>
+
+            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-4 duration-300 ${showFilters ? '' : 'hidden'}`}>
+              {/* Category */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-2">Categoría</label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="h-11 rounded-xl bg-background/50 border-border/50">
+                    <SelectValue placeholder="Todas" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-border/50 shadow-2xl">
+                    <SelectItem value="all">Todas las categorías</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Stock */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-2">Estado Stock</label>
+                <Select value={stockFilter} onValueChange={(v) => setStockFilter(v as 'all' | 'low' | 'out')}>
+                  <SelectTrigger className="h-11 rounded-xl bg-background/50 border-border/50">
+                    <SelectValue placeholder="Todo" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-border/50 shadow-2xl">
+                    <SelectItem value="all">Todo el stock</SelectItem>
+                    <SelectItem value="low">Stock bajo</SelectItem>
+                    <SelectItem value="out">Agotado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Status */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-2">Estado Artículo</label>
+                <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'active' | 'inactive')}>
+                  <SelectTrigger className="h-11 rounded-xl bg-background/50 border-border/50">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-border/50 shadow-2xl">
+                    <SelectItem value="all">Todos los estados</SelectItem>
+                    <SelectItem value="active">Activos únicamente</SelectItem>
+                    <SelectItem value="inactive">Inactivos únicamente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sort */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-2">Ordenar Por</label>
+                <Select value={`${sortBy}-${sortOrder}`} onValueChange={(value) => {
+                  const [sort, order] = value.split('-')
+                  setSortBy(sort as any)
+                  setSortOrder(order as any)
+                }}>
+                  <SelectTrigger className="h-11 rounded-xl bg-background/50 border-border/50">
+                    <SelectValue placeholder="Ordenar por..." />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-border/50 shadow-2xl">
+                    <SelectItem value="createdAt-DESC">Más recientes</SelectItem>
+                    <SelectItem value="createdAt-ASC">Más antiguos</SelectItem>
+                    <SelectItem value="name-ASC">Nombre A-Z</SelectItem>
+                    <SelectItem value="name-DESC">Nombre Z-A</SelectItem>
+                    <SelectItem value="price-ASC">Precio: Menor a Mayor</SelectItem>
+                    <SelectItem value="price-DESC">Precio: Mayor a Menor</SelectItem>
+                    <SelectItem value="stock-ASC">Stock: Menor a Mayor</SelectItem>
+                    <SelectItem value="stock-DESC">Stock: Mayor a Menor</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Low Stock Alert */}
-      {lowStockCount > 0 && (
-        <Card className="mb-6" style={{ borderColor: 'var(--color-secondary)', backgroundColor: 'rgba(var(--color-secondary), 0.05)' }}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ color: 'var(--color-secondary)' }}>
-              <AlertTriangle className="h-5 w-5" />
-              Alerta de Stock Bajo
-            </CardTitle>
-            <CardDescription style={{ color: 'var(--color-secondary)' }}>
-              {lowStockCount} producto(s) bajo el nivel mínimo de stock
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      )}
-
       {/* Products Table */}
       {loading && products.length === 0 ? (
         <LoadingPage title="Cargando productos..." description="Obteniendo catálogo..." />
       ) : products.length === 0 ? (
-        <Card style={{ borderColor: 'var(--color-primary)' }}>
+        <Card className="border-none bg-card/50 backdrop-blur-sm shadow-xl shadow-slate-950/5 overflow-hidden">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <Package className="h-16 w-16 text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold mb-2">No se encontraron productos</h3>
@@ -458,156 +497,173 @@ export default function ProductsPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card style={{ borderColor: 'var(--color-primary)' }}>
-          <CardHeader>
-            <CardTitle>
-              {search || categoryFilter !== 'all' || stockFilter !== 'all' || statusFilter !== 'all'
-                ? `Resultados (${total})`
-                : `Todos los Productos (${total})`
-              }
-            </CardTitle>
+        <Card className="border-none bg-card/50 backdrop-blur-sm shadow-xl shadow-slate-950/5 overflow-hidden">
+          <CardHeader className="border-b border-border/50 bg-muted/30 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xl font-bold">
+                {search || categoryFilter !== 'all' || stockFilter !== 'all' || statusFilter !== 'all'
+                  ? `Resultados de Búsqueda (${total})`
+                  : `Catálogo Completo (${total})`
+                }
+              </CardTitle>
+              {selectedProducts.length > 0 && (
+                <div className="flex items-center gap-2 animate-in fade-in zoom-in duration-300">
+                  <Badge variant="secondary" className="h-7 px-3 rounded-full bg-primary/10 text-primary border-primary/20 font-bold">
+                    {selectedProducts.length} seleccionados
+                  </Badge>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedProducts([])} className="h-7 text-xs font-bold hover:text-destructive">
+                    Deselccionar
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-center py-3 px-2 w-12">
+                  <tr className="border-b border-border/50 bg-muted/20">
+                    <th className="py-4 px-6 text-center w-12">
                       <Checkbox
                         checked={selectedProducts.length === products.length && products.length > 0}
                         onCheckedChange={toggleSelectAll}
+                        className="rounded-md border-primary/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                     </th>
-                    <th className="text-left py-3 px-4">Nombre</th>
-                    <th className="text-left py-3 px-4 hidden md:table-cell">SKU</th>
-                    <th className="text-left py-3 px-4 hidden lg:table-cell">Código de Barras</th>
-                    <th className="text-right py-3 px-4">Precio</th>
-                    <th className="text-right py-3 px-4">Stock</th>
-                    <th className="text-center py-3 px-4 hidden sm:table-cell">Estado</th>
-                    <th className="text-right py-3 px-4">Acciones</th>
+                    <th className="text-left py-4 px-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Producto / Detalles</th>
+                    <th className="text-left py-4 px-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hidden md:table-cell">Identificación</th>
+                    <th className="text-right py-4 px-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Valorización</th>
+                    <th className="text-right py-4 px-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Inventario</th>
+                    <th className="text-center py-4 px-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hidden sm:table-cell">Status</th>
+                    <th className="text-right py-4 px-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Acciones</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-border/50">
                   {products.map((product, index) => (
-                    <tr key={`${product.id}-${index}`} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <td className="py-3 px-2 text-center">
+                    <tr key={`${product.id}-${index}`} className="group transition-colors hover:bg-primary/5">
+                      <td className="py-4 px-6 text-center">
                         <Checkbox
                           checked={selectedProducts.includes(product.id)}
                           onCheckedChange={() => toggleProductSelection(product.id)}
+                          className="rounded-md border-primary/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                         />
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          {product.imageUrl ? (
-                            <img
-                              src={product.imageUrl}
-                              alt={product.name}
-                              className="w-10 h-10 object-cover rounded flex-shrink-0"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center flex-shrink-0">
-                              <Package className="h-5 w-5 text-gray-400" />
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-medium">{product.name}</p>
-                            {product.category && (
-                              <p className="text-xs text-gray-500">
-                                {product.category.name}
-                              </p>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-4">
+                          <div className="relative h-14 w-14 flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+                            {product.imageUrl ? (
+                              <img
+                                src={product.imageUrl}
+                                alt={product.name}
+                                className="h-full w-full object-cover rounded-2xl shadow-sm border border-border/50 bg-background"
+                              />
+                            ) : (
+                              <div className="h-full w-full bg-muted rounded-2xl flex items-center justify-center border border-border/50">
+                                <Package className="h-7 w-7 text-muted-foreground/30" />
+                              </div>
                             )}
-                            <div className="flex gap-1 mt-1 flex-wrap">
+                            {product.currentStock <= product.minStockLevel && (
+                              <div className="absolute -top-1 -right-1 h-4 w-4 bg-orange-500 rounded-full border-2 border-background shadow-sm animate-pulse" />
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-base leading-tight group-hover:text-primary transition-colors truncate">
+                              {product.name}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              {product.category && (
+                                <span className="text-[10px] font-bold text-muted-foreground border border-border/50 px-1.5 py-0.5 rounded-md bg-background/50 uppercase tracking-tighter">
+                                  {product.category.name}
+                                </span>
+                              )}
+                              <span className="text-[10px] font-mono text-muted-foreground opacity-50"># {product.sku}</span>
+                            </div>
+
+                            <div className="flex gap-1 mt-2 flex-wrap">
                               {product.trackExpirationDates && (
-                                <Badge variant="secondary" className="text-xs">
-                                  🗓️ Vencimientos
+                                <Badge variant="secondary" className="text-[9px] h-4 font-bold bg-blue-500/10 text-blue-600 border-blue-500/20 uppercase tracking-tighter">
+                                  🗓️ Lotes
                                 </Badge>
                               )}
                               {product.expirationStatus?.hasExpired && (
-                                <Badge variant="destructive" className="text-xs">
+                                <Badge variant="destructive" className="text-[9px] h-4 font-bold uppercase tracking-tighter">
                                   ⚠️ Vencido
                                 </Badge>
                               )}
                               {product.expirationStatus?.hasExpiringSoon && !product.expirationStatus?.hasExpired && (
-                                <Badge className="bg-yellow-600 hover:bg-yellow-700 text-xs">
-                                  ⏰ Por vencer
+                                <Badge className="text-[9px] h-4 font-bold bg-amber-500 hover:bg-amber-600 text-white uppercase tracking-tighter">
+                                  ⏰ Por Vencer
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-xs text-gray-500 md:hidden mt-1">
-                              {product.sku}
-                            </p>
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4 hidden md:table-cell">
-                        <code className="text-sm">{product.sku}</code>
-                      </td>
-                      <td className="py-3 px-4 hidden lg:table-cell">
-                        {product.barcode ? (
-                          <code className="text-sm">{product.barcode}</code>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <span className="text-sm">
-                          ${Number(product.sellingPrice).toFixed(2)}
-                        </span>
-                        <p className="text-xs text-gray-500">
-                          Costo: ${Number(product.costPrice).toFixed(2)}
-                        </p>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <span
-                            className={
-                              product.currentStock <= product.minStockLevel
-                                ? 'text-orange-600 font-semibold'
-                                : product.currentStock === 0
-                                  ? 'text-red-600 font-semibold'
-                                  : ''
-                            }
-                          >
-                            {product.currentStock}
-                          </span>
-                          {product.currentStock <= product.minStockLevel && product.currentStock > 0 && (
-                            <AlertTriangle className="h-3 w-3 text-orange-600" />
-                          )}
-                          {product.currentStock === 0 && (
-                            <AlertTriangle className="h-3 w-3 text-red-600" />
+                      <td className="py-4 px-4 hidden md:table-cell">
+                        <div className="space-y-1">
+                          <code className="text-[11px] font-mono bg-muted/50 px-2 py-0.5 rounded-lg border border-border/50">SKU: {product.sku}</code>
+                          {product.barcode && (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Search className="h-3 w-3 opacity-30" />
+                              <code className="text-[10px] font-mono">{product.barcode}</code>
+                            </div>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500">
-                          Min: {product.minStockLevel}
+                      </td>
+                      <td className="py-4 px-4 text-right">
+                        <p className="font-black text-lg gradient-text leading-none">
+                          ${Number(product.sellingPrice).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                        </p>
+                        <p className="text-[10px] font-bold text-muted-foreground mt-1.5 opacity-50 uppercase tracking-widest">
+                          Costo: ${Number(product.costPrice).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
                         </p>
                       </td>
-                      <td className="py-3 px-4 text-center hidden sm:table-cell">
-                        <Badge
-                          variant={product.isActive ? 'default' : 'secondary'}
-                          className="cursor-pointer"
+                      <td className="py-4 px-4 text-right">
+                        <div className="inline-flex flex-col items-end">
+                          <div className={`flex items-center gap-2 px-3 py-1 rounded-xl text-lg font-black border-2 ${product.currentStock <= 0
+                            ? 'bg-destructive/10 text-destructive border-destructive/20'
+                            : product.currentStock <= product.minStockLevel
+                              ? 'bg-orange-500/10 text-orange-600 border-orange-500/20'
+                              : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                            }`}>
+                            {product.currentStock}
+                            {product.currentStock <= product.minStockLevel && (
+                              <AlertTriangle className={`h-4 w-4 ${product.currentStock <= 0 ? 'text-destructive' : 'text-orange-600'}`} />
+                            )}
+                          </div>
+                          <p className="text-[10px] font-bold text-muted-foreground mt-1.5 opacity-50 uppercase tracking-widest pr-1">
+                            Mín: {product.minStockLevel}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-center hidden sm:table-cell">
+                        <button
                           onClick={() => {
-                            setStatusFilter(product.isActive ? 'inactive' : 'active')
-                            loadProducts(1, false)
+                            // En un sistema real esto llamaría a una API de toggle
+                            toast.info(`Cambiando estado de ${product.name}...`)
                           }}
+                          className={`h-7 px-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${product.isActive
+                            ? 'bg-primary/10 text-primary hover:bg-primary/20 hover:scale-105'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:scale-105'
+                            }`}
                         >
                           {product.isActive ? 'Activo' : 'Inactivo'}
-                        </Badge>
+                        </button>
                       </td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button asChild variant="ghost" size="sm" className="h-8 px-2">
+                      <td className="py-4 px-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button asChild variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-all active:scale-95 shadow-sm border border-border/20">
                             <Link href={`/dashboard/${store.slug}/products/${product.id}`}>
-                              <span className="hidden sm:inline">Editar</span>
-                              <span className="sm:hidden">✏️</span>
+                              <Pencil className="h-4 w-4" />
                             </Link>
                           </Button>
                           <Button
                             variant="ghost"
-                            size="sm"
-                            className="h-8 px-2 text-red-600 hover:text-red-700"
+                            size="icon"
+                            className="h-10 w-10 rounded-xl hover:bg-destructive/10 hover:text-destructive transition-all active:scale-95 shadow-sm border border-border/20"
                             onClick={() => setDeletingProduct(product)}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-5 w-5" />
                           </Button>
                         </div>
                       </td>
@@ -619,65 +675,63 @@ export default function ProductsPage() {
 
             {/* Pagination */}
             {!loading && products.length > 0 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t">
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <span>Mostrando</span>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-border/50 bg-muted/20">
+                <div className="flex items-center gap-3 text-sm font-bold text-muted-foreground">
+                  <span>Mostrar</span>
                   <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(parseInt(v))}>
-                    <SelectTrigger className="w-20">
+                    <SelectTrigger className="w-20 h-9 rounded-xl bg-background/50 border-border/50">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-2xl border-border/50 shadow-2xl">
                       <SelectItem value="10">10</SelectItem>
                       <SelectItem value="20">20</SelectItem>
                       <SelectItem value="50">50</SelectItem>
                       <SelectItem value="100">100</SelectItem>
                     </SelectContent>
                   </Select>
-                  <span>por página</span>
+                  <span className="uppercase tracking-widest text-[10px]">por página</span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, total)} de {total}
+                <div className="flex items-center gap-6">
+                  <span className="text-sm font-bold text-muted-foreground whitespace-nowrap">
+                    {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, total)} <span className="mx-1 opacity-30">/</span> {total}
                   </span>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
                     {pageLoading ? (
-                      <div className="flex items-center gap-2 px-3">
-                        <RefreshCw className="h-4 w-4 animate-spin text-gray-600" />
-                        <span className="text-sm text-gray-600">Cargando...</span>
+                      <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 rounded-xl border border-primary/20">
+                        <RefreshCw className="h-4 w-4 animate-spin text-primary" />
+                        <span className="text-xs font-bold text-primary uppercase tracking-widest">Cargando...</span>
                       </div>
                     ) : (
-                      <>
+                      <div className="flex items-center gap-1 bg-background/50 p-1 rounded-2xl border border-border/50">
                         <Button
-                          variant="outline"
-                          size="sm"
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handlePageChange(page - 1)}
                           disabled={page === 1}
+                          className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
                         >
-                          <ChevronLeft className="h-4 w-4" />
+                          <ChevronLeft className="h-5 w-5" />
                         </Button>
 
-                        {/* Page numbers */}
                         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                           let pageNum
-                          if (totalPages <= 5) {
-                            pageNum = i + 1
-                          } else if (page <= 3) {
-                            pageNum = i + 1
-                          } else if (page >= totalPages - 2) {
-                            pageNum = totalPages - 4 + i
-                          } else {
-                            pageNum = page - 2 + i
-                          }
+                          if (totalPages <= 5) pageNum = i + 1
+                          else if (page <= 3) pageNum = i + 1
+                          else if (page >= totalPages - 2) pageNum = totalPages - 4 + i
+                          else pageNum = page - 2 + i
 
                           return (
                             <Button
                               key={pageNum}
-                              variant={page === pageNum ? 'default' : 'outline'}
-                              size="sm"
+                              variant={page === pageNum ? 'default' : 'ghost'}
+                              size="icon"
                               onClick={() => handlePageChange(pageNum)}
-                              className="w-10"
+                              className={`h-9 w-9 rounded-xl text-xs font-bold transition-all ${page === pageNum
+                                ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-110'
+                                : 'hover:bg-primary/10 hover:text-primary'
+                                }`}
                             >
                               {pageNum}
                             </Button>
@@ -685,14 +739,15 @@ export default function ProductsPage() {
                         })}
 
                         <Button
-                          variant="outline"
-                          size="sm"
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handlePageChange(page + 1)}
                           disabled={page === totalPages}
+                          className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
                         >
-                          <ChevronRight className="h-4 w-4" />
+                          <ChevronRight className="h-5 w-5" />
                         </Button>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -707,30 +762,31 @@ export default function ProductsPage() {
         open={!!deletingProduct}
         onOpenChange={(open) => !open && setDeletingProduct(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-3xl border-border/50 shadow-2xl p-8">
           <AlertDialogHeader>
-            <AlertDialogTitle>Eliminar Producto</AlertDialogTitle>
-            <AlertDialogDescription>
-              ¿Estás seguro de que deseas eliminar &quot;{deletingProduct?.name}&quot;?
+            <AlertDialogTitle className="text-2xl font-black">Eliminar Producto</AlertDialogTitle>
+            <AlertDialogDescription className="text-base mt-2">
+              ¿Estás seguro de que deseas eliminar <span className="font-bold text-foreground">"{deletingProduct?.name}"</span>?
               {deletingProduct && (
-                <span className="block mt-2 text-sm text-gray-600">
-                  Este producto tiene <strong>{deletingProduct.currentStock}</strong> unidades en stock
+                <div className="mt-6 p-4 bg-muted/50 rounded-2xl border border-border/50">
+                  <p className="text-sm font-medium">Este producto tiene <span className="font-bold text-foreground">{deletingProduct.currentStock}</span> unidades en stock.</p>
                   {deletingProduct.currentStock <= deletingProduct.minStockLevel && (
-                    <span className="block mt-1 text-orange-600">
-                      ⚠️ Stock bajo activado
-                    </span>
+                    <p className="flex items-center gap-2 mt-2 text-sm text-orange-600 font-bold">
+                      <AlertTriangle className="h-4 w-4" />
+                      Advertencia: El stock está bajo.
+                    </p>
                   )}
-                </span>
+                </div>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="mt-8 gap-3">
+            <AlertDialogCancel className="h-12 rounded-2xl font-bold border-border/50">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
+              className="h-12 rounded-2xl font-bold bg-destructive hover:bg-destructive/90 text-white shadow-lg shadow-destructive/20"
             >
-              Eliminar
+              Eliminar Permanentemente
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

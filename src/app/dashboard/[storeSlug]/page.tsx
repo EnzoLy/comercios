@@ -4,8 +4,12 @@ import { getDataSource } from '@/lib/db'
 import { Sale, SaleStatus } from '@/lib/db/entities/sale.entity'
 import { Product } from '@/lib/db/entities/product.entity'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { DollarSign, ShoppingCart, Package, AlertTriangle } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { DollarSign, ShoppingCart, Package, AlertTriangle, Calendar } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { SalesChart } from '@/components/dashboard/sales-chart'
+
 import { TopProducts } from '@/components/dashboard/top-products'
 import { StockAlertsWidget } from '@/components/dashboard/stock-alerts-widget'
 import { PriceAlertsWidget } from '@/components/suppliers/price-alerts-widget'
@@ -124,84 +128,110 @@ export default async function StoreDashboard({
 
   return (
     <div className="p-4 md:p-8">
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">Panel de Control</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          ¡Bienvenido! Esto es lo que está pasando con tu tienda.
-        </p>
+      <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-extrabold mb-2 tracking-tight">
+            Panel de <span className="gradient-text">Control</span>
+          </h1>
+          <p className="text-muted-foreground flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            ¡Bienvenido! Esto es lo que está pasando con tu tienda hoy.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-4 py-2 rounded-xl backdrop-blur-sm">
+          <Calendar className="h-4 w-4" />
+          {new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
-        {/* Ingresos de Hoy - Links to Sales */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Ingresos de Hoy */}
         <Link href={`/dashboard/${storeSlug}/sales`}>
-          <Card className="cursor-pointer transition-all hover:shadow-lg" style={{ borderColor: 'var(--color-primary)' }}>
+          <Card className="group relative overflow-hidden border-none gradient-bg text-white shadow-primary/20">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+              <DollarSign className="h-24 w-24" />
+            </div>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-white/80">
                 Ingresos de Hoy
               </CardTitle>
-              <DollarSign className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />
+              <DollarSign className="h-4 w-4 text-white/80" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${todayRevenue.toFixed(2)}</div>
-              <p className="text-xs text-gray-500 mt-1">
-                {todaySales.length} transacciones
+              <div className="text-3xl font-black">${todayRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</div>
+              <p className="text-xs text-white/60 mt-2 font-medium flex items-center gap-1">
+                <ShoppingCart className="h-3 w-3" />
+                {todaySales.length} transacciones hoy
               </p>
             </CardContent>
           </Card>
         </Link>
 
-        {/* Transacciones - Links to Sales */}
+        {/* Transacciones */}
         <Link href={`/dashboard/${storeSlug}/sales`}>
-          <Card className="cursor-pointer transition-all hover:shadow-lg" style={{ borderColor: 'var(--color-primary)' }}>
+          <Card className="group relative overflow-hidden border-none bg-slate-800/50 backdrop-blur-md text-foreground border border-white/10 shadow-indigo-500/20">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
+              <ShoppingCart className="h-24 w-24" />
+            </div>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <CardTitle className="text-sm font-bold uppercase tracking-wider opacity-60">
                 Transacciones
               </CardTitle>
-              <ShoppingCart className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />
+              <ShoppingCart className="h-4 w-4 opacity-60" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{todaySales.length}</div>
-              <p className="text-xs text-gray-500 mt-1">Hoy</p>
+              <div className="text-3xl font-black">{todaySales.length}</div>
+              <p className="text-xs opacity-60 mt-2 font-medium">Ventas realizadas hoy</p>
             </CardContent>
           </Card>
         </Link>
 
-        {/* Total de Productos - Links to Products */}
+        {/* Total de Productos */}
         <Link href={`/dashboard/${storeSlug}/products`}>
-          <Card className="cursor-pointer transition-all hover:shadow-lg" style={{ borderColor: 'var(--color-primary)' }}>
+          <Card className="group relative overflow-hidden border-none bg-slate-800/50 backdrop-blur-md text-foreground border border-white/10 shadow-slate-950/20">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
+              <Package className="h-24 w-24" />
+            </div>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Total de Productos
+              <CardTitle className="text-sm font-bold uppercase tracking-wider opacity-60">
+                Catálogo
               </CardTitle>
-              <Package className="h-4 w-4" style={{ color: 'var(--color-secondary)' }} />
+              <Package className="h-4 w-4 opacity-60" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalProducts}</div>
-              <p className="text-xs text-gray-500 mt-1">Productos activos</p>
+              <div className="text-3xl font-black">{totalProducts}</div>
+              <p className="text-xs opacity-60 mt-2 font-medium">Productos disponibles</p>
             </CardContent>
           </Card>
         </Link>
 
-        {/* Alertas de Stock Bajo - Links to Inventory */}
+        {/* Alertas de Stock Bajo */}
         <Link href={`/dashboard/${storeSlug}/inventory`}>
-          <Card className="cursor-pointer transition-all hover:shadow-lg" style={{ borderColor: 'var(--color-primary)' }}>
+          <Card className={cn(
+            "group relative overflow-hidden border-none text-white shadow-orange-500/20",
+            lowStockCount > 0 ? "bg-orange-600" : "bg-green-600"
+          )}>
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+              <AlertTriangle className="h-24 w-24" />
+            </div>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Alertas de Stock Bajo
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-white/80">
+                Estado Stock
               </CardTitle>
-              <AlertTriangle className="h-4 w-4" style={{ color: 'var(--color-accent)' }} />
+              <AlertTriangle className="h-4 w-4 text-white/80" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{lowStockCount}</div>
-              <p className="text-xs text-gray-500 mt-1">Productos bajo el mínimo</p>
+              <div className="text-3xl font-black">{lowStockCount}</div>
+              <p className="text-xs text-white/60 mt-2 font-medium">Alertas activas</p>
             </CardContent>
           </Card>
         </Link>
       </div>
 
+
       {/* Sales Chart and Top Products Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="lg:col-span-2">
           <SalesChart data={salesChartData} />
         </div>
@@ -211,46 +241,57 @@ export default async function StoreDashboard({
       </div>
 
       {/* Stock Alerts, Price Alerts, and Recent Sales Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <StockAlertsWidget alerts={lowStockProducts} storeSlug={storeSlug} />
 
-        <Link href={`/dashboard/${storeSlug}/sales`}>
-          <Card style={{ borderColor: 'var(--color-primary)' }} className="cursor-pointer transition-all hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600 h-full">
-            <CardHeader>
-              <CardTitle>Ventas Recientes</CardTitle>
+        <Card className="h-full border-gray-100 dark:border-gray-800">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-xl font-bold">Ventas Recientes</CardTitle>
               <CardDescription>Últimas transacciones de tu tienda</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {recentSales.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">Aún no hay ventas</p>
-              ) : (
-                <div className="space-y-4">
-                  {recentSales.map((sale) => (
-                    <div
-                      key={sale.id}
-                      className="flex items-center justify-between border-b pb-2 last:border-0"
-                    >
+            </div>
+            <Link href={`/dashboard/${storeSlug}/sales`}>
+              <Button variant="outline" size="sm" className="rounded-xl">Ver todas</Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            {recentSales.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                <ShoppingCart className="h-12 w-12 opacity-20 mb-4" />
+                <p>Aún no hay ventas registradas</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentSales.map((sale) => (
+                  <div
+                    key={sale.id}
+                    className="flex items-center justify-between p-4 rounded-xl border border-gray-50 dark:border-gray-900 bg-secondary/5 hover:bg-secondary/10 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 rounded-full bg-primary/10">
+                        <DollarSign className="h-4 w-4 text-primary" />
+                      </div>
                       <div>
-                        <p className="font-medium">${Number(sale.total).toFixed(2)}</p>
-                        <p className="text-sm text-gray-500">
-                          {new Date(sale.createdAt).toLocaleString()}
+                        <p className="font-bold text-lg">${Number(sale.total).toLocaleString('es-ES', { minimumFractionDigits: 2 })}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">{sale.paymentMethod}</p>
-                        <p className="text-xs text-gray-500">{sale.status}</p>
-                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </Link>
+                    <div className="text-right">
+                      <Badge variant="secondary" className="rounded-lg font-bold">{sale.paymentMethod}</Badge>
+                      <p className="text-[10px] uppercase font-bold tracking-tighter text-muted-foreground mt-1">{sale.status}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Price Alerts Widget */}
-      <div className="mb-6 md:mb-8">
+      <div className="mb-8">
         <PriceAlertsWidget storeId={context.storeId} storeSlug={storeSlug} limit={5} />
       </div>
     </div>

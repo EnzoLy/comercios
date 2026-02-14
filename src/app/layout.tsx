@@ -18,6 +18,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Commerce Management System",
   description: "Multi-tenant commerce and inventory management",
+  icons: {
+    icon: "/logo-processed.png",
+    apple: "/logo-processed.png",
+  },
 };
 
 export default function RootLayout({

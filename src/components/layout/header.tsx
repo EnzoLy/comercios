@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -79,7 +80,10 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
     <header className="h-17 border-b bg-white flex items-center justify-between px-4 md:px-6">
       <div className="flex items-center gap-3">
         <MobileSidebar storeSlug={storeSlug} isOwner={isOwner} role={role} />
-        <h1 className="text-lg md:text-xl font-semibold">Sistema de Gestión Comercial</h1>
+        <div className="flex items-center gap-2">
+          <Image src="/logo-processed.png" alt="Logo" width={32} height={32} className="rounded-lg object-cover" />
+          <h1 className="text-lg md:text-xl font-semibold">Sistema de Gestión Comercial</h1>
+        </div>
       </div>
 
       <div className="flex items-center gap-4">

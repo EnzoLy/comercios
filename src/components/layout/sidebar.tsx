@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { usePermission } from '@/hooks/use-permission'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard,
   Package,
@@ -20,8 +22,10 @@ import {
   QrCode,
   Truck,
   ClipboardList,
+  ChevronRight,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
+
 
 interface SidebarProps {
   storeSlug: string
@@ -130,20 +134,21 @@ export function Sidebar({ storeSlug, isOwner, role }: SidebarProps) {
 
   if (!mounted) {
     return (
-      <aside className="hidden md:flex w-64 border-r bg-white flex-col h-screen">
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-2">
-            <Store className="h-5 w-5" />
+      <aside className="hidden md:flex w-64 border-r bg-white/50 backdrop-blur-xl flex-col h-screen">
+        <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+          <div className="flex items-center gap-3">
+            <div className="p-0.5 rounded-xl bg-primary/10 overflow-hidden">
+              <Image src="/logo-processed.png" alt="Logo" width={28} height={28} className="object-cover rounded-lg" />
+            </div>
             <div>
-              <h2 className="font-bold text-sm">{storeSlug}</h2>
-              <p className="text-xs text-gray-500">
+              <h2 className="font-bold text-sm tracking-tight">{storeSlug}</h2>
+              <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400">
                 {isOwner ? 'Propietario' : 'Empleado'}
               </p>
             </div>
           </div>
         </div>
         <div className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {/* Skeleton or empty space to avoid jump */}
           <div className="h-full w-full bg-transparent" />
         </div>
       </aside>
@@ -151,34 +156,39 @@ export function Sidebar({ storeSlug, isOwner, role }: SidebarProps) {
   }
 
   return (
-    <aside className="hidden md:flex w-64 border-r bg-white flex-col h-screen">
-      <div className="p-4 border-b">
-        <Link href="/dashboard/select-store" className="flex items-center gap-2 hover:opacity-80">
-          <Store className="h-5 w-5" />
+    <aside className="hidden md:flex w-64 border-r bg-background/50 backdrop-blur-xl flex-col h-screen sticky top-0">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+        <Link href="/dashboard/select-store" className="group flex items-center gap-3 hover:opacity-100 transition-all">
+          <div className="p-0.5 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors overflow-hidden">
+            <Image src="/logo-processed.png" alt="Logo" width={28} height={28} className="object-cover rounded-lg" />
+          </div>
           <div>
-            <h2 className="font-bold text-sm">{storeSlug}</h2>
-            <p className="text-xs text-gray-500">
+            <h2 className="font-bold text-sm tracking-tight group-hover:text-primary transition-colors">{storeSlug}</h2>
+            <p className="text-[10px] uppercase font-bold tracking-widest text-gray-400">
               {isOwner ? 'Propietario' : 'Empleado'}
             </p>
           </div>
         </Link>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {navItems.map((item) => (
-          <SidebarItem
-            key={item.href}
-            item={item}
-            storeSlug={storeSlug}
-            isOwner={isOwner}
-            pathname={pathname}
-          />
-        ))}
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-hide">
+        <AnimatePresence mode="popLayout">
+          {navItems.map((item, index) => (
+            <SidebarItem
+              key={item.href}
+              item={item}
+              storeSlug={storeSlug}
+              isOwner={isOwner}
+              pathname={pathname}
+              index={index}
+            />
+          ))}
+        </AnimatePresence>
       </nav>
 
-      <div className="p-4 border-t space-y-2">
-        <div className="flex items-center justify-between px-3 py-2">
-          <span className="text-sm text-gray-600">Tema</span>
+      <div className="p-4 border-t border-gray-100 dark:border-gray-800 space-y-2 bg-background/20">
+        <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-secondary/50 backdrop-blur-sm">
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Modo</span>
           <ThemeToggle />
         </div>
       </div>
@@ -191,40 +201,52 @@ function SidebarItem({
   storeSlug,
   isOwner,
   pathname,
+  index,
 }: {
   item: NavItem
   storeSlug: string
   isOwner: boolean
   pathname: string
+  index: number
 }) {
   const hasPermission = usePermission(item.permission as any)
 
-  // Check owner-only restriction
-  if (item.ownerOnly && !isOwner) {
-    return null
-  }
-
-  // Check permissions (some items don't need permission)
-  if (item.permission && !hasPermission) {
-    return null
-  }
+  if (item.ownerOnly && !isOwner) return null
+  if (item.permission && !hasPermission) return null
 
   const isActive = pathname === item.href
   const Icon = item.icon
 
   return (
-    <Link
-      href={item.href}
-      className={cn(
-        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-        isActive
-          ? 'text-white dark:text-white hover:opacity-90'
-          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-      )}
-      style={isActive ? { backgroundColor: 'var(--color-primary)' } : {}}
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.03 }}
     >
-      <Icon className="h-5 w-5" />
-      {item.label}
-    </Link>
+      <Link
+        href={item.href}
+        className={cn(
+          'group relative flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300',
+          isActive
+            ? 'text-white shadow-lg shadow-primary/20 bg-primary'
+            : 'text-gray-500 hover:text-primary hover:bg-primary/5 dark:text-gray-400 dark:hover:text-primary-foreground dark:hover:bg-primary/20'
+        )}
+      >
+        <div className="flex items-center gap-3">
+          <Icon className={cn("h-5 w-5 transition-transform duration-300 group-hover:scale-110", isActive ? "scale-110" : "")} />
+          <span>{item.label}</span>
+        </div>
+        {isActive && (
+          <motion.div
+            layoutId="active-indicator"
+            className="h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+          />
+        )}
+        {!isActive && (
+          <ChevronRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+        )}
+      </Link>
+    </motion.div>
   )
 }
+

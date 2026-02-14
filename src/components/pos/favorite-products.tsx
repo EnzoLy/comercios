@@ -103,54 +103,47 @@ export function FavoriteProducts({
               ))}
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               {favorites.map((favorite) => (
-                <Button
+                <button
                   key={favorite.productId}
-                  variant="outline"
-                  className="w-full h-auto flex-col items-start justify-start p-3 text-left"
+                  className="group relative flex flex-col items-center justify-center p-4 bg-card hover:bg-primary/5 active:scale-95 border border-border/50 hover:border-primary/50 rounded-2xl transition-all shadow-sm hover:shadow-md h-full aspect-square disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
                   onClick={() => handleAddToCart(favorite)}
                   disabled={favorite.currentStock === 0}
                 >
-                  <div className="w-full flex items-center gap-3">
-                    {favorite.imageUrl ? (
-                      <img
-                        src={favorite.imageUrl}
-                        alt={favorite.name}
-                        className="w-12 h-12 object-cover rounded flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center flex-shrink-0">
-                        <Package className="h-6 w-6 text-gray-400" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0 flex justify-between items-start gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">
-                          {favorite.name}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">
-                          {favorite.sku}
-                        </p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="font-semibold text-sm">
-                          {formatCurrency(favorite.price)}
-                        </p>
-                        <p
-                          className={`text-xs ${favorite.currentStock > 0
-                            ? 'text-green-600'
-                            : 'text-red-500'
-                            }`}
-                        >
-                          {favorite.currentStock > 0
-                            ? `Stock: ${favorite.currentStock}`
-                            : 'Agotado'}
-                        </p>
-                      </div>
-                    </div>
+                  {favorite.imageUrl ? (
+                    <img
+                      src={favorite.imageUrl}
+                      alt={favorite.name}
+                      className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity"
+                    />
+                  ) : (
+                    <Package className="h-8 w-8 text-muted-foreground/30 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 group-hover:scale-110 transition-transform" />
+                  )}
+
+                  <div className="relative z-10 flex flex-col items-center text-center">
+                    <p className="font-bold text-sm leading-tight line-clamp-2 mb-1 group-hover:text-primary transition-colors">
+                      {favorite.name}
+                    </p>
+                    <p className="font-black text-lg gradient-text">
+                      {formatCurrency(favorite.price)}
+                    </p>
                   </div>
-                </Button>
+
+                  {favorite.currentStock <= 5 && favorite.currentStock > 0 && (
+                    <div className="absolute top-2 right-2 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+                      {favorite.currentStock}
+                    </div>
+                  )}
+
+                  {favorite.currentStock === 0 && (
+                    <div className="absolute inset-0 bg-background/80 flex items-center justify-center backdrop-blur-[2px]">
+                      <span className="text-destructive font-black text-xs uppercase tracking-widest rotate-12 border-2 border-destructive px-2 py-1 rounded">
+                        Agotado
+                      </span>
+                    </div>
+                  )}
+                </button>
               ))}
             </div>
           )}

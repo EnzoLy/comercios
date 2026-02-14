@@ -5,7 +5,9 @@ import { Sale, SaleStatus } from '@/lib/db/entities/sale.entity'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Receipt, TrendingUp, DollarSign, ShoppingCart } from 'lucide-react'
+import { Receipt, TrendingUp, DollarSign, ShoppingCart, Search, Filter, Calendar, ChevronRight, ArrowUpRight, Clock, User } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Separator } from '@/components/ui/separator'
 
 const statusLabels: Record<string, string> = {
   COMPLETED: 'Completada',
@@ -53,118 +55,182 @@ export default async function SalesPage({
   const todayRevenue = todaySales.reduce((sum, sale) => sum + Number(sale.total), 0)
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">Ventas</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Visualiza y gestiona tus transacciones de ventas
-        </p>
+    <div className="p-4 md:p-8 space-y-8 animate-in fade-in duration-700">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">
+            Historial de <span className="gradient-text">Ventas</span>
+          </h1>
+          <p className="text-muted-foreground flex items-center gap-2">
+            <Receipt className="h-4 w-4 text-primary" />
+            Registro centralizado de transacciones y estados.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" className="h-11 rounded-xl font-bold border-border/50 bg-background/50 backdrop-blur-sm shadow-sm active:scale-95 transition-all">
+            <Calendar className="mr-2 h-4 w-4" />
+            Filtro de Fecha
+          </Button>
+          <Button asChild className="h-11 rounded-xl px-6 font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all">
+            <Link href={`/dashboard/${storeSlug}/pos`}>
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              Nuevo Ticket
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-        <Card style={{ borderColor: 'var(--color-primary)' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+      {/* Analytics Tiles */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="border-none bg-card/40 backdrop-blur-xl shadow-xl shadow-slate-950/5 overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <DollarSign className="h-12 w-12" />
+          </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <DollarSign className="h-3 w-3 text-emerald-500" />
               Ingresos Totales
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-            <p className="text-xs text-gray-500 mt-1">
-              {completedSales.length} ventas completadas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card style={{ borderColor: 'var(--color-primary)' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Ingresos de Hoy
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-gray-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${todayRevenue.toFixed(2)}</div>
-            <p className="text-xs text-gray-500 mt-1">
-              {todaySales.length} transacciones
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card style={{ borderColor: 'var(--color-primary)' }}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Venta Promedio
-            </CardTitle>
-            <ShoppingCart className="h-4 w-4 text-gray-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${completedSales.length > 0 ? (totalRevenue / completedSales.length).toFixed(2) : '0.00'}
+            <div className="text-3xl font-black tracking-tight">${totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</div>
+            <div className="flex items-center gap-2 mt-2">
+              <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-none text-[10px] font-bold px-2 py-0">
+                <ArrowUpRight className="h-3 w-3 mr-0.5" />
+                Oficial
+              </Badge>
+              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">
+                {completedSales.length} Ventas Confirmadas
+              </span>
             </div>
-            <p className="text-xs text-gray-500 mt-1">Por transacción</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none bg-card/40 backdrop-blur-xl shadow-xl shadow-slate-950/5 overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <TrendingUp className="h-12 w-12" />
+          </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Clock className="h-3 w-3 text-primary" />
+              Cierre de Hoy
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-black tracking-tight">${todayRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</div>
+            <div className="flex items-center gap-2 mt-2">
+              <Badge variant="secondary" className="bg-primary/10 text-primary border-none text-[10px] font-bold px-2 py-0">
+                Operativo
+              </Badge>
+              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">
+                {todaySales.length} Transacciones Hoy
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none bg-card/40 backdrop-blur-xl shadow-xl shadow-slate-950/5 overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <ShoppingCart className="h-12 w-12" />
+          </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <ShoppingCart className="h-3 w-3 text-amber-500" />
+              Ticket Medio
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-black tracking-tight">
+              ${completedSales.length > 0 ? (totalRevenue / completedSales.length).toLocaleString('es-ES', { minimumFractionDigits: 2 }) : '0.00'}
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+                Promedio por cliente
+              </span>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Sales Table */}
-      <Card style={{ borderColor: 'var(--color-primary)' }}>
-        <CardHeader>
-          <CardTitle>Ventas Recientes</CardTitle>
-          <CardDescription>Últimas 50 transacciones</CardDescription>
+      {/* Sales List Container */}
+      <Card className="border-none bg-card/40 backdrop-blur-xl shadow-xl shadow-slate-950/5">
+        <CardHeader className="px-6 py-6 border-b border-border/40">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-xl font-bold flex items-center gap-2">
+                Recientes
+              </CardTitle>
+              <CardDescription className="text-xs font-bold uppercase tracking-widest opacity-60">Últimos 50 movimientos</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                <Input placeholder="Buscar venta..." className="h-10 pl-9 rounded-xl border-border/50 bg-background/50 focus-visible:ring-primary" />
+              </div>
+              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-muted">
+                <Filter className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {sales.length === 0 ? (
-            <div className="text-center py-16">
-              <Receipt className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Aún no hay ventas</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Comienza realizando ventas desde el POS
+            <div className="text-center py-24 flex flex-col items-center">
+              <div className="h-20 w-20 bg-muted/50 rounded-full flex items-center justify-center mb-6">
+                <Receipt className="h-10 w-10 text-muted-foreground/30" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Canal Silencioso</h3>
+              <p className="text-muted-foreground max-w-xs text-sm">
+                No se registran ventas aún en este periodo. Comience a operar desde su terminal POS.
               </p>
-              <Button asChild>
+              <Button asChild className="mt-8 rounded-xl font-bold px-8">
                 <Link href={`/dashboard/${storeSlug}/pos`}>Ir al POS</Link>
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto -mx-2 sm:mx-0">
-              <table className="w-full min-w-[640px]">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[700px]">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-2 sm:px-4">Fecha</th>
-                    <th className="text-left py-3 px-2 sm:px-4 hidden md:table-cell">Cajero</th>
-                    <th className="text-left py-3 px-2 sm:px-4 hidden sm:table-cell">Pago</th>
-                    <th className="text-right py-3 px-2 sm:px-4">Total</th>
-                    <th className="text-center py-3 px-2 sm:px-4">Estado</th>
-                    <th className="text-right py-3 px-2 sm:px-4">Acciones</th>
+                  <tr className="bg-muted/30 border-b border-border/40">
+                    <th className="text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 py-4 px-6">ID / Tiempo</th>
+                    <th className="text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 py-4 px-6">Cajero</th>
+                    <th className="text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 py-4 px-6">Método</th>
+                    <th className="text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 py-4 px-6">Estado</th>
+                    <th className="text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 py-4 px-6">Monto Total</th>
+                    <th className="py-4 px-6"></th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-border/40">
                   {sales.map((sale) => (
-                    <tr key={sale.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <td className="py-3 px-2 sm:px-4">
-                        <div>
-                          <p className="font-medium text-sm">
-                            {new Date(sale.createdAt).toLocaleDateString('es-ES')}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(sale.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-                          </p>
+                    <tr key={sale.id} className="group hover:bg-muted/20 transition-colors">
+                      <td className="py-4 px-6">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold tracking-tight text-foreground/90">
+                            #{sale.id.substring(0, 8).toUpperCase()}
+                          </span>
+                          <span className="text-[10px] font-bold text-muted-foreground opacity-60 flex items-center gap-1.5 pt-1 uppercase tracking-tighter">
+                            {new Date(sale.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                            <span className="bg-muted px-1 rounded text-[8px] font-black">
+                              {new Date(sale.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </span>
                         </div>
                       </td>
-                      <td className="py-3 px-2 sm:px-4 hidden md:table-cell">
-                        <p className="text-sm">{sale.cashier?.name || 'Desconocido'}</p>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-2">
+                          <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary text-[10px] font-black">
+                            {sale.cashier?.name?.charAt(0) || 'U'}
+                          </div>
+                          <span className="text-sm font-semibold text-muted-foreground">{sale.cashier?.name?.split(' ')[0] || 'Sistema'}</span>
+                        </div>
                       </td>
-                      <td className="py-3 px-2 sm:px-4 hidden sm:table-cell">
-                        <Badge variant="outline" className="text-xs">
+                      <td className="py-4 px-6">
+                        <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-border/60 bg-background/50 text-muted-foreground/80">
                           {paymentMethodLabels[sale.paymentMethod] || sale.paymentMethod}
                         </Badge>
                       </td>
-                      <td className="py-3 px-2 sm:px-4 text-right font-semibold text-sm sm:text-base">
-                        ${Number(sale.total).toFixed(2)}
-                      </td>
-                      <td className="py-3 px-2 sm:px-4 text-center">
+                      <td className="py-4 px-6 text-center">
                         <Badge
                           variant={
                             sale.status === SaleStatus.COMPLETED
@@ -173,16 +239,22 @@ export default async function SalesPage({
                                 ? 'destructive'
                                 : 'secondary'
                           }
-                          className="text-xs"
+                          className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 border-none ${sale.status === SaleStatus.COMPLETED ? 'bg-emerald-500/20 text-emerald-600' :
+                              sale.status === SaleStatus.CANCELLED ? 'bg-destructive/20 text-destructive' : ''
+                            }`}
                         >
                           {statusLabels[sale.status] || sale.status}
                         </Badge>
                       </td>
-                      <td className="py-3 px-2 sm:px-4 text-right">
-                        <Button asChild variant="ghost" size="sm" className="h-8 px-2 sm:px-3">
+                      <td className="py-4 px-6 text-right">
+                        <span className="text-base font-black tracking-tight">
+                          ${Number(sale.total).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
                           <Link href={`/dashboard/${storeSlug}/sales/${sale.id}`}>
-                            <span className="hidden sm:inline">Ver</span>
-                            <span className="sm:hidden">•••</span>
+                            <ChevronRight className="h-4 w-4" />
                           </Link>
                         </Button>
                       </td>

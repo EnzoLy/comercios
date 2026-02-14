@@ -36,56 +36,80 @@
 :root {
   --radius: 0.625rem;
 
-  /* Color theme variables (set dynamically by ThemeProvider) */
-  --color-primary: #c084fc;
-  --color-secondary: #e9d5ff;
-  --color-accent: #f3e8ff;
+  /* New Premium Palette - Now fully dynamic */
+  --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 
   /* Light mode - Background and text colors */
-  --background: #ffffff;
-  --foreground: #0a0a0a;
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --card: #ffffff;
-  --card-foreground: #0a0a0a;
+  --card-foreground: #0f172a;
   --popover: #ffffff;
-  --popover-foreground: #0a0a0a;
-  --primary: #0a0a0a;
+  --popover-foreground: #0f172a;
+  --primary: var(--color-primary);
   --primary-foreground: #ffffff;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #0a0a0a;
-  --muted: #f5f5f5;
-  --muted-foreground: #666666;
-  --accent: var(--color-primary);
-  --accent-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #475569;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --accent: var(--color-accent);
+  --accent-foreground: var(--color-primary);
   --destructive: #ef4444;
-  --border: #e5e5e5;
-  --input: #e5e5e5;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
   --ring: var(--color-primary);
 }
 
 .dark {
-  /* Dark mode - pure black theme */
-  /* Header and sidebar - pure black */
-  --primary: #ffffff;
-  --primary-foreground: #000000;
+  /* Dark mode - Neutral Deep charcoal aesthetic */
+  --accent-gradient: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  --glass-bg: rgba(10, 10, 12, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
 
-  /* Pages and main content - slightly lighter black for differentiation */
-  --background: #0a0a0a;
-  --foreground: #ffffff;
-  --card: #111111;
-  --card-foreground: #ffffff;
-  --popover: #111111;
-  --popover-foreground: #ffffff;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #ffffff;
-  --muted: #1a1a1a;
-  --muted-foreground: #999999;
-  --accent: var(--color-primary);
-  --accent-foreground: #ffffff;
+  --primary: var(--color-primary);
+  --primary-foreground: #ffffff;
+
+  --background: #020617;
+  --foreground: #f8fafc;
+  --card: #0a0a0b; /* Much darker, less blue */
+  --card-foreground: #f8fafc;
+  --popover: #0a0a0b;
+  --popover-foreground: #f8fafc;
+  --secondary: #1e293b;
+  --secondary-foreground: #94a3b8;
+  --muted: #1e293b;
+  --muted-foreground: #64748b;
+  --accent: #1e1b4b;
+  --accent-foreground: var(--color-primary);
   --destructive: #ef4444;
-  --border: #1a1a1a;
-  --input: #1a1a1a;
+  --border: #1e293b;
+  --input: #1e293b;
   --ring: var(--color-primary);
 }
+
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.gradient-text {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-bg {
+  background: var(--accent-gradient);
+}
+
 
 html.dark {
   background-color: #0a0a0a;

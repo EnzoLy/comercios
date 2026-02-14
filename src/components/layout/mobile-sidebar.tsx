@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { usePermission } from '@/hooks/use-permission'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
@@ -154,7 +155,7 @@ export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) 
               className="flex items-center gap-2 hover:opacity-80"
               onClick={() => setOpen(false)}
             >
-              <Store className="h-5 w-5" />
+              <Image src="/logo-processed.png" alt="Logo" width={24} height={24} className="rounded-md object-cover" />
               <div>
                 <h2 className="font-bold text-sm">{storeSlug}</h2>
                 <p className="text-xs text-gray-500">

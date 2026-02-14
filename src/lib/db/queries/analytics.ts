@@ -109,8 +109,9 @@ export async function getMonthlySales(
     .addSelect('AVG(CAST(sale.total AS DECIMAL(10,2))) as avgTransaction')
     .where('sale.storeId = :storeId', { storeId })
     .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-    .andWhere('sale.createdAt >= :startDate', { startDate })
-    .andWhere('sale.createdAt <= :endDate', { endDate })
+    .andWhere('DATE(sale.createdAt) >= DATE(:startDate)', { startDate })
+    .andWhere('DATE(sale.createdAt) <= DATE(:endDate)', { endDate })
+
     .groupBy("TO_CHAR(sale.createdAt, 'YYYY-MM')")
     .orderBy("TO_CHAR(sale.createdAt, 'YYYY-MM')", 'ASC')
     .getRawMany()
@@ -347,7 +348,7 @@ export async function getAnalyticsOverview(
 ) {
   const saleRepo = dataSource.getRepository(Sale)
 
-  const [totalResults, transactionResults, employeeResults, productResults] = await Promise.all([
+  const [totalResults, employeeResults, productResults] = await Promise.all([
     saleRepo
       .createQueryBuilder('sale')
       .select('SUM(CAST(sale.total AS DECIMAL(10,2))) as totalRevenue')
@@ -355,17 +356,8 @@ export async function getAnalyticsOverview(
       .addSelect('AVG(CAST(sale.total AS DECIMAL(10,2))) as avgTransaction')
       .where('sale.storeId = :storeId', { storeId })
       .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-      .andWhere('sale.createdAt >= :startDate', { startDate })
-      .andWhere('sale.createdAt <= :endDate', { endDate })
-      .getRawOne(),
-
-    saleRepo
-      .createQueryBuilder('sale')
-      .select('COUNT(sale.id) as transactions')
-      .where('sale.storeId = :storeId', { storeId })
-      .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-      .andWhere('sale.createdAt >= :startDate', { startDate })
-      .andWhere('sale.createdAt <= :endDate', { endDate })
+      .andWhere('DATE(sale.createdAt) >= DATE(:startDate)', { startDate })
+      .andWhere('DATE(sale.createdAt) <= DATE(:endDate)', { endDate })
       .getRawOne(),
 
     getEmployeePerformance(dataSource, storeId, { startDate, endDate }),
@@ -383,3 +375,4 @@ export async function getAnalyticsOverview(
     topProduct: topProduct || null,
   }
 }
+

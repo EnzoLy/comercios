@@ -22,7 +22,7 @@ import { useActiveEmployee } from '@/contexts/active-employee-context'
 import { useStore } from '@/hooks/use-store'
 import { formatCurrency } from '@/lib/utils/currency'
 import { LoadingPage } from '@/components/ui/loading'
-import { Camera, Trash2, Plus, Minus, ShoppingCart, Store, Clock, BarChart3, AlertTriangle } from 'lucide-react'
+import { Camera, Trash2, Plus, Minus, ShoppingCart, Store, Clock, BarChart3, AlertTriangle, Maximize2, Minimize2, Search, Zap } from 'lucide-react'
 import { PaymentMethod } from '@/lib/db/entities/sale.entity'
 import {
   Dialog,
@@ -78,7 +78,30 @@ export default function POSPage() {
   const [lastSale, setLastSale] = useState<any>(null)
   const [expiredWarningOpen, setExpiredWarningOpen] = useState(false)
   const [expiredWarningProduct, setExpiredWarningProduct] = useState<any>(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const { activeEmployee, setActiveEmployee } = useActiveEmployee()
+
+  // Fullscreen toggle
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => {
+        setIsFullscreen(true)
+      })
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen()
+        setIsFullscreen(false)
+      }
+    }
+  }
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
 
   // Fetch tax settings and current shift from store
   useEffect(() => {
@@ -518,12 +541,21 @@ export default function POSPage() {
   }
 
   return (
-    <div className="h-full flex flex-col lg:flex-row">
+    <div className={`h-full flex flex-col lg:flex-row transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-50 overflow-hidden' : ''}`}>
       {/* Left: Product Search/Scan */}
-      <div className="flex-1 p-4 md:p-6 overflow-auto">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-2 mb-4 md:mb-6">
-          <h1 className="text-xl md:text-2xl font-bold">Caja</h1>
-          <div className="flex flex-col md:flex-row gap-3 md:gap-2 w-full md:w-auto">
+      <div className="flex-1 p-4 md:p-6 overflow-auto custom-scrollbar">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-xl">
+              <Zap className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">Punto de Venta</h1>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Terminal #01</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             <ShiftSwitcher
               storeId={store.storeId}
               currentShift={currentShift}
@@ -533,194 +565,231 @@ export default function POSPage() {
               variant="outline"
               size="sm"
               onClick={() => setRecentSalesOpen(true)}
-              title="F2"
-              className="w-full md:w-auto"
-              style={{ borderColor: 'var(--color-primary)' }}
+              className="h-9 hover:bg-primary/5 border-primary/20"
             >
-              Últimas Ventas
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Ventas (F2)
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShiftReportOpen(true)}
-              className="w-full md:w-auto"
-              style={{ borderColor: 'var(--color-primary)' }}
+              className="h-9 hover:bg-primary/5 border-primary/20"
             >
               <Clock className="h-4 w-4 mr-2" />
-              Cerrar Turno
+              Cierre
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleFullscreen}
+              className="h-9 w-9"
+              title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+            >
+              {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
             </Button>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="flex gap-2">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Button
               onClick={() => setScannerOpen(true)}
               size="lg"
-              className="flex-1 h-14 md:h-12 text-base"
+              className="md:col-span-1 h-16 rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-95 group"
             >
-              <Camera className="mr-2 h-5 w-5" />
-              Escanear Código de Barras
+              <Camera className="mr-2 h-6 w-6 group-hover:scale-110 transition-transform" />
+              Escanear
             </Button>
+
+            <div className="md:col-span-3 flex items-center bg-card border border-border rounded-2xl px-4 shadow-sm focus-within:ring-2 ring-primary/20 transition-all">
+              <Search className="h-5 w-5 text-muted-foreground" />
+              <div className="flex-1 ml-2">
+                <ProductSearch
+                  storeId={store.storeId}
+                  categoryId={selectedCategoryId}
+                  onProductSelect={(product) => {
+                    addToCart(product)
+                    toast.success(`Se añadió ${product.name} al carrito`)
+                  }}
+                />
+              </div>
+            </div>
           </div>
 
-          <ProductSearch
-            storeId={store.storeId}
-            categoryId={selectedCategoryId}
-            onProductSelect={(product) => {
-              addToCart(product)
-              toast.success(`Se añadió ${product.name} al carrito`)
-            }}
-          />
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-2 space-y-6">
+              {/* Categories & Favorites */}
+              <FavoriteProducts
+                storeId={store.storeId}
+                onProductSelect={(product) => {
+                  addToCart(product)
+                  toast.success(`Se añadió ${product.name} al carrito`)
+                }}
+              />
+            </div>
 
-          {/* Favorite Products */}
-          <FavoriteProducts
-            storeId={store.storeId}
-            onProductSelect={(product) => {
-              addToCart(product)
-              toast.success(`Se añadió ${product.name} al carrito`)
-            }}
-          />
-
-          {/* Personal Stats */}
-          <PersonalStats
-            storeId={store.storeId}
-            refreshTrigger={statRefreshTrigger}
-          />
+            <div className="space-y-6">
+              {/* Personal Stats */}
+              <PersonalStats
+                storeId={store.storeId}
+                refreshTrigger={statRefreshTrigger}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Right: Cart */}
-      <div className="w-full lg:w-96 flex flex-col max-h-[50vh] lg:max-h-none">
-        <div className="p-4 md:p-6">
-          <h2 className="text-lg md:text-xl font-bold flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5" />
-            Carrito ({cart.length})
-          </h2>
-          {currentShift && (
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              Turno: {currentShift.startTime}
-              {currentShift.endTime && ` - ${currentShift.endTime}`}
-            </p>
-          )}
+      {/* Right: Cart (Sidebar) */}
+      <div className="w-full lg:w-[420px] glass border-l border-border/50 flex flex-col h-full overflow-hidden shadow-2xl relative">
+        <div className="p-6 border-b border-border/50 flex items-center justify-between bg-primary/5">
+          <div>
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 text-primary" />
+              Carrito
+              {cart.length > 0 && (
+                <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full">
+                  {cart.length}
+                </span>
+              )}
+            </h2>
+            {currentShift && (
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {currentShift.startTime}
+              </p>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearCart}
+            className="text-muted-foreground hover:text-destructive transition-colors"
+            disabled={cart.length === 0}
+          >
+            Limpiar
+          </Button>
         </div>
 
-        <div className="flex-1 overflow-auto p-4 md:p-6 space-y-3 md:space-y-4">
+        <div className="flex-1 overflow-auto p-4 space-y-4 custom-scrollbar">
           {cart.length === 0 ? (
-            <p className="text-center text-gray-500 mt-8">El carrito está vacío</p>
+            <div className="h-full flex flex-col items-center justify-center opacity-40 py-20 text-center">
+              <ShoppingCart className="h-16 w-16 mb-4" />
+              <p className="text-lg font-medium">Tu carrito está vacío</p>
+              <p className="text-sm">Agrega productos para comenzar</p>
+            </div>
           ) : (
-            cart.map((item) => (
-              <Card key={item.productId} style={{ borderColor: 'var(--color-accent)' }}>
-                <CardContent className="p-3 md:p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <p className="font-medium text-sm md:text-base">{item.name}</p>
-                      <p className="text-xs md:text-sm text-gray-500">{item.sku}</p>
+            <div className="space-y-3">
+              {cart.map((item) => (
+                <div
+                  key={item.productId}
+                  className="group relative bg-card/50 hover:bg-card border border-border/50 rounded-2xl p-4 transition-all hover:shadow-lg hover:-translate-y-0.5 overflow-hidden"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1 min-w-0 pr-8">
+                      <p className="font-bold text-base line-clamp-1">{item.name}</p>
+                      <p className="text-xs text-muted-foreground font-mono mt-0.5 uppercase tracking-tighter">SKU: {item.sku}</p>
+
                       {item.trackExpirationDates && item.nearestExpirationDate && (
-                        <p className={`text-xs mt-1 font-semibold ${item.hasExpiredBatches ? 'text-red-600' : 'text-yellow-600'}`}>
-                          {item.hasExpiredBatches ? '⚠️ Vencido: ' : '📅 Vence: '}
-                          {new Date(item.nearestExpirationDate).toLocaleDateString('es-ES')}
-                        </p>
-                      )}
-                      {item.discount && item.discount > 0 && (
-                        <p className="text-xs mt-1" style={{ color: 'var(--color-primary)' }}>
-                          Descuento: {formatCurrency(item.discount)}
-                        </p>
+                        <div className={`text-[10px] mt-2 inline-flex items-center px-2 py-0.5 rounded-full font-bold uppercase tracking-tight ${item.hasExpiredBatches ? 'bg-destructive/10 text-destructive' : 'bg-amber-100 text-amber-700'}`}>
+                          {item.hasExpiredBatches ? <AlertTriangle className="h-3 w-3 mr-1" /> : <Clock className="h-3 w-3 mr-1" />}
+                          {item.hasExpiredBatches ? 'VENCIDO' : `VENCE: ${new Date(item.nearestExpirationDate).toLocaleDateString()}`}
+                        </div>
                       )}
                     </div>
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="icon"
                       onClick={() => removeFromCart(item.productId)}
-                      className="h-8 w-8 p-0"
+                      className="absolute top-2 right-2 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all opacity-0 group-hover:opacity-100"
                     >
-                      <Trash2 className="h-4 w-4" style={{ color: '#ef4444' }} />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-end justify-between">
+                    <div className="flex items-center bg-secondary/50 rounded-xl p-1 border border-border/50">
                       <Button
-                        variant="outline"
-                        size="sm"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => updateQuantity(item.productId, -1)}
                         disabled={item.quantity <= 1}
-                        className="h-9 w-9 p-0 md:h-8 md:w-8"
+                        className="h-8 w-8 rounded-lg"
                       >
-                        <Minus className="h-4 w-4 md:h-3 md:w-3" />
+                        <Minus className="h-3 w-3" />
                       </Button>
-                      <span className="w-10 md:w-8 text-center font-medium">{item.quantity}</span>
+                      <span className="w-10 text-center font-bold text-lg">{item.quantity}</span>
                       <Button
-                        variant="outline"
-                        size="sm"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => updateQuantity(item.productId, 1)}
                         disabled={item.quantity >= item.stock}
-                        className="h-9 w-9 p-0 md:h-8 md:w-8"
+                        className="h-8 w-8 rounded-lg"
                       >
-                        <Plus className="h-4 w-4 md:h-3 md:w-3" />
+                        <Plus className="h-3 w-3" />
                       </Button>
                     </div>
 
                     <div className="text-right">
-                      <p className="font-semibold text-sm md:text-base">
+                      {item.discount && item.discount > 0 && (
+                        <p className="text-xs text-primary font-medium mb-0.5">
+                          -{formatCurrency(item.discount)}
+                        </p>
+                      )}
+                      <p className="text-xl font-black gradient-text">
                         {formatCurrency((item.price * item.quantity) - (item.discount || 0))}
                       </p>
-                      <p className="text-xs text-gray-500">
-                        {formatCurrency(item.price)} c/u
+                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
+                        {formatCurrency(item.price)} unit.
                       </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
-        <div className="p-4 md:p-6 space-y-4" style={{ borderTop: '1px solid var(--color-primary)' }}>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm md:text-base">
-              <span>Subtotal:</span>
+        <div className="p-6 bg-card border-t border-border shadow-[0_-10px_40px_rgba(0,0,0,0.05)] space-y-6">
+          <div className="space-y-3">
+            <div className="flex justify-between text-sm text-muted-foreground font-medium">
+              <span className="uppercase tracking-widest">Subtotal</span>
               <span>{formatCurrency(subtotal)}</span>
             </div>
             {taxEnabled && (
-              <div className="flex justify-between text-sm md:text-base">
-                <span>{taxName}:</span>
+              <div className="flex justify-between text-sm text-muted-foreground font-medium">
+                <span className="uppercase tracking-widest">{taxName}</span>
                 <span>{formatCurrency(tax)}</span>
               </div>
             )}
             {cartDiscount > 0 && (
-              <div className="flex justify-between text-sm md:text-base" style={{ color: 'var(--color-primary)' }}>
-                <span>Descuento:</span>
+              <div className="flex justify-between text-sm text-primary font-bold">
+                <span className="uppercase tracking-widest">Descuento Global</span>
                 <span>-{formatCurrency(cartDiscount)}</span>
               </div>
             )}
-            <div className="flex justify-between text-lg md:text-xl font-bold pt-2" style={{ borderTop: '2px solid var(--color-primary)' }}>
-              <span>Total:</span>
-              <span>{formatCurrency(total)}</span>
+            <div className="flex justify-between items-center pt-4 border-t border-border mt-2">
+              <span className="text-base font-bold uppercase tracking-button">Total a Pagar</span>
+              <span className="text-3xl font-black text-primary drop-shadow-sm">
+                {formatCurrency(total)}
+              </span>
             </div>
           </div>
 
-          <DiscountControls
-            cartTotal={subtotal + tax}
-            currentDiscount={cartDiscount}
-            onDiscountChange={setCartDiscount}
-          />
+          <div className="space-y-4">
+            <DiscountControls
+              cartTotal={subtotal + tax}
+              currentDiscount={cartDiscount}
+              onDiscountChange={setCartDiscount}
+            />
 
-          <div className="flex gap-2">
             <Button
-              variant="outline"
-              className="flex-1 h-12 md:h-10"
-              onClick={clearCart}
-              disabled={cart.length === 0}
-            >
-              Limpiar
-            </Button>
-            <Button
-              className="flex-1 h-12 md:h-10 text-base"
+              className="w-full h-16 text-xl font-bold rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all group"
               onClick={() => setCheckoutOpen(true)}
               disabled={cart.length === 0}
             >
-              Pagar (F9)
+              Finalizar Venta (F9)
+              <ShoppingCart className="ml-2 h-6 w-6 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         </div>
@@ -755,51 +824,86 @@ export default function POSPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-6 py-4">
             <div className="space-y-2">
-              <Label>Monto Pagado (Opcional)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={amountPaid ?? ''}
-                onChange={(e) => setAmountPaid(e.target.value ? Number(e.target.value) : undefined)}
-                placeholder="Dejar vacío si no se aplica"
-              />
+              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Monto Recibido</Label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-muted-foreground">$</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  autoFocus
+                  value={amountPaid ?? ''}
+                  onChange={(e) => setAmountPaid(e.target.value ? Number(e.target.value) : undefined)}
+                  placeholder="0.00"
+                  className="pl-8 h-16 text-2xl font-black rounded-2xl bg-secondary/30"
+                />
+              </div>
+              <div className="grid grid-cols-4 gap-2 mt-2">
+                {[100, 500, 1000, 2000, 5000].map(amount => (
+                  <Button
+                    key={amount}
+                    variant="outline"
+                    size="sm"
+                    className="h-10 font-bold"
+                    onClick={() => setAmountPaid((amountPaid || 0) + amount)}
+                  >
+                    +{amount}
+                  </Button>
+                ))}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-10 font-bold"
+                  onClick={() => setAmountPaid(total)}
+                >
+                  Exacto
+                </Button>
+              </div>
             </div>
 
-            {amountPaid && amountPaid > 0 && (
-              <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg space-y-2">
-                <div className="flex justify-between">
-                  <span>Total:</span>
-                  <span className="font-semibold">{formatCurrency(total)}</span>
+            <div className="space-y-4">
+              <div className="p-6 bg-gradient-to-br from-card to-secondary/30 rounded-3xl border border-border shadow-inner space-y-4">
+                <div className="flex justify-between items-center text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                  <span>Total Venta</span>
+                  <span className="text-foreground text-lg">{formatCurrency(total)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Pagado:</span>
-                  <span className="font-semibold">{formatCurrency(amountPaid)}</span>
-                </div>
-                <div className="flex justify-between text-lg font-bold border-t pt-2">
-                  <span>Cambio:</span>
-                  <span style={{ color: change < 0 ? '#ef4444' : 'var(--color-primary)' }}>
-                    {formatCurrency(change)}
-                  </span>
-                </div>
+
+                {amountPaid && (
+                  <>
+                    <div className="flex justify-between items-center text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                      <span>Recibido</span>
+                      <span className="text-secondary-foreground text-lg">{formatCurrency(amountPaid)}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-4 border-t border-border">
+                      <span className="text-base font-bold uppercase tracking-widest text-primary">Vuelto/Cambio</span>
+                      <span className={`text-3xl font-black ${change < 0 ? 'text-destructive' : 'text-primary'}`}>
+                        {formatCurrency(change)}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
-            )}
+            </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button
-              variant="outline"
+              variant="ghost"
+              size="lg"
+              className="flex-1 h-14 rounded-2xl font-bold"
               onClick={() => setCheckoutOpen(false)}
               disabled={isProcessing}
             >
               Cancelar
             </Button>
             <Button
+              size="lg"
+              className="flex-1 h-14 rounded-2xl font-bold shadow-lg shadow-primary/20"
               onClick={handleCheckout}
-              disabled={isProcessing}
+              disabled={isProcessing || (amountPaid !== undefined && amountPaid < total)}
             >
-              {isProcessing ? 'Procesando...' : 'Completar Venta'}
+              {isProcessing ? 'Procesando...' : 'Confirmar Venta'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -811,8 +915,6 @@ export default function POSPage() {
         isOpen={showEmployeeSelector}
         onClose={() => setShowEmployeeSelector(false)}
         onEmployeeSelected={(employeeId, name) => {
-          // No need to manually set localStorage here,
-          // EmployeeSelector now uses setActiveEmployee correctly
           toast.success(`Empleado activo: ${name}`)
           router.refresh()
         }}

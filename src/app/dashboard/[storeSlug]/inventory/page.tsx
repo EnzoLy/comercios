@@ -10,9 +10,26 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LoadingPage } from '@/components/ui/loading'
-import { AlertTriangle, TrendingUp, TrendingDown, Package, Search, Loader2, Calendar } from 'lucide-react'
+import {
+  AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+  Package,
+  Search,
+  Loader2,
+  Calendar,
+  History,
+  Settings2,
+  Bell,
+  Box,
+  FileText,
+  Plus,
+  Minus,
+  CheckCircle2
+} from 'lucide-react'
 import { BatchesTable } from '@/components/batches/batches-table'
 import { ExpiringProductsReport } from '@/components/inventory/expiring-products-report'
+import { cn } from '@/lib/utils'
 
 export default function InventoryPage() {
   const router = useRouter()
@@ -54,7 +71,6 @@ export default function InventoryPage() {
 
       if (productsRes.ok) {
         const productsData = await productsRes.json()
-        // API returns { products, total, page, pageSize, hasMore }
         setProducts(productsData.products || productsData)
       }
     } catch (error) {
@@ -70,17 +86,17 @@ export default function InventoryPage() {
       case 'PURCHASE':
       case 'RETURN':
       case 'ADJUSTMENT':
-        return <TrendingUp className="h-4 w-4" style={{ color: 'var(--color-primary)' }} />
+        return <TrendingUp className="h-4 w-4 text-emerald-500" />
       case 'SALE':
       case 'DAMAGE':
-        return <TrendingDown className="h-4 w-4" style={{ color: '#ef4444' }} />
+        return <TrendingDown className="h-4 w-4 text-rose-500" />
       default:
-        return <Package className="h-4 w-4" />
+        return <Package className="h-4 w-4 text-muted-foreground" />
     }
   }
 
-  const getMovementColor = (quantity: number) => {
-    return quantity > 0 ? 'var(--color-primary)' : '#ef4444'
+  const getMovementColorClass = (quantity: number) => {
+    return quantity > 0 ? 'text-emerald-500' : 'text-rose-500'
   }
 
   const updateAdjustmentData = (productId: string, field: 'quantity' | 'notes', value: string) => {
@@ -155,148 +171,179 @@ export default function InventoryPage() {
       <LoadingPage
         title="Cargando inventario"
         description="Obteniendo información de stock y movimientos..."
-        icon={<Package className="h-8 w-8 text-gray-600" />}
+        icon={<Package className="h-8 w-8 text-primary animate-pulse" />}
       />
     )
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Inventario</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Administra los niveles de stock y rastrea movimientos
-        </p>
+    <div className="p-4 md:p-8 space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
+            Gestión de <span className="gradient-text">Inventario</span>
+          </h1>
+          <p className="text-muted-foreground flex items-center gap-2">
+            <Box className="h-4 w-4" />
+            Controla tus niveles de stock y supervisa cada movimiento.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-4 py-2 rounded-xl backdrop-blur-sm border border-border/50">
+          <Calendar className="h-4 w-4" />
+          {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+        </div>
       </div>
 
-      {/* Stock Alerts */}
+      {/* Stock Alerts Summary */}
       {alerts && (alerts.summary.lowStockCount > 0 || alerts.summary.outOfStockCount > 0) && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card style={{ borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.05)' }}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium" style={{ color: '#dc2626' }}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="group relative overflow-hidden border-none bg-rose-600 text-white shadow-lg shadow-rose-500/20">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+              <AlertTriangle className="h-24 w-24" />
+            </div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-white/80">
                 Sin Stock
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold" style={{ color: '#dc2626' }}>
-                {alerts.summary.outOfStockCount}
-              </div>
-              <p className="text-xs mt-1" style={{ color: '#b91c1c' }}>
-                Productos con 0 stock
-              </p>
+              <div className="text-4xl font-black">{alerts.summary.outOfStockCount}</div>
+              <p className="text-xs text-white/60 mt-2 font-medium">Productos requieren reposición inmediata</p>
             </CardContent>
           </Card>
 
-          <Card style={{ borderColor: 'var(--color-secondary)' }}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">
+          <Card className="group relative overflow-hidden border-none bg-orange-500 text-white shadow-lg shadow-orange-500/20">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+              <Bell className="h-24 w-24" />
+            </div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-white/80">
                 Stock Bajo
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {alerts.summary.lowStockCount}
-              </div>
-              <p className="text-xs mt-1">
-                Bajo el nivel mínimo
-              </p>
+              <div className="text-4xl font-black">{alerts.summary.lowStockCount}</div>
+              <p className="text-xs text-white/60 mt-2 font-medium">Bajo el nivel de stock mínimo</p>
             </CardContent>
           </Card>
 
-          {alerts.summary.highStockCount > 0 && (
-            <Card style={{ borderColor: 'var(--color-accent)', backgroundColor: 'rgba(var(--color-accent), 0.05)' }}>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium" style={{ color: 'var(--color-accent)' }}>
-                  Stock Alto
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold" style={{ color: 'var(--color-accent)' }}>
-                  {alerts.summary.highStockCount}
-                </div>
-                <p className="text-xs mt-1" style={{ color: 'var(--color-accent)' }}>
-                  Sobre el nivel máximo
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          <Card className="group relative overflow-hidden border-none bg-primary text-white shadow-lg shadow-primary/20">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+              <Package className="h-24 w-24" />
+            </div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-white/80">
+                Total SKUs
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-black">{products.length}</div>
+              <p className="text-xs text-white/60 mt-2 font-medium">Productos en tu catálogo activo</p>
+            </CardContent>
+          </Card>
         </div>
       )}
 
-      <Tabs defaultValue="movements" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="movements">Movimientos Recientes</TabsTrigger>
-          <TabsTrigger value="adjust">Ajustar Stock</TabsTrigger>
-          <TabsTrigger value="alerts">Alertas de Stock</TabsTrigger>
-          <TabsTrigger value="batches">
-            Gestión de Lotes
+      {/* Main Tabs Section */}
+      <Tabs defaultValue="movements" className="space-y-6">
+        <TabsList className="bg-secondary/50 p-1 rounded-xl h-auto flex-wrap sm:flex-nowrap border border-border/50">
+          <TabsTrigger value="movements" className="rounded-lg py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <History className="h-4 w-4 mr-2" />
+            Movimientos
           </TabsTrigger>
-          <TabsTrigger value="expiring">
-            Productos por Vencer
+          <TabsTrigger value="adjust" className="rounded-lg py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Settings2 className="h-4 w-4 mr-2" />
+            Ajustar Stock
+          </TabsTrigger>
+          <TabsTrigger value="alerts" className="rounded-lg py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Bell className="h-4 w-4 mr-2" />
+            Alertas
+          </TabsTrigger>
+          <TabsTrigger value="batches" className="rounded-lg py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <Calendar className="h-4 w-4 mr-2" />
+            Lotes
+          </TabsTrigger>
+          <TabsTrigger value="expiring" className="rounded-lg py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            Vencimientos
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="movements" className="space-y-4">
-          <Card style={{ borderColor: 'var(--color-primary)' }}>
-            <CardHeader>
-              <CardTitle>Movimientos de Stock Recientes</CardTitle>
-              <CardDescription>Últimas 30 transacciones de stock</CardDescription>
+        <TabsContent value="movements" className="animate-in fade-in-50 duration-500">
+          <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm border border-border/50">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle className="text-xl font-bold">Historial de Movimientos</CardTitle>
+                <CardDescription>Últimas 30 transacciones registradas</CardDescription>
+              </div>
+              <Badge variant="outline" className="px-3 py-1 font-bold rounded-lg uppercase tracking-tighter">
+                {movements.length} Registros
+              </Badge>
             </CardHeader>
             <CardContent>
               {movements.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">Aún no hay movimientos</p>
+                <div className="flex flex-col items-center justify-center py-24 text-muted-foreground opacity-20">
+                  <History className="h-16 w-16 mb-4" />
+                  <p className="font-medium text-lg">No hay movimientos registrados</p>
+                </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-3 px-4">Fecha</th>
-                        <th className="text-left py-3 px-4">Producto</th>
-                        <th className="text-left py-3 px-4">Tipo</th>
-                        <th className="text-right py-3 px-4">Cantidad</th>
-                        <th className="text-left py-3 px-4">Notas</th>
-                        <th className="text-left py-3 px-4">Usuario</th>
+                      <tr className="border-b border-border/50">
+                        <th className="text-left py-4 px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Fecha</th>
+                        <th className="text-left py-4 px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Producto</th>
+                        <th className="text-left py-4 px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Tipo</th>
+                        <th className="text-right py-4 px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Cantidad</th>
+                        <th className="text-left py-4 px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Razón</th>
+                        <th className="text-left py-4 px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Usuario</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-border/30">
                       {movements.map((movement) => (
-                        <tr key={movement.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <td className="py-3 px-4">
-                            <div className="text-sm">
+                        <tr key={movement.id} className="group hover:bg-secondary/20 transition-colors">
+                          <td className="py-4 px-4">
+                            <div className="text-sm font-medium">
                               {new Date(movement.createdAt).toLocaleDateString()}
-                              <br />
-                              <span className="text-xs text-gray-500">
-                                {new Date(movement.createdAt).toLocaleTimeString()}
-                              </span>
+                              <div className="text-[10px] font-bold text-muted-foreground uppercase mt-0.5">
+                                {new Date(movement.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </div>
                             </div>
                           </td>
-                          <td className="py-3 px-4">
-                            <div>
-                              <p className="font-medium">{movement.product?.name}</p>
-                              <p className="text-sm text-gray-500">{movement.product?.sku}</p>
+                          <td className="py-4 px-4">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-sm">{movement.product?.name}</span>
+                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{movement.product?.sku}</span>
                             </div>
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-4 px-4">
                             <div className="flex items-center gap-2">
                               {getMovementIcon(movement.type)}
-                              <Badge variant="outline">{movement.type}</Badge>
+                              <Badge variant="secondary" className="text-[10px] font-bold py-0 h-5 px-2 rounded-md uppercase tracking-tighter">
+                                {movement.type}
+                              </Badge>
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-right">
-                            <span className="font-semibold" style={{ color: getMovementColor(movement.quantity) }}>
+                          <td className="py-4 px-4 text-right">
+                            <div className={cn("text-base font-black tabular-nums", getMovementColorClass(movement.quantity))}>
                               {movement.quantity > 0 ? '+' : ''}{movement.quantity}
-                            </span>
+                            </div>
                           </td>
-                          <td className="py-3 px-4">
-                            <span className="text-sm text-gray-600">
+                          <td className="py-4 px-4">
+                            <span className="text-sm italic text-muted-foreground">
                               {movement.notes || movement.reference || '-'}
                             </span>
                           </td>
-                          <td className="py-3 px-4">
-                            <span className="text-sm">
-                              {movement.user?.name || 'Sistema'}
-                            </span>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-2">
+                              <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                                {movement.user?.name?.substring(0, 1) || 'S'}
+                              </div>
+                              <span className="text-xs font-bold uppercase tracking-tight">
+                                {movement.user?.name || 'Sistema'}
+                              </span>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -308,85 +355,84 @@ export default function InventoryPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="adjust" className="space-y-4">
-          <Card style={{ borderColor: 'var(--color-secondary)' }}>
+        <TabsContent value="adjust" className="animate-in fade-in-50 duration-500">
+          <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm border border-border/50">
             <CardHeader>
-              <CardTitle>Ajustar Stock</CardTitle>
-              <CardDescription>
-                Ajusta manualmente los niveles de stock. Usa números positivos para agregar, negativos para restar.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Search Bar */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Buscar por nombre o SKU..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <CardTitle className="text-xl font-bold">Panel de Ajuste Manual</CardTitle>
+                  <CardDescription>
+                    Realiza correcciones de stock rápidas. Usa (+) para aumentar y (-) para disminuir.
+                  </CardDescription>
+                </div>
+                <div className="relative w-full md:w-80">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nombre o SKU..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 h-10 rounded-xl bg-background/50 border-border/50 focus:ring-primary"
+                  />
+                </div>
               </div>
-
-              {/* Products Table */}
+            </CardHeader>
+            <CardContent>
               {filteredProducts.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">
-                  {searchTerm ? 'No se encontraron productos' : 'Cargando productos...'}
-                </p>
+                <div className="flex flex-col items-center justify-center py-24 text-muted-foreground opacity-20">
+                  <Package className="h-16 w-16 mb-4" />
+                  <p className="font-medium text-lg">No se encontraron productos</p>
+                </div>
               ) : (
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {filteredProducts.map((product) => (
-                    <div key={product.id} className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-900 transition">
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
-                        {/* Product Info */}
-                        <div>
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-sm text-gray-600">{product.sku}</p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Stock actual: <span className="font-semibold">{product.currentStock}</span>
-                          </p>
+                    <div
+                      key={product.id}
+                      className="group border border-border/50 rounded-2xl p-4 bg-background/30 hover:bg-background/80 hover:border-primary/30 transition-all duration-300"
+                    >
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <h4 className="font-bold text-base leading-tight">{product.name}</h4>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{product.sku}</p>
+                            <div className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase mt-1">
+                              Stock: {product.currentStock}
+                            </div>
+                          </div>
+                          {savingProductId === product.id && (
+                            <Loader2 className="h-5 w-5 text-primary animate-spin" />
+                          )}
                         </div>
 
-                        {/* Quantity Input */}
-                        <div>
-                          <label className="text-sm font-medium block mb-1">Cantidad</label>
-                          <Input
-                            type="number"
-                            placeholder="Ej: +10 o -5"
-                            value={adjustmentData[product.id]?.quantity ?? ''}
-                            onChange={(e) => updateAdjustmentData(product.id, 'quantity', e.target.value)}
-                            disabled={savingProductId === product.id}
-                          />
-                        </div>
-
-                        {/* Notes Input */}
-                        <div>
-                          <label className="text-sm font-medium block mb-1">Razón</label>
-                          <Input
-                            type="text"
-                            placeholder="Ej: Recount, damage..."
-                            value={adjustmentData[product.id]?.notes ?? ''}
-                            onChange={(e) => updateAdjustmentData(product.id, 'notes', e.target.value)}
-                            disabled={savingProductId === product.id}
-                          />
-                        </div>
-
-                        {/* Save Button */}
-                        <div className="flex items-end">
+                        <div className="grid grid-cols-5 gap-2">
+                          <div className="col-span-2">
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                placeholder="Cant."
+                                value={adjustmentData[product.id]?.quantity ?? ''}
+                                onChange={(e) => updateAdjustmentData(product.id, 'quantity', e.target.value)}
+                                disabled={savingProductId === product.id}
+                                className="h-10 rounded-xl bg-background/10 border-border/40 focus:ring-primary pl-4 text-sm font-bold"
+                              />
+                            </div>
+                          </div>
+                          <div className="col-span-2">
+                            <Input
+                              type="text"
+                              placeholder="Razón..."
+                              value={adjustmentData[product.id]?.notes ?? ''}
+                              onChange={(e) => updateAdjustmentData(product.id, 'notes', e.target.value)}
+                              disabled={savingProductId === product.id}
+                              className="h-10 rounded-xl bg-background/10 border-border/40 focus:ring-primary text-xs"
+                            />
+                          </div>
                           <Button
                             onClick={() => saveAdjustment(product.id)}
-                            disabled={savingProductId === product.id || !adjustmentData[product.id]}
-                            className="w-full"
-                            size="sm"
+                            disabled={savingProductId === product.id || !adjustmentData[product.id]?.quantity}
+                            size="icon"
+                            className="h-10 w-10 rounded-xl shadow-lg shadow-primary/20 shrink-0"
                           >
-                            {savingProductId === product.id ? (
-                              <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Guardando...
-                              </>
-                            ) : (
-                              'Guardar'
-                            )}
+                            <CheckCircle2 className="h-5 w-5" />
                           </Button>
                         </div>
                       </div>
@@ -398,85 +444,98 @@ export default function InventoryPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="alerts" className="space-y-4">
-          {alerts?.outOfStock && alerts.outOfStock.length > 0 && (
-            <Card style={{ borderColor: 'var(--color-accent)' }}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-red-900 dark:text-red-100">
-                  <AlertTriangle className="h-5 w-5" />
-                  Sin Stock ({alerts.outOfStock.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {alerts.outOfStock.map((product: any) => (
-                    <div key={product.id} className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-950 rounded-lg">
-                      <div>
-                        <p className="font-medium">{product.name}</p>
-                        <p className="text-sm text-gray-600">{product.sku}</p>
-                      </div>
-                      <Badge variant="destructive">0 en stock</Badge>
-                    </div>
-                  ))}
+        <TabsContent value="alerts" className="animate-in fade-in-50 duration-500 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Out of Stock */}
+            <Card className="border-none shadow-xl bg-rose-50/50 dark:bg-rose-950/10 border border-rose-200/50 dark:border-rose-900/50 overflow-hidden">
+              <div className="h-1.5 bg-rose-500" />
+              <CardHeader className="flex flex-row items-center gap-4">
+                <div className="h-12 w-12 rounded-2xl bg-rose-500/10 flex items-center justify-center">
+                  <AlertTriangle className="h-6 w-6 text-rose-500" />
                 </div>
+                <div>
+                  <CardTitle className="text-rose-600 dark:text-rose-400 font-black">Sin Stock ({alerts?.outOfStock?.length || 0})</CardTitle>
+                  <CardDescription>Requieren atención inmediata</CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {alerts?.outOfStock?.length === 0 ? (
+                  <p className="text-center py-10 text-muted-foreground/60 italic">No hay productos sin stock ✨</p>
+                ) : (
+                  alerts?.outOfStock?.map((product: any) => (
+                    <div key={product.id} className="flex items-center justify-between p-4 bg-white/50 dark:bg-black/20 rounded-2xl border border-rose-200/30 dark:border-rose-900/30">
+                      <div>
+                        <p className="font-bold text-sm tracking-tight">{product.name}</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase">{product.sku}</p>
+                      </div>
+                      <Badge variant="destructive" className="h-6 rounded-lg font-black tracking-tighter uppercase px-2">0 Stock</Badge>
+                    </div>
+                  ))
+                )}
               </CardContent>
             </Card>
-          )}
 
-          {alerts?.lowStock && alerts.lowStock.length > 0 && (
-            <Card style={{ borderColor: 'var(--color-secondary)' }}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-orange-900 dark:text-orange-100">
-                  <AlertTriangle className="h-5 w-5" />
-                  Stock Bajo ({alerts.lowStock.length})
-                </CardTitle>
+            {/* Low Stock */}
+            <Card className="border-none shadow-xl bg-orange-50/50 dark:bg-orange-950/10 border border-orange-200/50 dark:border-orange-900/50 overflow-hidden">
+              <div className="h-1.5 bg-orange-500" />
+              <CardHeader className="flex flex-row items-center gap-4">
+                <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center">
+                  <Bell className="h-6 w-6 text-orange-500" />
+                </div>
+                <div>
+                  <CardTitle className="text-orange-600 dark:text-orange-400 font-black">Stock Bajo ({alerts?.lowStock?.length || 0})</CardTitle>
+                  <CardDescription>Próximos a agotarse</CardDescription>
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {alerts.lowStock.map((product: any) => (
-                    <div key={product.id} className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
+              <CardContent className="space-y-3">
+                {alerts?.lowStock?.length === 0 ? (
+                  <p className="text-center py-10 text-muted-foreground/60 italic">Niveles saludables ✨</p>
+                ) : (
+                  alerts?.lowStock?.map((product: any) => (
+                    <div key={product.id} className="flex items-center justify-between p-4 bg-white/50 dark:bg-black/20 rounded-2xl border border-orange-200/30 dark:border-orange-900/30">
                       <div>
-                        <p className="font-medium">{product.name}</p>
-                        <p className="text-sm text-gray-600">{product.sku}</p>
+                        <p className="font-bold text-sm tracking-tight">{product.name}</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase">{product.sku}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-orange-900 dark:text-orange-100">
-                          {product.currentStock} / {product.minStockLevel}
-                        </p>
-                        <p className="text-xs text-gray-600">Actual / Mín</p>
+                        <div className="text-sm font-black text-orange-600 dark:text-orange-400">
+                          {product.currentStock} <span className="text-[10px] font-bold text-muted-foreground uppercase">/ {product.minStockLevel || 0}</span>
+                        </div>
+                        <p className="text-[8px] font-black uppercase text-muted-foreground tracking-tighter">Actual / Mín</p>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  ))
+                )}
               </CardContent>
             </Card>
-          )}
+          </div>
 
           {(!alerts || (alerts.outOfStock.length === 0 && alerts.lowStock.length === 0)) && (
-            <Card style={{ borderColor: 'var(--color-primary)' }}>
-              <CardContent className="flex flex-col items-center justify-center py-16">
-                <Package className="h-16 w-16 text-green-400 mb-4" />
-                <h3 className="text-lg font-semibold mb-2 text-green-900 dark:text-green-100">
-                  ¡Todos los niveles de stock están saludables!
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  No hay productos bajo los niveles mínimos de stock
-                </p>
+            <Card className="bg-emerald-500/10 border border-emerald-500/20 py-24 shadow-2xl shadow-emerald-500/5">
+              <CardContent className="flex flex-col items-center justify-center">
+                <div className="h-24 w-24 rounded-full bg-emerald-500/20 flex items-center justify-center mb-6 animate-bounce">
+                  <CheckCircle2 className="h-12 w-12 text-emerald-500" />
+                </div>
+                <h3 className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mb-2">¡Inventario Saludable!</h3>
+                <p className="text-muted-foreground font-medium">Todos tus productos tienen niveles de stock óptimos.</p>
               </CardContent>
             </Card>
           )}
         </TabsContent>
 
-        <TabsContent value="batches" className="space-y-4">
-          <Card style={{ borderColor: 'var(--color-primary)' }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Gestión de Lotes con Fechas de Vencimiento
-              </CardTitle>
-              <CardDescription>
-                Administra lotes de productos perecederos con fechas de vencimiento
-              </CardDescription>
+        <TabsContent value="batches" className="animate-in fade-in-50 duration-500">
+          <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm border border-border/50">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-bold flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  Gestión de Lotes
+                </CardTitle>
+                <CardDescription>Productos perecederos con trazabilidad industrial</CardDescription>
+              </div>
+              <Badge variant="outline" className="px-3 py-1 font-black rounded-lg uppercase tracking-tighter bg-primary/5 border-primary/20 text-primary">
+                Control FIFO
+              </Badge>
             </CardHeader>
             <CardContent>
               {store && <BatchesTable storeSlug={store.slug} />}
@@ -484,16 +543,20 @@ export default function InventoryPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="expiring" className="space-y-4">
-          <Card style={{ borderColor: 'var(--color-primary)' }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                Reporte de Productos por Vencer
-              </CardTitle>
-              <CardDescription>
-                Productos con lotes próximos a vencer o ya vencidos
-              </CardDescription>
+        <TabsContent value="expiring" className="animate-in fade-in-50 duration-500">
+          <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm border border-border/50 overflow-hidden">
+            <div className="h-1.5 bg-yellow-400" />
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-bold flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                  Control de Vencimientos
+                </CardTitle>
+                <CardDescription>Monitoreo preventivo de lotes próximos a vencer</CardDescription>
+              </div>
+              <div className="p-2 rounded-xl bg-yellow-500/10">
+                <Calendar className="h-5 w-5 text-yellow-600" />
+              </div>
             </CardHeader>
             <CardContent>
               <ExpiringProductsReport />
