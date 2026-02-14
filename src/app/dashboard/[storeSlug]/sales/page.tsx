@@ -7,6 +7,20 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Receipt, TrendingUp, DollarSign, ShoppingCart } from 'lucide-react'
 
+const statusLabels: Record<string, string> = {
+  COMPLETED: 'Completada',
+  CANCELLED: 'Cancelada',
+  PENDING: 'Pendiente',
+  REFUNDED: 'Reembolsada',
+}
+
+const paymentMethodLabels: Record<string, string> = {
+  CASH: 'Efectivo',
+  CARD: 'Tarjeta',
+  MOBILE: 'Móvil',
+  CREDIT: 'Crédito',
+}
+
 export default async function SalesPage({
   params,
 }: {
@@ -132,10 +146,10 @@ export default async function SalesPage({
                       <td className="py-3 px-2 sm:px-4">
                         <div>
                           <p className="font-medium text-sm">
-                            {new Date(sale.createdAt).toLocaleDateString()}
+                            {new Date(sale.createdAt).toLocaleDateString('es-ES')}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(sale.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
                       </td>
@@ -143,7 +157,9 @@ export default async function SalesPage({
                         <p className="text-sm">{sale.cashier?.name || 'Desconocido'}</p>
                       </td>
                       <td className="py-3 px-2 sm:px-4 hidden sm:table-cell">
-                        <Badge variant="outline" className="text-xs">{sale.paymentMethod}</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {paymentMethodLabels[sale.paymentMethod] || sale.paymentMethod}
+                        </Badge>
                       </td>
                       <td className="py-3 px-2 sm:px-4 text-right font-semibold text-sm sm:text-base">
                         ${Number(sale.total).toFixed(2)}
@@ -159,7 +175,7 @@ export default async function SalesPage({
                           }
                           className="text-xs"
                         >
-                          {sale.status}
+                          {statusLabels[sale.status] || sale.status}
                         </Badge>
                       </td>
                       <td className="py-3 px-2 sm:px-4 text-right">

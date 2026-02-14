@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -44,30 +44,52 @@ export function ProductSearchInput({
   const [highlightedIndex, setHighlightedIndex] = useState(0)
   const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({})
   const containerRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   const selectedProduct = products.find(p => p.id === value)
 
+  const handleSelectProduct = useCallback((product: Product) => {
+    onChange(product.id)
+    setSearch(product.name)
+    setShowDropdown(false)
+  }, [onChange])
+
   useEffect(() => {
-    if (selectedProduct) {
-      setSearch(selectedProduct.name)
+    if (value && !search) {
+      // Fetch the selected product name if we have a value but no search
+      const fetchProduct = async () => {
+        try {
+          const response = await fetch(`/api/stores/${storeId}/products/${value}`)
+          if (response.ok) {
+            const product = await response.json()
+            setSearch(product.name)
+          }
+        } catch (error) {
+          console.error('Error fetching product:', error)
+        }
+      }
+      fetchProduct()
     }
-  }, [])
+  }, [value, storeId, search])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node
+      if (
+        containerRef.current && 
+        !containerRef.current.contains(target) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target)
+      ) {
         setShowDropdown(false)
-        if (selectedProduct) {
-          setSearch(selectedProduct.name)
-        }
       }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [selectedProduct])
+  }, [])
 
   useEffect(() => {
     const updateDropdownPosition = () => {
@@ -144,12 +166,6 @@ export function ProductSearchInput({
     }
   }
 
-  const handleSelectProduct = (product: Product) => {
-    onChange(product.id)
-    setSearch(product.name)
-    setShowDropdown(false)
-  }
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showDropdown || products.length === 0) return
 
@@ -172,9 +188,6 @@ export function ProductSearchInput({
         break
       case 'Escape':
         setShowDropdown(false)
-        if (selectedProduct) {
-          setSearch(selectedProduct.name)
-        }
         break
     }
   }
@@ -188,6 +201,7 @@ export function ProductSearchInput({
 
   const dropdownContent = showDropdown && products.length > 0 ? (
     <div
+      ref={dropdownRef}
       style={dropdownStyle}
       className="bg-white dark:bg-gray-900 border rounded-lg shadow-xl max-h-64 overflow-y-auto"
     >
@@ -200,7 +214,11 @@ export function ProductSearchInput({
               ? 'bg-gray-100 dark:bg-gray-800'
               : 'hover:bg-gray-50 dark:hover:bg-gray-800'
           )}
-          onClick={() => handleSelectProduct(product)}
+          onMouseDown={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            handleSelectProduct(product)
+          }}
           onMouseEnter={() => setHighlightedIndex(index)}
         >
           {product.imageUrl ? (
@@ -230,6 +248,7 @@ export function ProductSearchInput({
     </div>
   ) : showDropdown && search.length >= 1 && !loading && products.length === 0 ? (
     <div
+      ref={dropdownRef}
       style={dropdownStyle}
       className="bg-white dark:bg-gray-900 border rounded-lg shadow-xl p-4 text-center text-gray-500"
     >

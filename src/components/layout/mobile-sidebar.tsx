@@ -119,6 +119,7 @@ export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) 
       href: `/dashboard/${storeSlug}/settings`,
       icon: Settings,
       permission: 'manage_store',
+      ownerOnly: true,
     },
   ]
 

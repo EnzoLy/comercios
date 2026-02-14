@@ -3,10 +3,26 @@ import Link from 'next/link'
 import { getStoreContext } from '@/lib/auth/store-context'
 import { getDataSource } from '@/lib/db'
 import { Sale } from '@/lib/db/entities/sale.entity'
+import { DigitalInvoice } from '@/lib/db/entities/digital-invoice.entity'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Receipt, User, CreditCard } from 'lucide-react'
+import { SaleInvoiceButton } from './invoice-button'
+
+const statusLabels: Record<string, string> = {
+  COMPLETED: 'Completada',
+  CANCELLED: 'Cancelada',
+  PENDING: 'Pendiente',
+  REFUNDED: 'Reembolsada',
+}
+
+const paymentMethodLabels: Record<string, string> = {
+  CASH: 'Efectivo',
+  CARD: 'Tarjeta',
+  MOBILE: 'Móvil',
+  CREDIT: 'Crédito',
+}
 
 export default async function SaleDetailsPage({
   params,
@@ -22,6 +38,7 @@ export default async function SaleDetailsPage({
 
   const dataSource = await getDataSource()
   const saleRepo = dataSource.getRepository(Sale)
+  const invoiceRepo = dataSource.getRepository(DigitalInvoice)
 
   const sale = await saleRepo.findOne({
     where: { id: saleId, storeId: context.storeId },
@@ -32,42 +49,57 @@ export default async function SaleDetailsPage({
     notFound()
   }
 
+  const existingInvoice = await invoiceRepo.findOne({
+    where: { saleId: sale.id },
+  })
+
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-4 md:p-8 max-w-4xl mx-auto">
       <div className="mb-6">
         <Button asChild variant="ghost" size="sm">
           <Link href={`/dashboard/${storeSlug}/sales`}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Sales
+            Volver a Ventas
           </Link>
         </Button>
       </div>
 
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Sale Details</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Detalles de Venta</h1>
           <p className="text-gray-600 dark:text-gray-400">
             #{sale.id.substring(0, 8)}
           </p>
         </div>
-        <Badge
-          variant={
-            sale.status === 'COMPLETED'
-              ? 'default'
-              : sale.status === 'CANCELLED'
-              ? 'destructive'
-              : 'secondary'
-          }
-        >
-          {sale.status}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <SaleInvoiceButton
+            saleId={sale.id}
+            storeId={context.storeId}
+            existingInvoice={existingInvoice ? {
+              id: existingInvoice.id,
+              accessToken: existingInvoice.accessToken,
+              invoiceNumber: existingInvoice.invoiceNumber,
+            } : null}
+          />
+          <Badge
+            variant={
+              sale.status === 'COMPLETED'
+                ? 'default'
+                : sale.status === 'CANCELLED'
+                ? 'destructive'
+                : 'secondary'
+            }
+          >
+            {statusLabels[sale.status] || sale.status}
+          </Badge>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Total Amount
+              Monto Total
             </CardTitle>
             <Receipt className="h-4 w-4 text-gray-400" />
           </CardHeader>
@@ -79,41 +111,41 @@ export default async function SaleDetailsPage({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Payment Method
+              Método de Pago
             </CardTitle>
             <CreditCard className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{sale.paymentMethod}</div>
+            <div className="text-xl font-bold">{paymentMethodLabels[sale.paymentMethod] || sale.paymentMethod}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Cashier
+              Cajero
             </CardTitle>
             <User className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-medium">{sale.cashier?.name || 'Unknown'}</div>
+            <div className="text-lg font-medium">{sale.cashier?.name || 'Desconocido'}</div>
           </CardContent>
         </Card>
       </div>
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Items ({sale.items?.length || 0})</CardTitle>
+          <CardTitle>Productos ({sale.items?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-3 px-4">Product</th>
-                  <th className="text-center py-3 px-4">Quantity</th>
-                  <th className="text-right py-3 px-4">Unit Price</th>
-                  <th className="text-right py-3 px-4">Discount</th>
+                  <th className="text-left py-3 px-4">Producto</th>
+                  <th className="text-center py-3 px-4">Cantidad</th>
+                  <th className="text-right py-3 px-4">Precio Unit.</th>
+                  <th className="text-right py-3 px-4">Descuento</th>
                   <th className="text-right py-3 px-4">Total</th>
                 </tr>
               </thead>
@@ -146,7 +178,7 @@ export default async function SaleDetailsPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Summary</CardTitle>
+          <CardTitle>Resumen</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           <div className="flex justify-between text-sm">
@@ -154,12 +186,12 @@ export default async function SaleDetailsPage({
             <span>${Number(sale.subtotal).toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Tax:</span>
+            <span className="text-gray-600">Impuesto:</span>
             <span>${Number(sale.tax).toFixed(2)}</span>
           </div>
           {sale.discount > 0 && (
             <div className="flex justify-between text-sm text-red-600">
-              <span>Discount:</span>
+              <span>Descuento:</span>
               <span>-${Number(sale.discount).toFixed(2)}</span>
             </div>
           )}
@@ -171,11 +203,11 @@ export default async function SaleDetailsPage({
           {sale.paymentMethod === 'CASH' && sale.amountPaid && (
             <>
               <div className="flex justify-between text-sm mt-4">
-                <span className="text-gray-600">Amount Paid:</span>
+                <span className="text-gray-600">Monto Recibido:</span>
                 <span>${Number(sale.amountPaid).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Change:</span>
+                <span className="text-gray-600">Cambio:</span>
                 <span>${Number(sale.change || 0).toFixed(2)}</span>
               </div>
             </>
@@ -183,27 +215,27 @@ export default async function SaleDetailsPage({
 
           <div className="mt-4 pt-4 border-t text-sm text-gray-600">
             <div className="flex justify-between mb-1">
-              <span>Date:</span>
-              <span>{new Date(sale.createdAt).toLocaleString()}</span>
+              <span>Fecha:</span>
+              <span>{new Date(sale.createdAt).toLocaleString('es-ES')}</span>
             </div>
             {sale.completedAt && (
               <div className="flex justify-between">
-                <span>Completed:</span>
-                <span>{new Date(sale.completedAt).toLocaleString()}</span>
+                <span>Completada:</span>
+                <span>{new Date(sale.completedAt).toLocaleString('es-ES')}</span>
               </div>
             )}
           </div>
 
           {sale.notes && (
             <div className="mt-4 pt-4 border-t">
-              <p className="text-sm font-medium mb-1">Notes:</p>
+              <p className="text-sm font-medium mb-1">Notas:</p>
               <p className="text-sm text-gray-600">{sale.notes}</p>
             </div>
           )}
 
           {sale.customerName && (
             <div className="mt-4 pt-4 border-t">
-              <p className="text-sm font-medium mb-1">Customer:</p>
+              <p className="text-sm font-medium mb-1">Cliente:</p>
               <p className="text-sm text-gray-600">{sale.customerName}</p>
               {sale.customerEmail && (
                 <p className="text-sm text-gray-600">{sale.customerEmail}</p>

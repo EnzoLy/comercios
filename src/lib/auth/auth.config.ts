@@ -7,6 +7,8 @@ import { User } from '../db/entities/user.entity'
 import { Employment } from '../db/entities/employment.entity'
 
 export const authConfig: NextAuthConfig = {
+  trustHost: true,
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     Credentials({
       credentials: {
@@ -108,6 +110,16 @@ export const authConfig: NextAuthConfig = {
     error: '/auth/error',
   },
   callbacks: {
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user
+      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard')
+      const isOnAdmin = nextUrl.pathname.startsWith('/admin')
+      
+      if (isOnDashboard || isOnAdmin) {
+        if (!isLoggedIn) return false
+      }
+      return true
+    },
     async jwt({ token, user }) {
       // Add user info to token on sign in
       if (user) {

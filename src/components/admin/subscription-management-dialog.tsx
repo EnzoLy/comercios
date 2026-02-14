@@ -217,7 +217,7 @@ export function SubscriptionManagementDialog({
           <Separator />
 
           {/* Permanent Toggle */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg border border-blue-200">
             <div>
               <h3 className="font-medium flex items-center gap-2">
                 <Infinity className="h-5 w-5 text-blue-600" />

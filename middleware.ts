@@ -4,7 +4,13 @@ import { auth } from '@/lib/auth/auth'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const session = await auth()
+  
+  let session = null
+  try {
+    session = await auth()
+  } catch (error) {
+    console.error('Auth error in middleware:', error)
+  }
 
   // Public routes that don't require authentication
   const publicRoutes = ['/auth/signin', '/auth/signup', '/auth/error', '/auth/change-password', '/']
@@ -116,10 +122,24 @@ export async function middleware(request: NextRequest) {
         const page = pageMatch ? pageMatch[1] : ''
 
         // Define allowed routes by role
+        // Note: 'settings' is owner-only, 'my-access' is available to all authenticated users
         const allowedRoutes: Record<string, string[]> = {
-          CASHIER: ['pos'],
-          STOCK_KEEPER: ['pos', 'inventory'],
-          MANAGER: ['pos', 'employees', 'shifts', 'analytics', 'sales', 'reports'],
+          CASHIER: ['pos', 'my-access'],
+          STOCK_KEEPER: ['pos', 'inventory', 'my-access', 'products', 'categories'],
+          MANAGER: [
+            'pos',
+            'employees',
+            'shifts',
+            'analytics',
+            'sales',
+            'reports',
+            'my-access',
+            'products',
+            'categories',
+            'inventory',
+            'suppliers',
+            'purchase-orders',
+          ],
           ADMIN: [
             'pos',
             'employees',
@@ -130,12 +150,24 @@ export async function middleware(request: NextRequest) {
             'products',
             'categories',
             'inventory',
+            'my-access',
+            'suppliers',
+            'purchase-orders',
           ],
         }
 
         // Owner can access everything
-        if (!isOwner) {
-          const allowedPagesForRole = allowedRoutes[role] || ['pos']
+        // ADMIN can access everything except settings
+        const isAdmin = role === 'ADMIN'
+        if (isOwner) {
+          // Owner can access everything - no restrictions
+        } else if (isAdmin) {
+          // ADMIN can access everything except settings
+          if (page === 'settings') {
+            return NextResponse.redirect(new URL(`/dashboard/${storeSlug}`, request.url))
+          }
+        } else {
+          const allowedPagesForRole = allowedRoutes[role] || ['pos', 'my-access']
 
           // Check if user is trying to access a route they don't have permission for
           if (page && !allowedPagesForRole.includes(page)) {
