@@ -778,8 +778,8 @@ export default function POSPage() {
             </div>
           </div>
           <DialogFooter className="p-8 pt-0 gap-3 sm:gap-0">
-            <Button variant="ghost" size="lg" className="flex-1 h-14 rounded-2xl font-bold text-muted-foreground hover:bg-destructive/5 hover:text-destructive" onClick={() => setCheckoutOpen(false)} disabled={isProcessing}>Cancelar</Button>
-            <Button size="lg" className="flex-1 h-16 rounded-2xl font-black uppercase text-xs tracking-widest shadow-2xl shadow-primary/20 transition-all active:scale-95" onClick={handleCheckout} disabled={isProcessing || (amountPaid !== undefined && amountPaid < total)}>{isProcessing ? 'Procesando...' : 'Confirmar Venta'}</Button>
+            <Button variant="ghost" className="flex-1 h-14 rounded-2xl font-bold text-muted-foreground hover:bg-destructive/5 hover:text-destructive" onClick={() => setCheckoutOpen(false)} disabled={isProcessing}>Cancelar</Button>
+            <Button className="flex-1 h-20 rounded-2xl font-black uppercase text-xs tracking-widest shadow-2xl shadow-primary/20 transition-all active:scale-95" onClick={handleCheckout} disabled={isProcessing || (amountPaid !== undefined && amountPaid < total)}>{isProcessing ? 'Procesando...' : 'Confirmar Venta'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
