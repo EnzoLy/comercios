@@ -23,6 +23,7 @@ import {
   Truck,
   ClipboardList,
   ChevronRight,
+  BookOpen,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 
@@ -54,6 +55,11 @@ export function Sidebar({ storeSlug, isOwner, role }: SidebarProps) {
       label: 'Mi Acceso',
       href: `/dashboard/${storeSlug}/my-access`,
       icon: QrCode,
+    },
+    {
+      label: 'Tutoriales',
+      href: `/dashboard/${storeSlug}/tutoriales`,
+      icon: BookOpen,
     },
     {
       label: 'Productos',

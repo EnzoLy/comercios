@@ -1,0 +1,615 @@
+---
+title: "Órdenes de Compra: Automatiza tus Reposiciones"
+description: "Aprende a crear, gestionar y recibir órdenes de compra. Automatiza la reposición de inventario y mantén control total sobre tus compras"
+category: "proveedores"
+roles: ["ADMIN", "MANAGER"]
+difficulty: "intermedio"
+duration: 15
+order: 2
+featured: true
+tags: ["órdenes de compra", "compras", "reposición", "proveedores"]
+thumbnail: "https://placehold.co/400x300/d97706/white?text=Ordenes"
+videoUrl: "https://placehold.co/800x450/d97706/white?text=Video+Ordenes+(Proximamente)"
+lastUpdated: "2026-02-15"
+author: "Sistema CMS"
+relatedTutorials: ["gestion-proveedores", "gestion-inventario"]
+---
+
+# Órdenes de Compra: Automatiza tus Reposiciones
+
+Las órdenes de compra son documentos formales que registran tu intención de comprar productos a un proveedor. Este tutorial te enseñará a optimizar tu proceso de compras.
+
+<Callout type="info" title="¿Qué es una Orden de Compra?">
+Es un documento que especifica qué productos quieres comprar, en qué cantidad, a qué precio y bajo qué condiciones. Sirve como contrato entre tú y el proveedor.
+</Callout>
+
+## Beneficios de Usar Órdenes de Compra
+
+<InfoCard icon="FileText" title="Documentación Formal">
+Tienes registro escrito de lo acordado, evitando malentendidos y facilitando reclamos.
+</InfoCard>
+
+<InfoCard icon="DollarSign" title="Control de Gastos">
+Autorizas y rastreas cada compra antes de realizarla, manteniendo presupuesto bajo control.
+</InfoCard>
+
+<InfoCard icon="Package" title="Mejor Recepción">
+Al recibir mercadería, comparas fácilmente lo que pediste vs lo que llegó.
+</InfoCard>
+
+<InfoCard icon="BarChart3" title="Análisis de Compras">
+Generas reportes de cuánto, cuándo y a quién compras para optimizar decisiones.
+</InfoCard>
+
+## Ciclo de Vida de una Orden de Compra
+
+```
+1. BORRADOR
+   ↓ (Revisión y autorización)
+2. ENVIADA
+   ↓ (Proveedor confirma)
+3. CONFIRMADA
+   ↓ (Mercadería llega)
+4. RECIBIDA (Parcial o Total)
+   ↓ (Verificación de calidad)
+5. COMPLETADA
+   ↓ (Pago realizado)
+6. CERRADA
+```
+
+Estados adicionales:
+- **CANCELADA**: Orden anulada antes de enviar
+- **RECHAZADA**: Proveedor no puede cumplir
+- **EN DISPUTA**: Problemas con la recepción
+
+## Crear una Orden de Compra Manualmente
+
+<StepList>
+  <Step title="Accede al Módulo de Órdenes de Compra">
+    Ve a **Proveedores → Órdenes de Compra** en el menú lateral.
+
+    <ImageZoom
+      src="https://placehold.co/800x450/d97706/white?text=Lista+Ordenes"
+      alt="Lista de órdenes de compra"
+      caption="Vista de todas las órdenes con sus estados"
+    />
+  </Step>
+
+  <Step title="Haz Clic en 'Nueva Orden'">
+    Se abrirá el formulario de creación de orden.
+  </Step>
+
+  <Step title="Selecciona el Proveedor">
+    Elige el proveedor del catálogo. Al seleccionarlo, el sistema cargará automáticamente:
+    - Términos de pago del proveedor
+    - Tiempo estimado de entrega
+    - Productos que ya compraste a este proveedor
+    - Datos de contacto
+  </Step>
+
+  <Step title="Agrega Productos a la Orden">
+    Tienes varias formas de agregar productos:
+
+    **Opción 1: Búsqueda Manual**
+    - Busca el producto por nombre o SKU
+    - Ingresa la cantidad deseada
+    - El sistema muestra el último precio de compra
+    - Haz clic en "Agregar"
+
+    **Opción 2: Productos Sugeridos**
+    El sistema sugiere productos basándose en:
+    - Productos con bajo stock
+    - Productos que compraste antes a este proveedor
+    - Productos próximos a agotarse según ventas
+
+    **Opción 3: Importar desde Excel**
+    - Descarga la plantilla
+    - Llena: Producto, Cantidad, Precio
+    - Importa el archivo
+
+    <Callout type="success" title="Sugerencias Inteligentes">
+    El sistema calcula automáticamente la cantidad sugerida basándose en:
+    - Tasa de venta promedio
+    - Stock actual
+    - Stock mínimo configurado
+    - Tiempo de entrega del proveedor
+    </Callout>
+  </Step>
+
+  <Step title="Configura Precio y Descuentos">
+    Para cada producto:
+
+    - **Precio Unitario**: Costo por unidad
+    - **Descuento**: % o monto fijo
+    - **Impuestos**: IVA u otros (si aplica)
+    - **Subtotal**: Calculado automáticamente
+
+    El sistema te alertará si:
+    - El precio es muy diferente a la última compra
+    - Hay mejores precios con otro proveedor
+    - Hay promociones activas
+  </Step>
+
+  <Step title="Revisa el Resumen">
+    Verás un resumen completo:
+
+    ```
+    ORDEN DE COMPRA #OC-2026-001
+    ================================
+    Proveedor: Distribuidora ABC
+    Fecha: 15/02/2026
+    Entrega Estimada: 22/02/2026
+
+    Productos:
+    - Coca Cola 2L (x50)    $125.00
+    - Fanta 2L (x30)        $75.00
+    - Sprite 2L (x20)       $50.00
+                            --------
+    Subtotal:               $250.00
+    Descuento (5%):         -$12.50
+    Impuestos (16%):        $38.00
+                            --------
+    TOTAL:                  $275.50
+
+    Condiciones:
+    - Pago: 30 días
+    - Envío: Gratis
+    ```
+  </Step>
+
+  <Step title="Agrega Notas e Instrucciones">
+    Incluye información adicional:
+
+    - Instrucciones de entrega (horario, lugar)
+    - Especificaciones de empaque
+    - Requisitos de documentación
+    - Condiciones especiales
+    - Contacto para coordinar entrega
+  </Step>
+
+  <Step title="Guarda como Borrador o Envía">
+    **Guardar como Borrador:**
+    - Para revisar más tarde
+    - Requiere autorización de supervisor
+    - Hacer ajustes antes de enviar
+
+    **Enviar Directamente:**
+    - Si tienes autorización
+    - La orden se marca como "ENVIADA"
+    - Se genera PDF automáticamente
+    - Se puede enviar por email al proveedor
+
+    <ImageZoom
+      src="https://placehold.co/800x450/d97706/white?text=PDF+Orden"
+      alt="PDF de orden de compra"
+      caption="Orden de compra profesional en formato PDF lista para enviar"
+    />
+  </Step>
+</StepList>
+
+## Generar Órdenes Automáticas
+
+El sistema puede crear órdenes automáticamente basándose en reglas.
+
+### Configurar Reposición Automática
+
+<StepList>
+  <Step title="Ve a Configuración de Compras">
+    **Proveedores → Configuración → Reposición Automática**
+  </Step>
+
+  <Step title="Define Reglas por Producto o Categoría">
+    Para cada regla, establece:
+
+    - **Punto de Reorden**: Cuando el stock baje de este nivel, generar orden
+    - **Cantidad a Pedir**: Cuánto comprar (fija o calculada)
+    - **Proveedor Preferido**: A quién comprar
+    - **Frecuencia Máxima**: No comprar más de X veces por mes
+  </Step>
+
+  <Step title="Configura el Cálculo de Cantidad">
+    **Métodos disponibles:**
+
+    1. **Cantidad Fija**: Siempre pedir la misma cantidad
+    2. **Hasta Stock Máximo**: Pedir lo necesario para llegar al stock máximo
+    3. **Por Demanda Proyectada**: Calcular según ventas promedio
+    4. **EOQ (Economic Order Quantity)**: Cantidad económica óptima
+
+    <Callout type="info" title="EOQ - Cantidad Económica de Pedido">
+    El sistema calcula la cantidad óptima que minimiza costos totales (almacenamiento + pedido).
+
+    Requiere configurar:
+    - Costo por hacer un pedido
+    - Costo de mantener inventario
+    - Demanda anual proyectada
+    </Callout>
+  </Step>
+
+  <Step title="Activa la Automatización">
+    Elige el modo:
+
+    - **Manual Asistido**: El sistema crea borradores que revisas y apruebas
+    - **Semi-Automático**: Crea y envía órdenes, pero requiere confirmación
+    - **Totalmente Automático**: Crea, envía y confirma sin intervención (solo para productos de alta confianza)
+  </Step>
+</StepList>
+
+### Revisión de Órdenes Sugeridas
+
+El sistema genera un reporte diario/semanal con:
+
+- Productos que necesitan reposición
+- Cantidad sugerida para cada uno
+- Proveedor recomendado
+- Inversión total estimada
+- Fecha sugerida de pedido
+
+Puedes aprobar todas, aprobar selectivamente, o modificar antes de enviar.
+
+## Recibir una Orden de Compra
+
+Cuando llega la mercadería del proveedor:
+
+<StepList>
+  <Step title="Abre la Orden Correspondiente">
+    Ve a **Órdenes de Compra → Busca la orden** (por número o proveedor)
+
+    Verifica que el estado sea "CONFIRMADA" o "ENVIADA"
+  </Step>
+
+  <Step title="Haz Clic en 'Recibir Mercadería'">
+    Se abrirá el formulario de recepción con la lista de productos ordenados.
+
+    <ImageZoom
+      src="https://placehold.co/800x450/d97706/white?text=Recepcion+Mercaderia"
+      alt="Formulario de recepción de mercadería"
+      caption="Interface para registrar la recepción de productos"
+    />
+  </Step>
+
+  <Step title="Verifica Cada Producto">
+    Para cada ítem en la orden:
+
+    **Revisa Físicamente:**
+    - Cuenta la cantidad recibida
+    - Verifica el estado (sin daños)
+    - Comprueba fechas de vencimiento
+    - Confirma que el producto es correcto
+
+    **Registra en el Sistema:**
+    - **Cantidad Ordenada**: Lo que pediste
+    - **Cantidad Recibida**: Lo que realmente llegó
+    - **Cantidad Aceptada**: Lo que apruebas
+    - **Cantidad Rechazada**: Productos dañados o incorrectos
+
+    **Estados posibles:**
+    - ✅ **Completo**: Recibiste todo lo ordenado
+    - ⚠️ **Parcial**: Recibiste menos de lo ordenado
+    - ❌ **Rechazado**: Producto no aceptable
+  </Step>
+
+  <Step title="Registra Lotes y Vencimientos">
+    Si el producto requiere control de lotes:
+
+    - **Número de Lote**: Código del fabricante/proveedor
+    - **Fecha de Fabricación**: Cuándo se produjo
+    - **Fecha de Vencimiento**: Cuándo caduca
+    - **Ubicación de Almacenamiento**: Dónde lo guardas
+
+    <Callout type="warning" title="Productos Perecederos">
+    SIEMPRE registra las fechas de vencimiento. Esto evitará vender productos caducados y te ayudará a planificar promociones.
+    </Callout>
+  </Step>
+
+  <Step title="Documenta Discrepancias">
+    Si hay diferencias entre lo ordenado y lo recibido:
+
+    **Tipos de discrepancias:**
+    - **Faltante**: Productos que no llegaron
+    - **Excedente**: Productos de más (verifica con proveedor)
+    - **Producto Incorrecto**: Enviaron algo diferente
+    - **Producto Dañado**: Llegó en mal estado
+
+    Para cada discrepancia, registra:
+    - Descripción del problema
+    - Foto del producto/empaque (si está dañado)
+    - Acción tomada (rechazar, aceptar con descuento, devolver)
+    - Acuerdo con proveedor
+  </Step>
+
+  <Step title="Confirma la Recepción">
+    Al confirmar:
+
+    - **El inventario se actualiza automáticamente** con las cantidades aceptadas
+    - **Se genera un comprobante de recepción** (PDF)
+    - **Se notifica al proveedor** (si configurado)
+    - **Se actualiza el estado de la orden**:
+      - "RECIBIDA PARCIALMENTE" si falta mercadería
+      - "COMPLETADA" si recibiste todo
+    - **Se crea automáticamente una factura por pagar** (si aplica)
+  </Step>
+
+  <Step title="Gestiona Productos Rechazados">
+    Para productos que rechazaste:
+
+    1. Genera una **Nota de Devolución** automáticamente
+    2. Coordina con el proveedor la devolución o reposición
+    3. Decide:
+       - **Devolución**: El proveedor retira el producto
+       - **Nota de Crédito**: El proveedor descuenta del total
+       - **Reposición**: El proveedor envía reemplazo
+
+    El sistema rastrea este proceso hasta que se resuelva.
+  </Step>
+</StepList>
+
+## Gestión de Pagos
+
+Después de recibir la orden, viene el pago.
+
+### Proceso de Pago
+
+1. **Recepción de Factura del Proveedor**
+   - El proveedor envía factura oficial
+   - Registras la factura en el sistema
+   - Asocias con la orden de compra
+
+2. **Verificación de Factura**
+   - Compara factura vs orden de compra
+   - Verifica montos, cantidades, precios
+   - Valida datos fiscales
+
+3. **Programación de Pago**
+   - Según términos acordados (15, 30, 60 días)
+   - Agrega a calendario de pagos
+   - Recibe alertas antes del vencimiento
+
+4. **Ejecución del Pago**
+   - Registra el pago en el sistema
+   - Adjunta comprobante (transferencia, cheque)
+   - Marca factura como "PAGADA"
+   - Actualiza estado de cuenta del proveedor
+
+<ImageZoom
+  src="https://placehold.co/800x450/d97706/white?text=Pago+Factura"
+  alt="Registro de pago de factura"
+  caption="Interface para registrar pagos a proveedores"
+/>
+
+### Descuentos por Pronto Pago
+
+Si el proveedor ofrece descuentos por pagar antes:
+
+- El sistema calcula automáticamente el descuento
+- Te sugiere si conviene pagar antes (análisis financiero)
+- Registra el ahorro obtenido
+- Genera reporte de ahorros acumulados
+
+**Ejemplo:**
+```
+Factura: $10,000
+Vencimiento: 30 días
+Descuento pronto pago: 3% si pagas a 7 días
+
+Análisis:
+- Ahorro por pronto pago: $300
+- Costo de oportunidad: ¿Qué más puedes hacer con esos $10,000 por 23 días?
+- Recomendación: PAGAR ANTICIPADO (si el 3% supera tu costo de oportunidad)
+```
+
+## Devoluciones a Proveedores
+
+Si necesitas devolver productos después de recibirlos:
+
+<StepList>
+  <Step title="Crea una Solicitud de Devolución">
+    **Proveedores → Devoluciones → Nueva Devolución**
+  </Step>
+
+  <Step title="Selecciona la Orden Original">
+    Busca la orden de compra de donde vienen los productos a devolver.
+  </Step>
+
+  <Step title="Especifica Productos a Devolver">
+    - Producto
+    - Cantidad
+    - Motivo (defecto, error en orden, vencimiento prematuro, etc.)
+    - Fotos/evidencia
+  </Step>
+
+  <Step title="Define Solución Esperada">
+    - **Reembolso Total**: Devolución de dinero
+    - **Nota de Crédito**: Usar en próxima compra
+    - **Reposición**: Envío de producto nuevo
+    - **Descuento Parcial**: Quedarte el producto con descuento
+  </Step>
+
+  <Step title="Envía Solicitud al Proveedor">
+    El sistema genera un documento formal y lo puede enviar automáticamente por email.
+  </Step>
+
+  <Step title="Rastrea la Devolución">
+    Estados:
+    - SOLICITADA
+    - APROBADA
+    - EN TRÁNSITO (devolviendo producto)
+    - RESUELTA (reembolso/crédito aplicado)
+  </Step>
+</StepList>
+
+## Reportes de Órdenes de Compra
+
+### Reporte de Compras por Período
+
+Muestra todas las compras en un rango de fechas:
+
+- Total invertido
+- Número de órdenes
+- Proveedores activos
+- Productos comprados
+- Promedio por orden
+
+Útil para presupuestos y planificación financiera.
+
+### Reporte de Órdenes Pendientes
+
+Lista todas las órdenes que aún no han sido completamente recibidas:
+
+- Órdenes confirmadas esperando entrega
+- Recepciones parciales pendientes
+- Tiempo de retraso
+- Impacto en inventario
+
+Ayuda a hacer seguimiento a proveedores.
+
+### Reporte de Cumplimiento de Proveedores
+
+Evalúa el desempeño basándose en órdenes:
+
+```
+Proveedor A:
+- Órdenes a tiempo: 85%
+- Órdenes completas: 90%
+- Productos rechazados: 2%
+- Calificación: ⭐⭐⭐⭐
+
+Proveedor B:
+- Órdenes a tiempo: 95%
+- Órdenes completas: 98%
+- Productos rechazados: 0.5%
+- Calificación: ⭐⭐⭐⭐⭐
+```
+
+### Reporte de Ahorro por Negociación
+
+Compara precios históricos:
+
+- Cuánto pagabas antes vs ahora
+- Ahorro total acumulado
+- Efectividad de negociaciones
+- Proveedores con mejor evolución de precio
+
+## Mejores Prácticas
+
+### Planificación de Compras
+
+<Callout type="success" title="Compra por Calendario, No por Urgencia">
+Las compras de emergencia son más caras. Planifica con anticipación basándote en:
+- Proyecciones de venta
+- Lead time de proveedores
+- Estacionalidad
+- Promociones programadas
+</Callout>
+
+**Calendario recomendado:**
+- **Semanal**: Productos perecederos de alta rotación
+- **Quincenal**: Productos de rotación media
+- **Mensual**: Productos de baja rotación
+- **Trimestral**: Artículos especiales o de temporada
+
+### Consolidación de Órdenes
+
+Evita hacer órdenes pequeñas frecuentes:
+
+- Consolida compras para alcanzar mínimos de envío gratis
+- Agrupa productos del mismo proveedor
+- Aprovecha descuentos por volumen
+- Reduce costos administrativos de procesamiento
+
+### Comunicación con Proveedores
+
+- Envía órdenes por escrito (PDF + email)
+- Solicita confirmación expresa
+- Confirma fecha de entrega
+- Actualiza contactos si cambian
+- Notifica cambios en tu negocio
+
+### Control de Calidad
+
+- Inspecciona SIEMPRE la mercadería al recibirla
+- No aceptes productos que no cumplen especificaciones
+- Documenta con fotos cualquier problema
+- Comunica inmediatamente las discrepancias
+- Mantiene registros de devoluciones
+
+### Optimización de Costos
+
+<InfoCard icon="TrendingDown" title="Reducir Costos de Compra">
+**Estrategias:**
+- Negocia descuentos por volumen
+- Aprovecha temporadas de baja demanda
+- Compara precios entre proveedores
+- Evalúa productos genéricos vs marcas
+- Consolida proveedores para mayor volumen
+</InfoCard>
+
+## Solución de Problemas Comunes
+
+### Proveedor no entrega a tiempo
+
+**Acciones:**
+1. Contacta inmediatamente al proveedor
+2. Solicita nueva fecha compromiso
+3. Evalúa impacto en tu inventario
+4. Considera compra de emergencia a otro proveedor
+5. Documenta el retraso en la orden
+6. Revisa calificación del proveedor
+
+### Productos llegan dañados frecuentemente
+
+**Causas posibles:**
+- Empaque inadecuado del proveedor
+- Mal manejo en transporte
+- Productos defectuosos de fábrica
+
+**Soluciones:**
+- Solicita mejor empaque
+- Cambia método de envío
+- Considera otro proveedor
+- Negocia descuento por riesgo
+
+### Diferencias constantes en cantidades
+
+**Investigar:**
+- ¿El proveedor redondea cajas/paquetes?
+- ¿Hay errores en el picking?
+- ¿La unidad de medida coincide?
+
+**Soluciones:**
+- Clarifica unidades (cajas vs unidades)
+- Solicita fotos del preparado
+- Exige hojas de empaque detalladas
+
+## Integraciones
+
+### Con Contabilidad
+
+- Genera automáticamente asientos contables
+- Actualiza cuentas por pagar
+- Vincula con proveedores (maestro)
+- Controla presupuesto de compras
+
+### Con Inventario
+
+- Actualiza stock al recibir
+- Crea movimientos de entrada
+- Registra lotes y vencimientos
+- Alerta de bajo stock
+
+### Con Finanzas
+
+- Proyecta flujo de efectivo
+- Programa pagos futuros
+- Calcula capital de trabajo necesario
+- Optimiza ciclo de conversión de efectivo
+
+## Próximos Pasos
+
+Dominar las órdenes de compra es clave para una operación eficiente. Continúa con:
+
+- **Análisis de Rentabilidad**: Qué productos/proveedores son más rentables
+- **Gestión de Inventario Avanzada**: JIT, EOQ, Stock de Seguridad
+- **Presupuestos**: Planificación financiera de compras
+- **Automatización Total**: Compras sin intervención humana
+
+¿Dudas sobre órdenes de compra? Contacta a soporte o consulta más tutoriales.

@@ -122,10 +122,10 @@ export async function middleware(request: NextRequest) {
         const page = pageMatch ? pageMatch[1] : ''
 
         // Define allowed routes by role
-        // Note: 'settings' is owner-only, 'my-access' is available to all authenticated users
+        // Note: 'settings' is owner-only, 'my-access' and 'tutoriales' are available to all authenticated users
         const allowedRoutes: Record<string, string[]> = {
-          CASHIER: ['pos', 'my-access'],
-          STOCK_KEEPER: ['pos', 'inventory', 'my-access', 'products', 'categories'],
+          CASHIER: ['pos', 'my-access', 'tutoriales'],
+          STOCK_KEEPER: ['pos', 'inventory', 'my-access', 'products', 'categories', 'tutoriales'],
           MANAGER: [
             'pos',
             'employees',
@@ -139,6 +139,7 @@ export async function middleware(request: NextRequest) {
             'inventory',
             'suppliers',
             'purchase-orders',
+            'tutoriales',
           ],
           ADMIN: [
             'pos',
@@ -153,6 +154,7 @@ export async function middleware(request: NextRequest) {
             'my-access',
             'suppliers',
             'purchase-orders',
+            'tutoriales',
           ],
         }
 

@@ -1,0 +1,466 @@
+---
+title: "Control de Inventario: Stock, Lotes y Vencimientos"
+description: "Aprende a monitorear tu inventario, ajustar stock, gestionar lotes y controlar fechas de vencimiento de productos perecederos"
+category: "inventario"
+roles: ["ADMIN", "MANAGER", "STOCK_KEEPER"]
+difficulty: "intermedio"
+duration: 10
+order: 1
+featured: true
+tags: ["inventario", "stock", "lotes", "vencimiento", "alertas"]
+thumbnail: "https://placehold.co/400x300/c026d3/white?text=Inventario"
+videoUrl: "https://placehold.co/800x450/c026d3/white?text=Video+Inventario+(Proximamente)"
+lastUpdated: "2026-02-15"
+author: "Sistema CMS"
+relatedTutorials: ["agregar-productos"]
+---
+
+# Control de Inventario: Stock, Lotes y Vencimientos
+
+El módulo de inventario te permite monitorear y controlar el stock de tus productos en tiempo real. Visualiza alertas, gestiona lotes y previene pérdidas por vencimiento.
+
+<Callout type="info" title="¿Qué puedes hacer en Inventario?">
+- Ver el historial de todos los movimientos de stock
+- Ajustar cantidades manualmente cuando sea necesario
+- Recibir alertas de productos sin stock o con stock bajo
+- Gestionar lotes de productos perecederos
+- Controlar fechas de vencimiento y recibir avisos preventivos
+</Callout>
+
+## Acceder al Módulo de Inventario
+
+<StepList>
+  <Step title="Ve al Menú Inventario">
+    En el menú lateral de tu dashboard, haz clic en "Inventario". Verás el panel principal con métricas de stock.
+
+    <ImageZoom
+      src="https://placehold.co/800x450/c026d3/white?text=Dashboard+Inventario"
+      alt="Dashboard de inventario"
+      caption="Vista principal del módulo de inventario con alertas destacadas"
+    />
+  </Step>
+
+  <Step title="Revisa las Métricas de Alertas">
+    En la parte superior verás tres tarjetas con información clave:
+
+    - **Sin Stock** (rojo): Productos que se agotaron completamente
+    - **Stock Bajo** (naranja): Productos por debajo del stock mínimo
+    - **Total SKUs** (azul): Cantidad total de productos en tu catálogo
+
+    Estas tarjetas te dan una vista rápida del estado de tu inventario.
+  </Step>
+</StepList>
+
+## Pestañas del Módulo
+
+El módulo tiene 5 secciones organizadas en pestañas:
+
+### 1. Movimientos - Historial de Transacciones
+
+Muestra las últimas 30 transacciones de inventario registradas automáticamente.
+
+<InfoCard icon="History" title="Tipos de Movimientos Registrados">
+El sistema registra automáticamente estos movimientos:
+
+- **PURCHASE**: Compras a proveedores (aumenta stock)
+- **SALE**: Ventas realizadas en el POS (disminuye stock automáticamente)
+- **RETURN**: Devoluciones de clientes (aumenta stock)
+- **DAMAGE**: Productos dañados o merma (disminuye stock)
+- **ADJUSTMENT**: Ajustes manuales que tú realizas
+</InfoCard>
+
+**Información que verás en cada movimiento:**
+- Fecha y hora exacta
+- Nombre y SKU del producto
+- Tipo de movimiento (con ícono visual)
+- Cantidad (positiva para entradas, negativa para salidas)
+- Razón o notas del movimiento
+- Usuario que lo registró
+
+<Callout type="success" title="Trazabilidad Completa">
+Cada movimiento queda registrado permanentemente con fecha, hora y responsable. Esto facilita auditorías y seguimiento.
+</Callout>
+
+### 2. Ajustar Stock - Correcciones Manuales
+
+Cuando necesitas corregir el stock de productos por conteos físicos, mermas o correcciones.
+
+<StepList>
+  <Step title="Busca el Producto">
+    Usa el buscador para encontrar el producto que necesitas ajustar. Puedes buscar por nombre o SKU.
+
+    <ImageZoom
+      src="https://placehold.co/800x450/c026d3/white?text=Ajustar+Stock"
+      alt="Panel de ajuste de stock"
+      caption="Interface para ajustar stock de productos manualmente"
+    />
+  </Step>
+
+  <Step title="Ingresa la Cantidad">
+    En el campo "Cant." ingresa:
+    - **Número positivo** (ej: +10) si quieres AUMENTAR el stock
+    - **Número negativo** (ej: -5) si quieres DISMINUIR el stock
+
+    El número que ingreses se SUMARÁ al stock actual.
+
+    **Ejemplo:**
+    ```
+    Stock actual: 50 unidades
+    Ingresas: +20
+    Resultado: 70 unidades
+
+    Stock actual: 50 unidades
+    Ingresas: -15
+    Resultado: 35 unidades
+    ```
+  </Step>
+
+  <Step title="Explica la Razón">
+    En el campo "Razón" ingresa el motivo del ajuste. Ejemplos:
+    - "Conteo físico"
+    - "Merma por daño"
+    - "Corrección error de registro"
+    - "Productos vencidos retirados"
+    - "Robo detectado"
+
+    <Callout type="warning" title="La Razón es Obligatoria">
+    No podrás guardar el ajuste sin especificar una razón. Esto mantiene trazabilidad de todos los cambios.
+    </Callout>
+  </Step>
+
+  <Step title="Guarda el Ajuste">
+    Haz clic en el botón de check (✓) para confirmar. El sistema:
+    - Actualiza el stock inmediatamente
+    - Registra el movimiento tipo "ADJUSTMENT"
+    - Asocia el cambio con tu usuario
+    - Muestra una confirmación de éxito
+  </Step>
+</StepList>
+
+**Cuándo usar ajustes manuales:**
+- Después de hacer un conteo físico y encontrar diferencias
+- Al detectar productos dañados que debes retirar
+- Cuando encuentras errores en registros anteriores
+- Al recibir productos de proveedores (si no tienes orden de compra)
+- Al identificar mermas o robos
+
+### 3. Alertas - Productos que Requieren Atención
+
+Esta pestaña te muestra dos tipos de alertas críticas:
+
+<InfoCard icon="AlertTriangle" title="Sin Stock (Prioridad Alta)">
+Productos completamente agotados que no puedes vender.
+
+**Acciones recomendadas:**
+1. Verifica la demanda del producto (¿se vende mucho?)
+2. Contacta al proveedor para hacer un pedido
+3. Si está descontinuado, márcalo como inactivo
+4. Busca un proveedor alternativo si es urgente
+</InfoCard>
+
+<InfoCard icon="Bell" title="Stock Bajo (Advertencia)">
+Productos que están por debajo del **Stock Mínimo** configurado.
+
+El sistema compara:
+- **Stock Actual** vs **Stock Mínimo** (configurado en cada producto)
+
+Si el stock actual es menor al mínimo, aparece aquí.
+
+**Acciones recomendadas:**
+1. Planifica una compra antes de que se agote
+2. Considera el tiempo de entrega del proveedor
+3. Evalúa si el stock mínimo está bien configurado
+4. Revisa si hay promociones disponibles del proveedor
+</InfoCard>
+
+<Callout type="success" title="Sin Alertas = Inventario Saludable">
+Si no hay alertas, verás un mensaje de confirmación: "¡Inventario Saludable!". Todos tus productos tienen niveles óptimos de stock.
+</Callout>
+
+### 4. Lotes - Control de Trazabilidad
+
+Gestiona productos organizados por lotes para trazabilidad y control de calidad.
+
+**¿Qué es un lote?**
+Un lote es un grupo de productos con características comunes:
+- Misma fecha de fabricación
+- Mismo proveedor
+- Misma fecha de vencimiento
+- Mismo código de trazabilidad
+
+**Beneficios de usar lotes:**
+- **Trazabilidad**: Si hay un problema de calidad, identificas exactamente qué productos retirar
+- **FIFO**: Vende primero los productos más antiguos (First In, First Out)
+- **Control de vencimientos**: Sabes exactamente qué lote vence primero
+- **Regulaciones**: Cumple con normativas sanitarias para alimentos, medicamentos, etc.
+
+<StepList>
+  <Step title="Configura Productos para Lotes">
+    Para que un producto maneje lotes:
+    1. Ve a **Productos** → Edita el producto
+    2. En configuración avanzada, activa **"Rastrear por Lotes"**
+    3. Si es perecedero, activa **"Rastrear Fechas de Vencimiento"**
+    4. Guarda los cambios
+  </Step>
+
+  <Step title="Visualiza los Lotes">
+    En la pestaña "Lotes" del módulo de inventario verás todos los lotes activos:
+    - Producto al que pertenecen
+    - Número de lote
+    - Cantidad disponible
+    - Fecha de vencimiento
+    - Estado (activo, próximo a vencer, vencido)
+  </Step>
+
+  <Step title="Uso en el POS">
+    Cuando vendes un producto con lotes, el POS:
+    - Muestra los lotes disponibles ordenados por vencimiento
+    - Sugiere vender del lote más próximo a vencer (FEFO)
+    - Descuenta automáticamente del lote seleccionado
+    - No permite vender de lotes vencidos
+  </Step>
+</StepList>
+
+### 5. Vencimientos - Prevención de Pérdidas
+
+Control preventivo de productos próximos a vencer.
+
+El sistema analiza todos los lotes con fecha de vencimiento y los organiza por urgencia.
+
+**Categorías de alertas:**
+
+```
+🔴 VENCIDOS
+   - Productos que ya superaron su fecha de vencimiento
+   - Acción: Retirar INMEDIATAMENTE del piso de venta
+   - Registrar como merma/daño
+
+🟡 PRÓXIMOS A VENCER (7-30 días)
+   - Productos que vencerán pronto
+   - Acción: Aplicar descuentos, promociones
+   - Ubicar en lugar visible
+   - Notificar al equipo de ventas
+
+🟢 VIGENTES (>30 días)
+   - Productos con fecha de vencimiento lejana
+   - Solo monitoreo, sin acción necesaria
+```
+
+<StepList>
+  <Step title="Revisa el Reporte de Vencimientos">
+    El reporte te muestra:
+    - Producto y lote
+    - Cantidad en riesgo
+    - Días restantes hasta vencer
+    - Valor monetario en riesgo
+    - Color según urgencia
+  </Step>
+
+  <Step title="Toma Acción Preventiva">
+    Según los días restantes:
+
+    **30 días antes:**
+    - Planifica promociones (2x1, descuentos)
+    - Prepara material de marketing
+    - Coordina con el equipo de ventas
+
+    **7 días antes:**
+    - Descuentos agresivos (30-50% off)
+    - Ubicación prioritaria en exhibición
+    - Notificación a clientes frecuentes
+
+    **Día de vencimiento:**
+    - Retiro obligatorio del piso de venta
+    - Registro como merma/donación
+    - Actualizar stock (ajuste negativo)
+  </Step>
+
+  <Step title="Registra la Merma">
+    Si no lograste vender el producto:
+    1. Ve a **Ajustar Stock**
+    2. Busca el producto
+    3. Ingresa cantidad negativa (ej: -10)
+    4. Razón: "Producto vencido - Lote ABC123"
+    5. Guarda
+
+    Esto retira el producto del inventario y queda registrado para reportes.
+  </Step>
+</StepList>
+
+## Cómo se Actualiza el Stock Automáticamente
+
+El inventario se actualiza sin intervención manual en estos casos:
+
+### Ventas en el POS
+
+Cada vez que realizas una venta:
+- El stock se **descuenta automáticamente**
+- Se crea un movimiento tipo "SALE"
+- Si el producto tiene lotes, descuenta del lote seleccionado
+- Si llegas a stock mínimo, genera alerta
+
+### Devoluciones de Clientes
+
+Cuando procesas una devolución:
+- El stock se **incrementa automáticamente**
+- Se crea un movimiento tipo "RETURN"
+- El producto vuelve a estar disponible para venta
+
+### Compras a Proveedores
+
+Cuando recibes una orden de compra:
+- El stock se **incrementa** con las cantidades recibidas
+- Se crea un movimiento tipo "PURCHASE"
+- Si aplica, se crea un lote con fecha de vencimiento
+
+## Mejores Prácticas
+
+### Conteos Físicos Regulares
+
+<Callout type="warning" title="Recomendación de Frecuencia">
+- **Productos de alto valor**: Conteo semanal
+- **Productos de alta rotación**: Conteo quincenal
+- **Inventario general**: Conteo mensual
+- **Inventario completo**: Conteo trimestral o semestral
+</Callout>
+
+**Proceso recomendado:**
+1. Elige un momento de baja actividad (cierre de día, domingo)
+2. Asigna secciones a diferentes responsables
+3. Cuenta físicamente cada producto
+4. Compara con el stock del sistema
+5. Usa "Ajustar Stock" para corregir diferencias
+6. Documenta las razones de las diferencias
+
+### Configuración de Stock Mínimo
+
+Para configurar alertas efectivas:
+
+**Fórmula sugerida:**
+```
+Stock Mínimo = (Venta Diaria Promedio × Días de Lead Time) + Stock de Seguridad
+
+Ejemplo:
+- Vendes 10 unidades por día
+- Proveedor entrega en 7 días
+- Quieres 3 días de seguridad
+
+Stock Mínimo = (10 × 7) + (10 × 3) = 100 unidades
+```
+
+Configura esto en cada producto para recibir alertas oportunas.
+
+### Organización del Almacén FIFO
+
+Para productos perecederos:
+
+```
+📦 Sistema FIFO (First In, First Out)
+
+[Nuevo] ← [Medio] ← [Antiguo] → [VENTA]
+  Atrás     Centro    Frente      Cliente
+
+Reglas:
+- Productos nuevos al FONDO
+- Productos antiguos al FRENTE
+- Cliente toma del frente = se vende lo más antiguo
+```
+
+### Gestión de Mermas
+
+Tipos de merma y cómo registrarlas:
+
+**Merma Normal (Esperada):**
+- Productos vencidos
+- Roturas accidentales
+- Muestras de cortesía
+- Consumo interno autorizado
+
+**Merma Anormal (Investigar):**
+- Robos detectados
+- Diferencias grandes en conteos
+- Daños por mal almacenamiento
+- Pérdidas sin explicación
+
+**Para registrar:**
+1. Pestaña "Ajustar Stock"
+2. Cantidad negativa según lo perdido
+3. Razón detallada del tipo de merma
+4. Si es anormal, investiga la causa raíz
+
+## Reportes y Análisis
+
+Aunque no hay reportes específicos en este módulo, puedes usar los datos para:
+
+### Analizar Movimientos
+
+Exporta el historial de movimientos para:
+- Identificar productos con más ajustes (posible robo o error)
+- Ver patrones de compra y venta
+- Calcular mermas totales por período
+- Auditar cambios realizados por cada usuario
+
+### Monitorear Alertas
+
+Lleva un registro de:
+- Cuántos productos quedan sin stock mensualmente
+- Frecuencia de alertas de stock bajo
+- Tiempo promedio para reponer productos
+- Efectividad de los stock mínimos configurados
+
+### Optimizar Compras
+
+Con la información de alertas:
+- Identifica productos que se agotan frecuentemente
+- Ajusta cantidades de pedido
+- Negocia mejores términos con proveedores
+- Planifica compras estacionales
+
+## Solución de Problemas Comunes
+
+### El stock no coincide con el conteo físico
+
+**Posibles causas:**
+- Ventas no registradas correctamente
+- Productos movidos sin registro
+- Errores en recepción de mercadería
+- Robos o mermas no documentadas
+
+**Solución:**
+1. Haz el ajuste manual del stock
+2. Investiga la causa de la diferencia
+3. Capacita al personal si es error humano
+4. Mejora controles si es robo recurrente
+
+### Productos con stock negativo
+
+**Causa:**
+Venta registrada pero el rastreo de stock estaba desactivado o hubo error.
+
+**Solución:**
+1. Ve a Ajustar Stock
+2. Ajusta a cero o al valor correcto
+3. Razón: "Corrección stock negativo"
+4. Verifica configuración del producto (debe tener "Rastrear Stock" activo)
+
+### Alertas incorrectas de stock bajo
+
+**Causa:**
+Stock mínimo mal configurado.
+
+**Solución:**
+1. Ve a Productos → Edita el producto
+2. Ajusta el "Stock Mínimo" a un valor más apropiado
+3. Guarda los cambios
+4. La alerta desaparecerá si el stock actual supera el nuevo mínimo
+
+## Próximos Pasos
+
+Ahora que dominas el control de inventario, explora:
+
+- **Gestión de Proveedores**: Organiza tu catálogo de proveedores
+- **Órdenes de Compra**: Automatiza la reposición de stock
+- **Reportes de Productos**: Analiza productos más vendidos
+- **Configuración de Productos**: Optimiza configuración de stock
+
+¿Necesitas ayuda con el inventario? Consulta más tutoriales o contacta a soporte.

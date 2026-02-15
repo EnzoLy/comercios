@@ -1,0 +1,316 @@
+---
+title: "Cómo Realizar una Venta en el Punto de Venta"
+description: "Guía completa para procesar ventas en el sistema POS. Aprende a agregar productos, aplicar descuentos y generar tickets de venta"
+category: "caja"
+roles: []
+difficulty: "principiante"
+duration: 7
+order: 1
+featured: true
+tags: ["pos", "ventas", "caja", "tickets"]
+thumbnail: "https://placehold.co/400x300/dc2626/white?text=Caja"
+videoUrl: "https://placehold.co/800x450/dc2626/white?text=Video+Realizar+Venta+(Proximamente)"
+lastUpdated: "2026-02-15"
+author: "Sistema CMS"
+relatedTutorials: []
+---
+
+# Cómo Realizar una Venta en el Punto de Venta
+
+El punto de venta (POS) es el corazón de tu negocio. Aquí procesarás todas las transacciones de manera rápida y eficiente. Este tutorial te guiará por todo el proceso de venta.
+
+<Callout type="info" title="Acceso al POS">
+Todos los roles pueden acceder al punto de venta: ADMIN, MANAGER, STOCK_KEEPER y CASHIER. Es la funcionalidad más importante del sistema.
+</Callout>
+
+## Antes de Comenzar: Abrir un Turno
+
+Antes de realizar ventas, necesitas tener un turno activo.
+
+<StepList>
+  <Step title="Ve al Módulo de Turnos">
+    En el menú lateral, selecciona "Turnos" o ve directamente a "Caja" (el sistema te pedirá abrir un turno si no hay uno activo).
+  </Step>
+
+  <Step title="Inicia Sesión con tu PIN">
+    Ingresa tu PIN de empleado de 4 dígitos. Esto identifica quién está realizando las ventas.
+
+    <Callout type="warning" title="Seguridad">
+    Nunca compartas tu PIN con otros empleados. Cada persona debe usar su propio PIN para mantener un registro preciso de las ventas.
+    </Callout>
+  </Step>
+
+  <Step title="Registra el Efectivo Inicial">
+    Ingresa la cantidad de efectivo con la que inicias el turno (generalmente el fondo de cambio). Esto es importante para el cuadre de caja al cerrar el turno.
+  </Step>
+</StepList>
+
+## Proceso de Venta Paso a Paso
+
+<ImageZoom
+  src="https://placehold.co/800x450/dc2626/white?text=Interfaz+POS"
+  alt="Interfaz del punto de venta"
+  caption="Vista principal del punto de venta con todas sus funcionalidades"
+/>
+
+<StepList>
+  <Step title="Accede al Punto de Venta">
+    Haz clic en "Caja" en el menú lateral. Verás la interfaz del POS con el carrito vacío y el catálogo de productos.
+  </Step>
+
+  <Step title="Agrega Productos al Carrito">
+    Tienes varias formas de agregar productos:
+
+    **Opción 1: Escanear código de barras**
+    - Usa un lector de códigos de barras USB
+    - Escanea el producto
+    - Se agregará automáticamente al carrito
+
+    **Opción 2: Búsqueda manual**
+    - Usa el buscador en la parte superior
+    - Escribe el nombre o SKU del producto
+    - Haz clic en el producto para agregarlo
+
+    **Opción 3: Catálogo visual**
+    - Explora las categorías de productos
+    - Haz clic en el producto deseado
+    - Se agregará al carrito
+
+    <ImageZoom
+      src="https://placehold.co/800x450/dc2626/white?text=Agregar+Productos"
+      alt="Agregar productos al carrito"
+      caption="Diferentes formas de agregar productos a una venta"
+    />
+  </Step>
+
+  <Step title="Ajusta Cantidades">
+    Una vez agregado un producto al carrito:
+
+    - Haz clic en los botones **+** o **-** para cambiar la cantidad
+    - O escribe directamente el número deseado
+    - Para eliminar un producto, reduce la cantidad a cero o usa el ícono de papelera
+  </Step>
+
+  <Step title="Aplica Descuentos (Opcional)">
+    Puedes aplicar descuentos de dos formas:
+
+    **Descuento por producto:**
+    - Haz clic en el ícono de descuento junto al producto
+    - Ingresa el porcentaje o monto fijo de descuento
+    - El precio se ajustará automáticamente
+
+    **Descuento general:**
+    - Usa el botón "Aplicar Descuento" en el total
+    - Afecta a todos los productos del carrito
+
+    <Callout type="warning" title="Permisos de Descuento">
+    Dependiendo de tu rol, puede haber límites en los descuentos que puedes aplicar. Los CASHIERS normalmente tienen un límite menor que los MANAGERS.
+    </Callout>
+  </Step>
+
+  <Step title="Revisa el Total">
+    En el panel derecho verás:
+
+    - **Subtotal**: Suma de todos los productos
+    - **Descuentos**: Total de descuentos aplicados
+    - **Impuestos**: Calculados automáticamente según la configuración
+    - **Total a Pagar**: Monto final que debe pagar el cliente
+  </Step>
+
+  <Step title="Selecciona el Método de Pago">
+    Haz clic en "Procesar Pago" y selecciona el método:
+
+    - **Efectivo**: Ingresa el monto recibido, el sistema calculará el cambio
+    - **Tarjeta**: Débito o crédito
+    - **Transferencia**: Pago electrónico
+    - **Mixto**: Combina varios métodos de pago
+
+    <ImageZoom
+      src="https://placehold.co/800x450/dc2626/white?text=Metodos+de+Pago"
+      alt="Métodos de pago disponibles"
+      caption="Acepta múltiples formas de pago en una misma transacción"
+    />
+
+    <InfoCard icon="DollarSign" title="Pago con Efectivo">
+    Al seleccionar efectivo, ingresa el monto recibido del cliente. El sistema mostrará automáticamente cuánto cambio debes entregar.
+    </InfoCard>
+  </Step>
+
+  <Step title="Confirma la Venta">
+    Una vez seleccionado el método de pago:
+
+    - Revisa que todo esté correcto
+    - Haz clic en "Confirmar Venta"
+    - La venta se procesará inmediatamente
+    - El inventario se actualizará automáticamente
+
+    <Callout type="success" title="¡Venta Exitosa!">
+    Verás una notificación de confirmación y el carrito se vaciará automáticamente para la siguiente venta.
+    </Callout>
+  </Step>
+
+  <Step title="Imprime o Envía el Ticket">
+    Después de confirmar la venta, tienes opciones:
+
+    - **Imprimir Ticket**: Si tienes impresora conectada
+    - **Enviar por Email**: Ticket digital al cliente
+    - **Generar PDF**: Para guardarlo digitalmente
+    - **Ver Ticket**: Revisar el comprobante en pantalla
+
+    El ticket incluye:
+    - Fecha y hora de la venta
+    - Productos vendidos con precios
+    - Métodos de pago utilizados
+    - Número de ticket único
+    - QR code para verificación
+  </Step>
+</StepList>
+
+## Funciones Avanzadas del POS
+
+### Guardar Venta Pendiente
+
+Si necesitas pausar una venta para atender otro cliente:
+
+1. Haz clic en "Guardar Venta Pendiente"
+2. Dale un nombre o identificador
+3. Atiende al siguiente cliente
+4. Recupera la venta pendiente cuando estés listo
+
+<Callout type="info" title="Múltiples Ventas Pendientes">
+Puedes tener varias ventas en espera simultáneamente. Útil cuando tienes múltiples clientes haciendo pedidos.
+</Callout>
+
+### Búsqueda Rápida
+
+Usa atajos de teclado para mayor velocidad:
+
+```
+F1          Ir al buscador de productos
+F2          Aplicar descuento
+F3          Procesar pago
+ESC         Limpiar carrito
+```
+
+### Cliente Frecuente
+
+Si tienes un programa de puntos o descuentos especiales:
+
+1. Agrega el cliente antes de procesar la venta
+2. Los descuentos aplicables se aplicarán automáticamente
+3. El historial de compras se asociará al cliente
+
+## Ventas Sin Conexión (Offline)
+
+<Callout type="success" title="Funciona sin Internet">
+El POS funciona incluso sin conexión a internet. Las ventas se guardan localmente y se sincronizan automáticamente cuando se recupera la conexión.
+</Callout>
+
+Cuando estás offline, verás un indicador en la esquina superior. Las ventas seguirán funcionando normalmente.
+
+## Cerrar el Turno
+
+Al finalizar tu jornada:
+
+<StepList>
+  <Step title="Ve a 'Cerrar Turno'">
+    Desde el POS o desde el módulo de Turnos, selecciona "Cerrar Turno Actual".
+  </Step>
+
+  <Step title="Cuenta el Efectivo">
+    Ingresa cuánto dinero hay en la caja física. El sistema comparará:
+
+    - Efectivo esperado (inicial + ventas - cambios)
+    - Efectivo real (lo que cuentas)
+    - Diferencia (faltante o sobrante)
+  </Step>
+
+  <Step title="Registra Observaciones">
+    Si hay diferencias, explica la razón (gastos, donaciones, errores, etc.)
+  </Step>
+
+  <Step title="Confirma el Cierre">
+    Una vez cerrado, el turno queda bloqueado y no se pueden modificar las ventas. Se genera un reporte completo de la jornada.
+  </Step>
+</StepList>
+
+## Solución de Problemas
+
+### Producto no aparece en el POS
+
+**Posibles causas:**
+- El producto está inactivo
+- No tiene precio de venta configurado
+- El stock es cero y está configurado para no vender sin stock
+
+**Solución:** Ve al módulo de Productos y verifica la configuración.
+
+### Error al procesar el pago
+
+**Posibles causas:**
+- Problemas de conexión (si es pago con tarjeta)
+- Stock insuficiente de algún producto
+
+**Solución:** Verifica el mensaje de error específico y corrige el problema.
+
+### No puedo aplicar descuento
+
+**Posibles causas:**
+- Tu rol no tiene permisos de descuento
+- El descuento excede el límite permitido
+
+**Solución:** Contacta a un supervisor o administrador para aplicar el descuento.
+
+### La impresora no funciona
+
+**Solución rápida:**
+1. Verifica que la impresora esté encendida y conectada
+2. Prueba imprimir una página de prueba desde Windows
+3. Reinicia el navegador
+4. Como alternativa, usa "Generar PDF" para entregar el ticket digital
+
+## Tips para Mayor Eficiencia
+
+1. **Usa el lector de códigos de barras**: Es 10x más rápido que buscar manualmente
+2. **Aprende los atajos de teclado**: Ahorra segundos en cada venta
+3. **Organiza el catálogo por categorías**: Facilita encontrar productos sin código
+4. **Mantén el espacio de trabajo limpio**: Un carrito ordenado reduce errores
+5. **Verifica el cambio antes de entregar**: Evita errores en el cierre de caja
+
+## Estadísticas en Tiempo Real
+
+El sistema muestra métricas en vivo:
+
+- Ventas del día actual
+- Productos más vendidos
+- Promedio de venta por ticket
+- Métodos de pago más utilizados
+
+<ImageZoom
+  src="https://placehold.co/800x450/dc2626/white?text=Dashboard+POS"
+  alt="Dashboard con estadísticas"
+  caption="Visualiza el rendimiento de las ventas en tiempo real"
+/>
+
+## Seguridad y Auditoría
+
+Todas las ventas quedan registradas con:
+
+- Fecha y hora exacta
+- Empleado que realizó la venta
+- Productos vendidos
+- Métodos de pago
+- Ticket único no modificable
+
+Esto permite auditorías completas y seguimiento de cualquier transacción.
+
+## Próximos Pasos
+
+Ahora que dominas el proceso de venta básico, explora:
+
+- **Gestión de Turnos**: Aprende sobre apertura y cierre de caja
+- **Reportes de Ventas**: Analiza el rendimiento de tu negocio
+- **Clientes Frecuentes**: Implementa programas de fidelización
+- **Devoluciones**: Cómo procesar devoluciones correctamente
+
+¡Felicitaciones! Ya estás listo para procesar ventas de manera profesional.

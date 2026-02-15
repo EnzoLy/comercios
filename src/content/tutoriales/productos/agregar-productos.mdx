@@ -1,0 +1,219 @@
+---
+title: "Cómo Agregar Productos al Inventario"
+description: "Aprende a agregar y configurar productos en tu inventario paso a paso. Incluye precios, stock, categorías y códigos de barras"
+category: "productos"
+roles: ["ADMIN", "MANAGER", "STOCK_KEEPER"]
+difficulty: "principiante"
+duration: 8
+order: 1
+featured: true
+tags: ["productos", "inventario", "configuración", "códigos de barras"]
+thumbnail: "https://placehold.co/400x300/1e40af/white?text=Productos"
+videoUrl: "https://placehold.co/800x450/dc2626/white?text=Video+Tutorial+(Proximamente)"
+lastUpdated: "2026-02-15"
+author: "Sistema CMS"
+relatedTutorials: ["categorias", "codigos-barras"]
+---
+
+# Cómo Agregar Productos al Inventario
+
+Agregar productos correctamente es fundamental para el buen funcionamiento de tu negocio. En este tutorial aprenderás todo lo necesario para configurar productos de manera efectiva.
+
+<Callout type="info" title="Antes de comenzar">
+Asegúrate de tener permisos de ADMIN, MANAGER o STOCK_KEEPER para acceder a la gestión de productos.
+</Callout>
+
+## Proceso Paso a Paso
+
+<StepList>
+  <Step title="Accede al Módulo de Productos">
+    Desde el menú lateral, haz clic en "Productos". Verás la lista de todos los productos existentes en tu inventario.
+
+    <ImageZoom
+      src="https://placehold.co/800x450/1e40af/white?text=Lista+de+Productos"
+      alt="Lista de productos"
+      caption="Vista principal del módulo de productos"
+    />
+  </Step>
+
+  <Step title="Haz Clic en 'Agregar Producto'">
+    En la esquina superior derecha, encontrarás el botón "Agregar Producto" con un ícono de plus (+). Haz clic para abrir el formulario de creación.
+  </Step>
+
+  <Step title="Completa la Información Básica">
+    Ingresa los datos principales del producto:
+
+    - **Nombre**: Nombre descriptivo del producto (ej: "Coca Cola 2L")
+    - **SKU**: Código interno único para identificar el producto (ej: "COCA-2L-001")
+    - **Categoría**: Selecciona o crea una categoría (ej: "Bebidas")
+    - **Descripción**: Información adicional opcional del producto
+  </Step>
+
+  <Step title="Configura Precios">
+    Define los precios del producto:
+
+    - **Precio de Costo**: Cuánto te costó el producto (para cálculo de utilidades)
+    - **Precio de Venta**: Precio al que venderás el producto
+    - **Precio Mayorista** (opcional): Precio especial para ventas al por mayor
+
+    <Callout type="success" title="Tip">
+    El sistema calculará automáticamente el margen de ganancia basándose en la diferencia entre el precio de costo y el precio de venta.
+    </Callout>
+  </Step>
+
+  <Step title="Configura el Inventario">
+    Establece los parámetros de stock:
+
+    - **Stock Inicial**: Cantidad actual del producto
+    - **Stock Mínimo**: Nivel de alerta para reposición
+    - **Stock Máximo**: Capacidad máxima de almacenamiento
+    - **Rastrear Stock**: Activa esta opción si quieres que el sistema controle automáticamente el inventario
+
+    <ImageZoom
+      src="https://placehold.co/800x450/1e40af/white?text=Configuracion+de+Stock"
+      alt="Configuración de inventario"
+      caption="Parámetros de control de stock"
+    />
+  </Step>
+
+  <Step title="Agrega Códigos de Barras (Opcional)">
+    Si tu producto tiene código de barras, puedes agregarlo para agilizar las ventas:
+
+    - Haz clic en "Agregar Código de Barras"
+    - Ingresa el código o escanéalo con un lector
+    - Puedes agregar múltiples códigos para el mismo producto
+    - Marca uno como código principal
+
+    <Callout type="warning" title="Importante">
+    Cada código de barras debe ser único en el sistema. Si intentas agregar un código que ya existe, recibirás un error.
+    </Callout>
+  </Step>
+
+  <Step title="Configura Opciones Avanzadas">
+    Dependiendo de tu tipo de negocio, puedes configurar:
+
+    - **Rastrear Fechas de Vencimiento**: Para productos perecederos
+    - **Venta por Peso**: Para productos que se venden por kilogramo
+    - **Producto Activo**: Desactívalo si quieres que no aparezca en el POS
+    - **Proveedor**: Asocia el producto con un proveedor específico
+  </Step>
+
+  <Step title="Agrega una Imagen (Opcional)">
+    Sube una foto del producto para identificarlo más fácilmente en el punto de venta. Las imágenes deben ser:
+
+    - Formato JPG o PNG
+    - Tamaño máximo 5MB
+    - Resolución recomendada: 800x800px
+  </Step>
+
+  <Step title="Guarda el Producto">
+    Revisa que toda la información esté correcta y haz clic en "Guardar Producto". El sistema validará los datos y creará el producto.
+
+    <Callout type="success" title="¡Listo!">
+    Tu producto ha sido creado exitosamente y ya está disponible para la venta en el punto de venta.
+    </Callout>
+  </Step>
+</StepList>
+
+## Campos Obligatorios vs Opcionales
+
+<InfoCard icon="FileText" title="Campos Obligatorios">
+Los siguientes campos son **requeridos** para crear un producto:
+
+- Nombre del producto
+- SKU (código único)
+- Precio de venta
+- Categoría
+
+Todos los demás campos son opcionales y pueden configurarse después.
+</InfoCard>
+
+## Tips y Mejores Prácticas
+
+### Nomenclatura de SKU
+
+Usa un sistema consistente para tus códigos SKU. Ejemplos:
+
+```
+CATEGORIA-PRODUCTO-VARIANTE
+
+Ejemplos:
+BEB-COCA-2L        (Bebida, Coca Cola, 2 Litros)
+SNACK-PAPAS-150G   (Snack, Papas, 150 gramos)
+LIMPIEZA-JABON-1L  (Limpieza, Jabón, 1 litro)
+```
+
+### Organización por Categorías
+
+Crea categorías lógicas que faciliten la búsqueda:
+
+- Bebidas
+  - Gaseosas
+  - Jugos
+  - Agua
+- Alimentos
+  - Snacks
+  - Lácteos
+  - Panadería
+
+### Control de Stock
+
+<Callout type="warning" title="Recomendación">
+Establece el **stock mínimo** en un nivel que te permita reordenar antes de quedarte sin producto. Considera el tiempo de entrega de tu proveedor.
+</Callout>
+
+## Importación Masiva
+
+Si necesitas agregar muchos productos a la vez, puedes usar la función de **Importación desde Excel**:
+
+1. Descarga la plantilla de importación
+2. Llena los datos en Excel
+3. Sube el archivo al sistema
+4. El sistema validará y creará todos los productos
+
+<ImageZoom
+  src="https://placehold.co/800x450/1e40af/white?text=Importar+desde+Excel"
+  alt="Importación masiva de productos"
+  caption="Importa cientos de productos en segundos usando Excel"
+/>
+
+## Editar Productos Existentes
+
+Para modificar un producto ya creado:
+
+1. Busca el producto en la lista
+2. Haz clic en el ícono de editar (lápiz)
+3. Modifica los campos necesarios
+4. Guarda los cambios
+
+<Callout type="info" title="Historial de Cambios">
+El sistema mantiene un registro de todas las modificaciones realizadas a los productos, incluyendo cambios de precio y ajustes de stock.
+</Callout>
+
+## Solución de Problemas Comunes
+
+### Error: "El SKU ya existe"
+
+Cada SKU debe ser único. Verifica que no hayas usado ese código previamente o elige uno diferente.
+
+### Error: "El código de barras ya está registrado"
+
+Un código de barras solo puede estar asociado a un producto. Si necesitas reasignarlo, primero elimínalo del producto anterior.
+
+### El producto no aparece en el POS
+
+Verifica que:
+- El producto esté marcado como "Activo"
+- Tenga un precio de venta configurado
+- Tenga stock disponible (si rastrear stock está activado)
+
+## Próximos Pasos
+
+Ahora que sabes agregar productos, te recomendamos:
+
+- **Crear Categorías**: Organiza mejor tu inventario
+- **Configurar Códigos de Barras**: Agiliza el proceso de venta
+- **Importar Productos**: Si tienes muchos productos por agregar
+- **Gestionar Proveedores**: Asocia productos con sus proveedores
+
+¿Tienes preguntas? Consulta los demás tutoriales o contacta a soporte.
