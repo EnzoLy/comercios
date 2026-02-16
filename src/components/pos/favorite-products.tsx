@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronDown, ChevronUp, Heart, Package } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/currency'
 import { useFavoriteProducts } from '@/hooks/use-favorite-products'
+import { toast } from 'sonner'
 
 interface FavoriteProduct {
   productId: string
