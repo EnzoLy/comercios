@@ -1,11 +1,13 @@
 import { ProductForm } from '@/components/products/product-form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-export default function NewProductPage({
+export default async function NewProductPage({
   searchParams,
 }: {
-  searchParams: { categoryId?: string }
+  searchParams: Promise<{ categoryId?: string }>
 }) {
+  const params = await searchParams
+
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <div className="mb-8">
@@ -15,7 +17,7 @@ export default function NewProductPage({
         </p>
       </div>
 
-      <ProductForm mode="create" preselectedCategoryId={searchParams.categoryId} />
+      <ProductForm mode="create" preselectedCategoryId={params.categoryId} />
     </div>
   )
 }

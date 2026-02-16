@@ -12,7 +12,7 @@ thumbnail: "https://placehold.co/400x300/1e40af/white?text=Productos"
 videoUrl: "https://placehold.co/800x450/dc2626/white?text=Video+Tutorial+(Proximamente)"
 lastUpdated: "2026-02-15"
 author: "Sistema CMS"
-relatedTutorials: ["categorias", "codigos-barras"]
+relatedTutorials: []
 ---
 
 # Cómo Agregar Productos al Inventario
@@ -43,136 +43,337 @@ Asegúrate de tener permisos de ADMIN, MANAGER o STOCK_KEEPER para acceder a la 
   <Step title="Completa la Información Básica">
     Ingresa los datos principales del producto:
 
-    - **Nombre**: Nombre descriptivo del producto (ej: "Coca Cola 2L")
-    - **SKU**: Código interno único para identificar el producto (ej: "COCA-2L-001")
-    - **Categoría**: Selecciona o crea una categoría (ej: "Bebidas")
-    - **Descripción**: Información adicional opcional del producto
+    **Nombre del Producto** (*requerido):
+    - Nombre descriptivo y claro
+    - Ejemplo: "Coca Cola 2L", "Pan de Molde Integral"
+
+    **Descripción** (opcional):
+    - Información adicional del producto
+    - Características especiales, ingredientes, etc.
+
+    **SKU - Código Interno** (*requerido):
+    - Código único que usarás para identificar el producto
+    - Ejemplos: "COCA-2L-001", "CAMISA-AZUL-M", "ZAPATO-001"
+    - Debe ser único en todo el sistema
+
+    <Callout type="success" title="Tip de Nomenclatura">
+    Usa un formato consistente para tus SKUs: CATEGORIA-PRODUCTO-VARIANTE
+
+    Ejemplos:
+    - BEB-COCA-2L (Bebida, Coca Cola, 2 Litros)
+    - SNACK-PAPAS-150G (Snack, Papas, 150 gramos)
+    - LIMPIEZA-JABON-1L (Limpieza, Jabón, 1 litro)
+    </Callout>
   </Step>
 
-  <Step title="Configura Precios">
-    Define los precios del producto:
+  <Step title="Agrega una Imagen del Producto">
+    Puedes añadir una imagen de dos formas:
 
-    - **Precio de Costo**: Cuánto te costó el producto (para cálculo de utilidades)
-    - **Precio de Venta**: Precio al que venderás el producto
-    - **Precio Mayorista** (opcional): Precio especial para ventas al por mayor
+    **Opción 1: Por URL**
+    - Haz clic en el botón "URL"
+    - Pega la URL de una imagen en internet
+    - Formatos aceptados: JPG, PNG, WebP, GIF
 
-    <Callout type="success" title="Tip">
-    El sistema calculará automáticamente el margen de ganancia basándose en la diferencia entre el precio de costo y el precio de venta.
+    **Opción 2: Subir Archivo**
+    - Haz clic en el botón "Subir Archivo"
+    - Selecciona una imagen de tu computadora
+    - Formatos aceptados: JPG, PNG, WebP, GIF
+    - Tamaño máximo: 5MB
+
+    La imagen aparecerá como vista previa. Si no te gusta, puedes eliminarla con el botón X.
+
+    <ImageZoom
+      src="https://placehold.co/800x450/1e40af/white?text=Imagen+Producto"
+      alt="Subir imagen de producto"
+      caption="Agrega una imagen para identificar el producto visualmente en el POS"
+    />
+  </Step>
+
+  <Step title="Selecciona una Categoría">
+    - Haz clic en el selector de categorías
+    - Elige la categoría que mejor describe tu producto
+    - Si la categoría no existe, créala primero en el módulo de Categorías
+    - Este campo es opcional pero muy recomendado para organizar tu inventario
+
+    <Callout type="info" title="Organización por Categorías">
+    Las categorías te ayudan a:
+    - Filtrar productos fácilmente
+    - Generar reportes por tipo de producto
+    - Organizar el catálogo en el POS
+    - Crear promociones por categoría
+    </Callout>
+  </Step>
+
+  <Step title="Configura Códigos de Barras">
+    **Código de Barras Principal** (opcional):
+    - Ingresa el código de barras del fabricante manualmente
+    - O haz clic en el ícono de 📷 para escanear con tu cámara web
+    - Ejemplo: 7501234567890
+
+    **Códigos de Barras Adicionales** (opcional):
+    - Puedes agregar múltiples códigos de barras para el mismo producto
+    - Útil si el producto tiene diferentes presentaciones o proveedores
+    - Escribe el código y haz clic en el botón + para agregarlo
+    - Puedes eliminar códigos haciendo clic en la X
+
+    <Callout type="warning" title="Códigos Únicos">
+    Cada código de barras debe ser único en el sistema. Si intentas agregar un código que ya está asignado a otro producto, recibirás un error.
+    </Callout>
+
+    <ImageZoom
+      src="https://placehold.co/800x450/1e40af/white?text=Codigos+Barras"
+      alt="Configuración de códigos de barras"
+      caption="Agrega un código de barras principal y adicionales si es necesario"
+    />
+  </Step>
+
+  <Step title="Configura Producto por Peso (Opcional)">
+    Si vendes productos que se pesan en el momento de la venta (frutas, verduras, carnes, etc.):
+
+    1. Activa el checkbox "Producto por peso"
+    2. Selecciona la unidad de medida:
+       - **Kilogramos (kg)**: Para carnes, verduras, etc.
+       - **Gramos (g)**: Para productos más pequeños
+       - **Libras (lb)**: Si usas sistema imperial
+       - **Onzas (oz)**: Para productos ligeros
+
+    <Callout type="info" title="¿Qué son los productos por peso?">
+    Los productos por peso se venden por su medida y no por unidad. En el POS, se ingresa cuántos kilos/libras se vendieron y el sistema calcula el precio automáticamente multiplicando el peso por el precio unitario.
+    </Callout>
+  </Step>
+
+  <Step title="Define los Precios">
+    El sistema requiere dos precios obligatorios:
+
+    **Precio de Costo** (*requerido):
+    - Cuánto te costó el producto
+    - Usado para calcular utilidades y márgenes
+    - Ejemplo: Si compraste el producto en $10.00, ingresa 10.00
+
+    **Precio de Venta** (*requerido):
+    - Precio al que venderás al cliente
+    - Debe ser mayor al precio de costo para tener ganancia
+    - Ejemplo: Si vendes en $15.00, ingresa 15.00
+
+    El sistema calculará automáticamente tu margen de ganancia:
+    ```
+    Margen = ((Precio Venta - Precio Costo) / Precio Venta) × 100
+
+    Ejemplo:
+    Costo: $10.00
+    Venta: $15.00
+    Margen: ((15 - 10) / 15) × 100 = 33.33%
+    ```
+
+    <Callout type="success" title="Calculando Precios">
+    **Tip profesional:** Para calcular tu precio de venta basándote en el margen deseado:
+
+    Precio Venta = Precio Costo / (1 - Margen Deseado)
+
+    Ejemplo con 40% de margen:
+    - Costo: $10.00
+    - Precio Venta = 10 / (1 - 0.40) = 10 / 0.60 = $16.67
+    </Callout>
+  </Step>
+
+  <Step title="Configura los Impuestos (Opcional)">
+    El sistema tiene un esquema de impuestos de dos niveles:
+
+    **Tasa de Impuesto Global (a nivel de tienda)**
+    - Configurada en los ajustes de la tienda
+    - Se aplica automáticamente a todos los productos por defecto
+    - Ejemplo: IVA del 16%
+
+    **Tasa de Impuesto Personalizada (por producto)**
+
+    Al **crear** el producto, puedes sobrescribir la tasa global:
+    1. Activa el checkbox **"Configurar tasa de impuesto personalizada para este producto"**
+    2. Ingresa el porcentaje específico para este producto
+    3. Ejemplo: Si el producto tiene IVA reducido del 8%, ingresa **8**
+    4. Ejemplo: Si es un producto exento, ingresa **0**
+
+    Al **editar** el producto, encontrarás una sección completa llamada **"Configuración de Impuestos"** debajo del formulario principal:
+    - Muestra claramente la tasa global de la tienda
+    - Switch para activar/desactivar tasa personalizada
+    - Indica cuál tasa se está aplicando actualmente
+    - Botón separado para guardar solo la configuración de impuestos
+
+    <ImageZoom
+      src="https://placehold.co/800x450/7c3aed/white?text=Configuracion+Impuestos"
+      alt="Configuración de impuestos en edición"
+      caption="Sección de Configuración de Impuestos al editar un producto"
+    />
+
+    <Callout type="info" title="¿Cuándo usar tasa personalizada?">
+    Usa una tasa de impuesto personalizada cuando:
+    - **Productos con IVA reducido**: Alimentos básicos, libros, medicinas (según legislación)
+    - **Productos exentos**: Algunos productos pueden estar exentos de IVA (tasa 0%)
+    - **Impuestos especiales**: Bebidas alcohólicas, tabaco, productos de lujo
+    - **Zonas fronterizas**: Productos con tasas diferenciadas por región
+    </Callout>
+
+    **Cómo se calcula el impuesto en el POS:**
+    ```
+    Subtotal = Precio de Venta
+    Impuesto = Subtotal × (Tasa de Impuesto / 100)
+    Total = Subtotal + Impuesto
+
+    Ejemplo con IVA del 16%:
+    - Precio de Venta: $100.00
+    - Tasa de Impuesto: 16%
+    - Impuesto: $100.00 × 0.16 = $16.00
+    - Total al cliente: $116.00
+
+    Ejemplo con IVA reducido del 8%:
+    - Precio de Venta: $100.00
+    - Tasa de Impuesto: 8%
+    - Impuesto: $100.00 × 0.08 = $8.00
+    - Total al cliente: $108.00
+    ```
+
+    <Callout type="warning" title="Importante sobre cambios de tasa">
+    - La tasa de impuesto se **registra en cada venta** al momento de la transacción
+    - Si cambias la tasa posteriormente, solo afectará a **nuevas ventas**
+    - Las ventas anteriores mantienen la tasa que tenían al momento de venderse
+    - Esto garantiza la integridad de los reportes fiscales históricos
     </Callout>
   </Step>
 
   <Step title="Configura el Inventario">
-    Establece los parámetros de stock:
+    Establece los parámetros de control de stock:
 
-    - **Stock Inicial**: Cantidad actual del producto
-    - **Stock Mínimo**: Nivel de alerta para reposición
-    - **Stock Máximo**: Capacidad máxima de almacenamiento
-    - **Rastrear Stock**: Activa esta opción si quieres que el sistema controle automáticamente el inventario
+    **Stock Actual**:
+    - Cantidad actual de unidades disponibles
+    - Si estás creando un producto nuevo, ingresa cuántas unidades tienes
+    - Si es 0, el producto aparecerá sin stock
+
+    **Nivel Mínimo de Stock**:
+    - Nivel de alerta para reposición
+    - Cuando el stock llegue a este número, recibirás una alerta
+    - Recomendado: considera tu tiempo de reposición + demanda diaria
+    - Ejemplo: Si vendes 5 al día y tu proveedor tarda 3 días, mínimo = 15 unidades
+
+    **Nivel Máximo de Stock** (opcional):
+    - Capacidad máxima de almacenamiento
+    - Útil para evitar sobre-stock
+    - Deja vacío si no tienes límite de almacenamiento
+
+    **Unidad**:
+    - Cómo se cuenta el producto
+    - Ejemplos: "piezas", "kg", "litros", "cajas", "paquetes"
 
     <ImageZoom
-      src="https://placehold.co/800x450/1e40af/white?text=Configuracion+de+Stock"
+      src="https://placehold.co/800x450/1e40af/white?text=Configuracion+Stock"
       alt="Configuración de inventario"
-      caption="Parámetros de control de stock"
+      caption="Parámetros de control de stock con niveles mínimo y máximo"
     />
-  </Step>
 
-  <Step title="Agrega Códigos de Barras (Opcional)">
-    Si tu producto tiene código de barras, puedes agregarlo para agilizar las ventas:
+    <Callout type="warning" title="Fórmula de Stock Mínimo">
+    Stock Mínimo = (Venta Diaria Promedio × Días de Lead Time) + Stock de Seguridad
 
-    - Haz clic en "Agregar Código de Barras"
-    - Ingresa el código o escanéalo con un lector
-    - Puedes agregar múltiples códigos para el mismo producto
-    - Marca uno como código principal
-
-    <Callout type="warning" title="Importante">
-    Cada código de barras debe ser único en el sistema. Si intentas agregar un código que ya existe, recibirás un error.
+    Ejemplo:
+    - Vendes 10 unidades por día
+    - Proveedor entrega en 7 días
+    - Quieres 3 días de seguridad
+    - Stock Mínimo = (10 × 7) + (10 × 3) = 100 unidades
     </Callout>
   </Step>
 
-  <Step title="Configura Opciones Avanzadas">
-    Dependiendo de tu tipo de negocio, puedes configurar:
+  <Step title="Activa Rastreo de Vencimientos (Opcional)">
+    Si tu producto es perecedero (alimentos, medicinas, cosméticos):
 
-    - **Rastrear Fechas de Vencimiento**: Para productos perecederos
-    - **Venta por Peso**: Para productos que se venden por kilogramo
-    - **Producto Activo**: Desactívalo si quieres que no aparezca en el POS
-    - **Proveedor**: Asocia el producto con un proveedor específico
-  </Step>
+    1. Activa el checkbox "Rastrear fechas de vencimiento"
+    2. Esto habilitará el sistema de lotes
+    3. Podrás registrar fechas de vencimiento al recibir mercadería
+    4. Recibirás alertas cuando los productos estén próximos a vencer
 
-  <Step title="Agrega una Imagen (Opcional)">
-    Sube una foto del producto para identificarlo más fácilmente en el punto de venta. Las imágenes deben ser:
-
-    - Formato JPG o PNG
-    - Tamaño máximo 5MB
-    - Resolución recomendada: 800x800px
+    <Callout type="info" title="Control de Lotes">
+    El sistema de lotes te permite:
+    - Rastrear productos por fecha de fabricación/vencimiento
+    - Vender automáticamente del lote más antiguo (FIFO)
+    - Recibir alertas preventivas de vencimiento
+    - Cumplir con normativas sanitarias
+    </Callout>
   </Step>
 
   <Step title="Guarda el Producto">
-    Revisa que toda la información esté correcta y haz clic en "Guardar Producto". El sistema validará los datos y creará el producto.
+    Revisa que toda la información esté correcta:
+    - ✓ Nombre y SKU únicos
+    - ✓ Precios de costo y venta ingresados
+    - ✓ Stock inicial correcto
+    - ✓ Categoría seleccionada (si aplica)
 
-    <Callout type="success" title="¡Listo!">
+    Haz clic en "Crear Producto". El sistema validará los datos y creará el producto.
+
+    <Callout type="success" title="¡Producto Creado!">
     Tu producto ha sido creado exitosamente y ya está disponible para la venta en el punto de venta.
     </Callout>
+
+    Si hay errores, el sistema te mostrará mensajes específicos indicando qué campos corregir.
   </Step>
 </StepList>
 
 ## Campos Obligatorios vs Opcionales
 
-<InfoCard icon="FileText" title="Campos Obligatorios">
-Los siguientes campos son **requeridos** para crear un producto:
-
-- Nombre del producto
+<InfoCard icon="FileText" title="Resumen de Campos">
+**Campos Obligatorios** (marcados con *):
+- Nombre del Producto
 - SKU (código único)
-- Precio de venta
-- Categoría
+- Precio de Costo
+- Precio de Venta
 
-Todos los demás campos son opcionales y pueden configurarse después.
+**Campos Opcionales** (pero recomendados):
+- Descripción
+- Imagen
+- Categoría
+- Código de Barras
+- Códigos Adicionales
+- Stock Inicial
+- Nivel Mínimo de Stock
+- Nivel Máximo de Stock
+- Unidad
+- Producto por Peso
+- Rastrear Vencimientos
+- Tasa de Impuesto Personalizada (por defecto usa la tasa de la tienda)
 </InfoCard>
 
-## Tips y Mejores Prácticas
-
-### Nomenclatura de SKU
-
-Usa un sistema consistente para tus códigos SKU. Ejemplos:
-
-```
-CATEGORIA-PRODUCTO-VARIANTE
-
-Ejemplos:
-BEB-COCA-2L        (Bebida, Coca Cola, 2 Litros)
-SNACK-PAPAS-150G   (Snack, Papas, 150 gramos)
-LIMPIEZA-JABON-1L  (Limpieza, Jabón, 1 litro)
-```
-
-### Organización por Categorías
-
-Crea categorías lógicas que faciliten la búsqueda:
-
-- Bebidas
-  - Gaseosas
-  - Jugos
-  - Agua
-- Alimentos
-  - Snacks
-  - Lácteos
-  - Panadería
-
-### Control de Stock
-
-<Callout type="warning" title="Recomendación">
-Establece el **stock mínimo** en un nivel que te permita reordenar antes de quedarte sin producto. Considera el tiempo de entrega de tu proveedor.
-</Callout>
-
-## Importación Masiva
+## Importación Masiva de Productos
 
 Si necesitas agregar muchos productos a la vez, puedes usar la función de **Importación desde Excel**:
 
-1. Descarga la plantilla de importación
-2. Llena los datos en Excel
-3. Sube el archivo al sistema
-4. El sistema validará y creará todos los productos
+<StepList>
+  <Step title="Descarga la Plantilla">
+    Ve a Productos → Importar → Descargar Plantilla Excel
+  </Step>
+
+  <Step title="Llena los Datos">
+    Abre el archivo Excel y completa:
+    - Una fila por producto
+    - Columnas: Nombre, SKU, Precio Costo, Precio Venta, Stock, etc.
+    - Respeta los formatos indicados
+  </Step>
+
+  <Step title="Sube el Archivo">
+    Vuelve a Productos → Importar → Seleccionar Archivo
+
+    El sistema validará:
+    - SKUs únicos
+    - Códigos de barras únicos
+    - Formatos numéricos correctos
+    - Categorías existentes
+  </Step>
+
+  <Step title="Revisa y Confirma">
+    El sistema mostrará un resumen:
+    - Productos válidos: se crearán
+    - Errores: se listarán para que corrijas
+
+    Confirma la importación y listo.
+  </Step>
+</StepList>
 
 <ImageZoom
-  src="https://placehold.co/800x450/1e40af/white?text=Importar+desde+Excel"
+  src="https://placehold.co/800x450/1e40af/white?text=Importar+Excel"
   alt="Importación masiva de productos"
   caption="Importa cientos de productos en segundos usando Excel"
 />
@@ -181,39 +382,121 @@ Si necesitas agregar muchos productos a la vez, puedes usar la función de **Imp
 
 Para modificar un producto ya creado:
 
-1. Busca el producto en la lista
-2. Haz clic en el ícono de editar (lápiz)
+1. Ve a Productos → Busca el producto
+2. Haz clic en el nombre del producto o en el ícono de editar (lápiz)
 3. Modifica los campos necesarios
-4. Guarda los cambios
+4. Haz clic en "Actualizar Producto"
 
 <Callout type="info" title="Historial de Cambios">
-El sistema mantiene un registro de todas las modificaciones realizadas a los productos, incluyendo cambios de precio y ajustes de stock.
+El sistema mantiene un registro de todas las modificaciones realizadas a los productos, incluyendo cambios de precio y ajustes de stock para trazabilidad y auditorías.
 </Callout>
 
 ## Solución de Problemas Comunes
 
 ### Error: "El SKU ya existe"
 
-Cada SKU debe ser único. Verifica que no hayas usado ese código previamente o elige uno diferente.
+**Causa:** Otro producto ya está usando ese código SKU.
+
+**Solución:**
+- Verifica que no hayas creado el producto previamente
+- Busca el producto con ese SKU en la lista
+- Elige un SKU diferente
+- Usa un formato que incluya variante (ej: COCA-2L-001, COCA-2L-002)
 
 ### Error: "El código de barras ya está registrado"
 
-Un código de barras solo puede estar asociado a un producto. Si necesitas reasignarlo, primero elimínalo del producto anterior.
+**Causa:** Un código de barras solo puede estar asociado a un producto.
+
+**Solución:**
+- Busca qué producto tiene ese código de barras
+- Si es el mismo producto, no necesitas agregarlo de nuevo
+- Si necesitas reasignarlo, primero elimínalo del producto anterior
+- Considera usar "Códigos Adicionales" si son variantes del mismo producto
 
 ### El producto no aparece en el POS
 
-Verifica que:
-- El producto esté marcado como "Activo"
-- Tenga un precio de venta configurado
-- Tenga stock disponible (si rastrear stock está activado)
+**Posibles causas y soluciones:**
+
+1. **Stock en cero y sistema configurado para no vender sin stock**
+   - Solución: Ajusta el stock o desactiva la restricción en configuración
+
+2. **Producto sin precio de venta**
+   - Solución: Edita el producto y agrega el precio de venta
+
+3. **Categoría inactiva**
+   - Solución: Verifica que la categoría del producto esté activa
+
+4. **Cache del navegador**
+   - Solución: Refresca la página del POS (F5) o limpia el cache
+
+### No puedo subir la imagen
+
+**Posibles causas:**
+
+1. **Archivo muy grande (>5MB)**
+   - Solución: Comprime la imagen usando TinyPNG o similar
+
+2. **Formato no soportado**
+   - Solución: Convierte a JPG, PNG, WebP o GIF
+
+3. **Nombre de archivo con caracteres especiales**
+   - Solución: Renombra el archivo con solo letras, números y guiones
+
+## Mejores Prácticas
+
+### Organización por Categorías
+
+Crea categorías lógicas que faciliten la búsqueda:
+
+```
+📁 Bebidas
+  ├─ Gaseosas
+  ├─ Jugos
+  └─ Agua
+
+📁 Alimentos
+  ├─ Snacks
+  ├─ Lácteos
+  └─ Panadería
+
+📁 Limpieza
+  ├─ Detergentes
+  ├─ Desinfectantes
+  └─ Utensilios
+```
+
+### Uso de Imágenes
+
+**Recomendaciones:**
+- Resolución: 800x800px (cuadrada)
+- Fondo blanco o transparente
+- Producto centrado y bien iluminado
+- Sin textos o marcas de agua
+- Comprimidas para carga rápida
+
+### Control de Stock Eficiente
+
+1. **Configura niveles mínimos realistas** basándote en:
+   - Historial de ventas
+   - Tiempo de entrega del proveedor
+   - Estacionalidad del producto
+
+2. **Usa unidades consistentes:**
+   - Si vendes por piezas, usa "pzas" o "unidades"
+   - Si por peso, usa "kg" o "lb"
+   - Mantén consistencia en toda tu tienda
+
+3. **Revisa y ajusta periódicamente:**
+   - Productos de baja rotación: reduce stock mínimo
+   - Productos de alta rotación: aumenta stock mínimo
 
 ## Próximos Pasos
 
 Ahora que sabes agregar productos, te recomendamos:
 
-- **Crear Categorías**: Organiza mejor tu inventario
-- **Configurar Códigos de Barras**: Agiliza el proceso de venta
+- **Crear Categorías**: Organiza mejor tu inventario por tipos
+- **Configurar Proveedores**: Asocia productos con sus proveedores
 - **Importar Productos**: Si tienes muchos productos por agregar
-- **Gestionar Proveedores**: Asocia productos con sus proveedores
+- **Gestionar Inventario**: Aprende a controlar el stock eficientemente
 
 ¿Tienes preguntas? Consulta los demás tutoriales o contacta a soporte.

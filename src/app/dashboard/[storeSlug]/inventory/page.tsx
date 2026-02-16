@@ -95,6 +95,17 @@ export default function InventoryPage() {
     }
   }
 
+  const getMovementLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      'PURCHASE': 'Compra',
+      'SALE': 'Venta',
+      'RETURN': 'Devolución',
+      'DAMAGE': 'Daño',
+      'ADJUSTMENT': 'Ajuste'
+    }
+    return labels[type] || type
+  }
+
   const getMovementColorClass = (quantity: number) => {
     return quantity > 0 ? 'text-emerald-500' : 'text-rose-500'
   }
@@ -321,7 +332,7 @@ export default function InventoryPage() {
                             <div className="flex items-center gap-2">
                               {getMovementIcon(movement.type)}
                               <Badge variant="secondary" className="text-[10px] font-bold py-0 h-5 px-2 rounded-md uppercase tracking-tighter">
-                                {movement.type}
+                                {getMovementLabel(movement.type)}
                               </Badge>
                             </div>
                           </td>

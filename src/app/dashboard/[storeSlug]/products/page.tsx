@@ -288,12 +288,7 @@ export default function ProductsPage() {
               Nuevo Producto
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-11 rounded-2xl px-6 bg-background/50 backdrop-blur-sm border border-border/50">
-            <Link href={`/dashboard/${store.slug}/import`}>
-              <FileSpreadsheet className="mr-2 h-5 w-5" />
-              Importar
-            </Link>
-          </Button>
+
         </div>
       </div>
 

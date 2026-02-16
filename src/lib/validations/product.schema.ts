@@ -21,6 +21,9 @@ const baseProductSchema = z.object({
   isWeighedProduct: z.boolean().default(false),
   weightUnit: z.string().optional(),
   additionalBarcodes: z.array(z.string().min(1)).optional(),
+  // Tax configuration
+  taxRate: z.number().min(0, 'La tasa de impuesto debe ser positiva').max(100, 'La tasa de impuesto no puede ser mayor a 100%').optional(),
+  overrideTaxRate: z.boolean().default(false),
 })
 
 // Create schema with refinement

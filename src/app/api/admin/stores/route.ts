@@ -66,23 +66,56 @@ export async function POST(request: Request) {
     const userRepo = dataSource.getRepository(User)
     const employmentRepo = dataSource.getRepository(Employment)
 
-    // Verify owner exists
-    const owner = await userRepo.findOne({ where: { id: validated.ownerId } })
-    if (!owner) {
-      return NextResponse.json({ error: 'Owner user not found' }, { status: 404 })
+    let ownerId: string
+
+    // Determinar si crear nuevo usuario o usar existente
+    if (validated.ownerId) {
+      // Usar usuario existente
+      const owner = await userRepo.findOne({ where: { id: validated.ownerId } })
+      if (!owner) {
+        return NextResponse.json({ error: 'Usuario propietario no encontrado' }, { status: 404 })
+      }
+      ownerId = validated.ownerId
+    } else if (validated.ownerName && validated.ownerEmail && validated.ownerPassword) {
+      // Crear nuevo usuario
+      // Verificar que el email no esté en uso
+      const existingUser = await userRepo.findOne({ where: { email: validated.ownerEmail } })
+      if (existingUser) {
+        return NextResponse.json({ error: 'El email ya está registrado' }, { status: 400 })
+      }
+
+      // Hash de la contraseña
+      const bcrypt = require('bcryptjs')
+      const hashedPassword = await bcrypt.hash(validated.ownerPassword, 10)
+
+      // Crear usuario
+      const newUser = userRepo.create({
+        name: validated.ownerName,
+        email: validated.ownerEmail,
+        password: hashedPassword,
+        role: 'STORE_OWNER' as any,
+        isActive: true,
+        mustChangePassword: true, // Forzar cambio de contraseña en primer login
+      })
+      const savedUser = await userRepo.save(newUser)
+      ownerId = savedUser.id
+    } else {
+      return NextResponse.json({
+        error: 'Debes proporcionar un ID de usuario o datos completos para crear uno nuevo'
+      }, { status: 400 })
     }
 
-    // Check slug uniqueness
+    // Verificar que el slug no esté en uso
     const existing = await storeRepo.findOne({ where: { slug: validated.slug } })
     if (existing) {
-      return NextResponse.json({ error: 'Slug already in use' }, { status: 400 })
+      return NextResponse.json({ error: 'El slug ya está en uso' }, { status: 400 })
     }
 
-    // Create store
+    // Crear tienda
     const store = storeRepo.create({
       name: validated.name,
       slug: validated.slug,
-      ownerId: validated.ownerId,
+      ownerId,
       description: validated.description,
       phone: validated.phone,
       email: validated.email,
@@ -90,9 +123,9 @@ export async function POST(request: Request) {
     })
     await storeRepo.save(store)
 
-    // Create owner employment as ADMIN
+    // Crear employment del owner como ADMIN
     const employment = employmentRepo.create({
-      userId: validated.ownerId,
+      userId: ownerId,
       storeId: store.id,
       role: EmploymentRole.ADMIN,
       isActive: true,
@@ -101,16 +134,22 @@ export async function POST(request: Request) {
     await employmentRepo.save(employment)
 
     return NextResponse.json(
-      { id: store.id, name: store.name, slug: store.slug, isActive: store.isActive },
+      {
+        id: store.id,
+        name: store.name,
+        slug: store.slug,
+        isActive: store.isActive,
+        newUserCreated: !validated.ownerId
+      },
       { status: 201 }
     )
   } catch (error: any) {
     console.error('Create store error:', error)
 
     if (error.name === 'ZodError') {
-      return NextResponse.json({ error: 'Invalid input', details: error }, { status: 400 })
+      return NextResponse.json({ error: 'Entrada inválida', details: error }, { status: 400 })
     }
 
-    return NextResponse.json({ error: 'Failed to create store' }, { status: 500 })
+    return NextResponse.json({ error: 'Error al crear la tienda' }, { status: 500 })
   }
 }

@@ -90,6 +90,8 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
       unit: product.unit,
       imageUrl: product.imageUrl,
       additionalBarcodes: product.additionalBarcodes,
+      taxRate: product.taxRate,
+      overrideTaxRate: product.overrideTaxRate ?? false,
     } : {
       currentStock: 0,
       minStockLevel: 10,
@@ -97,6 +99,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
       trackExpirationDates: false,
       isActive: true,
       isWeighedProduct: false,
+      overrideTaxRate: false,
     },
   })
 
@@ -547,6 +550,43 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   <p className="text-sm text-red-500">{String(errors.sellingPrice.message)}</p>
                 )}
               </div>
+            </div>
+
+            <div className="space-y-3 border-t pt-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="overrideTaxRate"
+                  checked={watch('overrideTaxRate')}
+                  onCheckedChange={(checked) => setValue('overrideTaxRate', checked as boolean)}
+                  disabled={isLoading}
+                />
+                <Label htmlFor="overrideTaxRate" className="cursor-pointer">
+                  Configurar tasa de impuesto personalizada para este producto
+                </Label>
+              </div>
+              <p className="text-xs text-gray-500">
+                Por defecto, se usa la tasa de impuesto configurada en la tienda. Activa esta opción para usar una tasa diferente.
+              </p>
+
+              {watch('overrideTaxRate') && (
+                <div className="space-y-2">
+                  <Label htmlFor="taxRate">Tasa de Impuesto (%)</Label>
+                  <Input
+                    id="taxRate"
+                    type="number"
+                    step="0.01"
+                    placeholder="Ej: 16.00 para IVA del 16%"
+                    {...register('taxRate', { valueAsNumber: true })}
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Ingresa el porcentaje de impuesto (ej: 16 para 16%, 8 para 8%)
+                  </p>
+                  {errors.taxRate?.message && (
+                    <p className="text-sm text-red-500">{String(errors.taxRate.message)}</p>
+                  )}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

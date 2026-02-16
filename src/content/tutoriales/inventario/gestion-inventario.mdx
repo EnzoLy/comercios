@@ -62,11 +62,11 @@ Muestra las últimas 30 transacciones de inventario registradas automáticamente
 <InfoCard icon="History" title="Tipos de Movimientos Registrados">
 El sistema registra automáticamente estos movimientos:
 
-- **PURCHASE**: Compras a proveedores (aumenta stock)
-- **SALE**: Ventas realizadas en el POS (disminuye stock automáticamente)
-- **RETURN**: Devoluciones de clientes (aumenta stock)
-- **DAMAGE**: Productos dañados o merma (disminuye stock)
-- **ADJUSTMENT**: Ajustes manuales que tú realizas
+- **Compra**: Compras a proveedores (aumenta stock)
+- **Venta**: Ventas realizadas en el POS (disminuye stock automáticamente)
+- **Devolución**: Devoluciones de clientes (aumenta stock)
+- **Daño**: Productos dañados o merma (disminuye stock)
+- **Ajuste**: Ajustes manuales que tú realizas
 </InfoCard>
 
 **Información que verás en cada movimiento:**
@@ -131,7 +131,7 @@ Cuando necesitas corregir el stock de productos por conteos físicos, mermas o c
   <Step title="Guarda el Ajuste">
     Haz clic en el botón de check (✓) para confirmar. El sistema:
     - Actualiza el stock inmediatamente
-    - Registra el movimiento tipo "ADJUSTMENT"
+    - Registra el movimiento tipo "Ajuste"
     - Asocia el cambio con tu usuario
     - Muestra una confirmación de éxito
   </Step>
@@ -295,7 +295,7 @@ El inventario se actualiza sin intervención manual en estos casos:
 
 Cada vez que realizas una venta:
 - El stock se **descuenta automáticamente**
-- Se crea un movimiento tipo "SALE"
+- Se crea un movimiento tipo "Venta"
 - Si el producto tiene lotes, descuenta del lote seleccionado
 - Si llegas a stock mínimo, genera alerta
 
@@ -303,14 +303,14 @@ Cada vez que realizas una venta:
 
 Cuando procesas una devolución:
 - El stock se **incrementa automáticamente**
-- Se crea un movimiento tipo "RETURN"
+- Se crea un movimiento tipo "Devolución"
 - El producto vuelve a estar disponible para venta
 
 ### Compras a Proveedores
 
 Cuando recibes una orden de compra:
 - El stock se **incrementa** con las cantidades recibidas
-- Se crea un movimiento tipo "PURCHASE"
+- Se crea un movimiento tipo "Compra"
 - Si aplica, se crea un lote con fecha de vencimiento
 
 ## Mejores Prácticas
