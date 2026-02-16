@@ -79,7 +79,9 @@ export async function middleware(request: NextRequest) {
 
     // Check if accessing store-scoped route: /dashboard/[storeSlug]/*
     const storeSlugMatch = pathname.match(/^\/dashboard\/([^/]+)/)
-    if (storeSlugMatch && storeSlugMatch[1] !== 'select-store') {
+    const excludedRoutes = ['select-store', 'user-settings']
+
+    if (storeSlugMatch && !excludedRoutes.includes(storeSlugMatch[1])) {
       const storeSlug = storeSlugMatch[1]
 
       // Verify user has access to this store

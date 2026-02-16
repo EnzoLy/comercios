@@ -7,6 +7,16 @@ import { ChevronDown, ChevronUp, Heart, Package } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/currency'
 import { useFavoriteProducts } from '@/hooks/use-favorite-products'
 
+interface FavoriteProduct {
+  productId: string
+  name: string
+  sku: string
+  price: number
+  quantitySold: number
+  currentStock: number
+  imageUrl?: string | null
+}
+
 interface FavoriteProductsProps {
   storeId: string
   onProductSelect: (product: any) => void
