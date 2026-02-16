@@ -37,9 +37,13 @@ export function DiscountControls({
   const [discountValue, setDiscountValue] = useState(currentDiscount > 0 ? String(currentDiscount) : '')
 
   const percentageOptions = [5, 10, 15, 20]
+  const [selectedPercentage, setSelectedPercentage] = useState<number | null>(null)
 
   const handleQuickDiscount = (percentage: number) => {
     const discountAmount = (cartTotal * percentage) / 100
+    setSelectedPercentage(percentage)
+    setDiscountValue(String(percentage))
+    setDiscountType('percentage')
     onDiscountChange(Math.round(discountAmount * 100) / 100)
     setIsOpen(false)
   }
@@ -95,9 +99,10 @@ export function DiscountControls({
                 {percentageOptions.map((percentage) => (
                   <Button
                     key={percentage}
-                    variant="outline"
+                    variant={selectedPercentage === percentage ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleQuickDiscount(percentage)}
+                    className={selectedPercentage === percentage ? "bg-primary text-primary-foreground" : ""}
                   >
                     {percentage}%
                   </Button>

@@ -133,7 +133,7 @@ export const authConfig: NextAuthConfig = {
       }
       return true
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       // Add user info to token on sign in
       if (user) {
         token.id = user.id
@@ -144,6 +144,36 @@ export const authConfig: NextAuthConfig = {
         token.colorTheme = user.colorTheme
         token.stores = user.stores
       }
+
+      // Refresh user data when update() is called
+      if (trigger === 'update' && token.id) {
+        try {
+          const userRepo = await getRepository(User)
+          const freshUser = await userRepo.findOne({
+            where: { id: token.id as string },
+            relations: ['employments', 'employments.store'],
+          })
+
+          if (freshUser) {
+            const stores = (freshUser.employments || [])
+              .filter((emp: Employment) => emp.isActive)
+              .map((emp: Employment) => ({
+                storeId: emp.storeId,
+                name: emp.store.name,
+                slug: emp.store.slug,
+                employmentRole: emp.role,
+                isOwner: emp.store.ownerId === freshUser.id,
+              }))
+
+            token.name = freshUser.name
+            token.colorTheme = freshUser.colorTheme
+            token.stores = stores
+          }
+        } catch (error) {
+          console.error('Error refreshing user data:', error)
+        }
+      }
+
       return token
     },
     async session({ session, token }) {

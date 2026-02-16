@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireStoreAccess } from '@/lib/auth/permissions'
 import { getDataSource } from '@/lib/db'
+import { withRetry } from '@/lib/db/retry'
 import { Store } from '@/lib/db/entities/store.entity'
 
 export async function GET(
@@ -11,9 +12,11 @@ export async function GET(
     const { storeId } = await params
     await requireStoreAccess(storeId)
 
-    const dataSource = await getDataSource()
-    const store = await dataSource.getRepository(Store).findOne({
-      where: { id: storeId },
+    const store = await withRetry(async () => {
+      const dataSource = await getDataSource()
+      return await dataSource.getRepository(Store).findOne({
+        where: { id: storeId },
+      })
     })
 
     if (!store) {

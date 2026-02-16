@@ -78,8 +78,8 @@ export async function getDailySales(
     .addSelect('AVG(CAST(sale.total AS DECIMAL(10,2))) as avgTransaction')
     .where('sale.storeId = :storeId', { storeId })
     .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-    .andWhere('DATE(sale.createdAt) >= DATE(:startDate)', { startDate })
-    .andWhere('DATE(sale.createdAt) <= DATE(:endDate)', { endDate })
+    .andWhere('sale.createdAt >= :startDate', { startDate })
+    .andWhere('sale.createdAt <= :endDate', { endDate })
     .groupBy('DATE(sale.createdAt)')
     .orderBy('DATE(sale.createdAt)', 'ASC')
     .getRawMany()
@@ -109,8 +109,8 @@ export async function getMonthlySales(
     .addSelect('AVG(CAST(sale.total AS DECIMAL(10,2))) as avgTransaction')
     .where('sale.storeId = :storeId', { storeId })
     .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-    .andWhere('DATE(sale.createdAt) >= DATE(:startDate)', { startDate })
-    .andWhere('DATE(sale.createdAt) <= DATE(:endDate)', { endDate })
+    .andWhere('sale.createdAt >= :startDate', { startDate })
+    .andWhere('sale.createdAt <= :endDate', { endDate })
 
     .groupBy("TO_CHAR(sale.createdAt, 'YYYY-MM')")
     .orderBy("TO_CHAR(sale.createdAt, 'YYYY-MM')", 'ASC')
@@ -139,8 +139,8 @@ export async function getEmployeePerformance(
     .leftJoinAndSelect('sale.cashier', 'cashier')
     .where('sale.storeId = :storeId', { storeId })
     .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-    .andWhere('DATE(sale.createdAt) >= DATE(:startDate)', { startDate })
-    .andWhere('DATE(sale.createdAt) <= DATE(:endDate)', { endDate })
+    .andWhere('sale.createdAt >= :startDate', { startDate })
+    .andWhere('sale.createdAt <= :endDate', { endDate })
     .getMany()
 
   // Group by employee
@@ -208,8 +208,8 @@ export async function getProductAnalytics(
     .leftJoinAndSelect('product.category', 'category')
     .where('sale.storeId = :storeId', { storeId })
     .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-    .andWhere('DATE(sale.createdAt) >= DATE(:startDate)', { startDate })
-    .andWhere('DATE(sale.createdAt) <= DATE(:endDate)', { endDate })
+    .andWhere('sale.createdAt >= :startDate', { startDate })
+    .andWhere('sale.createdAt <= :endDate', { endDate })
     .getMany()
 
   // Group by product ID
@@ -308,8 +308,8 @@ export async function getCategoryAnalytics(
     .leftJoin(Category, 'category', 'category.id = product.categoryId')
     .where('sale.storeId = :storeId', { storeId })
     .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-    .andWhere('DATE(sale.createdAt) >= DATE(:startDate)', { startDate })
-    .andWhere('DATE(sale.createdAt) <= DATE(:endDate)', { endDate })
+    .andWhere('sale.createdAt >= :startDate', { startDate })
+    .andWhere('sale.createdAt <= :endDate', { endDate })
     .andWhere('category.id IS NOT NULL')
     .groupBy('category.id')
     .addGroupBy('category.name')
@@ -356,8 +356,8 @@ export async function getAnalyticsOverview(
       .addSelect('AVG(CAST(sale.total AS DECIMAL(10,2))) as avgTransaction')
       .where('sale.storeId = :storeId', { storeId })
       .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-      .andWhere('DATE(sale.createdAt) >= DATE(:startDate)', { startDate })
-      .andWhere('DATE(sale.createdAt) <= DATE(:endDate)', { endDate })
+      .andWhere('sale.createdAt >= :startDate', { startDate })
+      .andWhere('sale.createdAt <= :endDate', { endDate })
       .getRawOne(),
 
     getEmployeePerformance(dataSource, storeId, { startDate, endDate }),

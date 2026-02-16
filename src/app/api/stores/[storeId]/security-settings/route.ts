@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireRole, isStoreOwner } from '@/lib/auth/permissions'
 import { getDataSource } from '@/lib/db'
+import { withRetry } from '@/lib/db/retry'
 import { Store } from '@/lib/db/entities/store.entity'
 import { EmploymentRole } from '@/lib/db/entities/employment.entity'
 
@@ -19,12 +20,13 @@ export async function GET(
     const { requireStoreAccess } = await import('@/lib/auth/permissions')
     await requireStoreAccess(storeId)
 
-    const dataSource = await getDataSource()
-    const storeRepo = dataSource.getRepository(Store)
-
-    const store = await storeRepo.findOne({
-      where: { id: storeId },
-      select: ['id', 'requireEmployeePin'],
+    const store = await withRetry(async () => {
+      const dataSource = await getDataSource()
+      const storeRepo = dataSource.getRepository(Store)
+      return await storeRepo.findOne({
+        where: { id: storeId },
+        select: ['id', 'requireEmployeePin'],
+      })
     })
 
     if (!store) {

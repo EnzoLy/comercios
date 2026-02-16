@@ -9,6 +9,7 @@ import { Percent, Cog, Shield, Trash2 } from 'lucide-react'
 import { TaxSettingsForm } from '@/components/settings/tax-settings-form'
 import { SecuritySettingsForm } from '@/components/settings/security-settings-form'
 import { ResetSettingsForm } from '@/components/settings/reset-settings-form'
+import { StoreInfoForm } from '@/components/settings/store-info-form'
 
 export default function SettingsPage() {
   const params = useParams()
@@ -60,24 +61,22 @@ export default function SettingsPage() {
 
         {/* Tab de Configuración General */}
         <TabsContent value="general" className="space-y-6 mt-6">
+          <StoreInfoForm />
+
           <Card>
             <CardHeader>
-              <CardTitle>Información de la Tienda</CardTitle>
+              <CardTitle>Información Adicional</CardTitle>
               <CardDescription>
-                Información general de tu tienda
+                Datos de la tienda
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Tienda</p>
-                <p className="text-lg font-semibold">{store.slug}</p>
-              </div>
-              <div>
                 <p className="text-sm font-medium text-muted-foreground">ID de Tienda</p>
-                <p className="text-lg font-semibold text-muted-foreground">{store.storeId}</p>
+                <p className="text-xs font-mono text-muted-foreground">{store.storeId}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Rol</p>
+                <p className="text-sm font-medium text-muted-foreground">Tu Rol</p>
                 <p className="text-lg font-semibold capitalize">{store.role}</p>
               </div>
             </CardContent>

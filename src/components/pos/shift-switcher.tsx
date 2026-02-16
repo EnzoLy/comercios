@@ -18,6 +18,8 @@ import { PinPadDialog } from './pin-pad-dialog'
 import { OwnerPinDialog } from '@/components/auth/owner-pin-dialog'
 import { SetOwnerPinDialog } from '@/components/auth/set-owner-pin-dialog'
 import { useActiveEmployee } from '@/contexts/active-employee-context'
+import { useSecuritySettings } from '@/hooks/use-security-settings'
+import { useEmployeeShifts } from '@/hooks/use-employee-shifts'
 
 interface Shift {
   id: string
@@ -44,39 +46,24 @@ export function ShiftSwitcher({
   currentShift,
   onShiftChange,
 }: ShiftSwitcherProps) {
-  const [shifts, setShifts] = useState<Shift[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { activeEmployee, setActiveEmployee, clearImpersonation } = useActiveEmployee()
+  const { data: session } = useSession()
+  const router = useRouter()
+
+  // SWR hooks for data fetching with caching
+  const activeUserId = typeof window !== 'undefined' ? localStorage.getItem('activeUserId') : null
+  const { shifts = [], isLoading } = useEmployeeShifts(storeId, activeUserId)
+  const { securitySettings } = useSecuritySettings(storeId)
+
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState<string>('')
   const [isSwitching, setIsSwitching] = useState(false)
   const [pinPadOpen, setPinPadOpen] = useState(false)
-  const [requirePin, setRequirePin] = useState(true)
   const [showOwnerPinDialog, setShowOwnerPinDialog] = useState(false)
   const [showSetOwnerPinDialog, setShowSetOwnerPinDialog] = useState(false)
-  const { activeEmployee, setActiveEmployee, clearImpersonation } = useActiveEmployee()
-  const { data: session } = useSession()
-  const router = useRouter()
 
-  useEffect(() => {
-    fetchTodayShifts()
-    fetchSecuritySettings()
-  }, [storeId])
-
-
-  const fetchSecuritySettings = async () => {
-    try {
-      const response = await fetch(`/api/stores/${storeId}/security-settings`)
-      if (response.ok) {
-        const data = await response.json()
-        setRequirePin(data.requireEmployeePin ?? true)
-      }
-    } catch (error) {
-      console.error('Error loading security settings:', error)
-      // Default to requiring PIN on error
-      setRequirePin(true)
-    }
-  }
+  const requirePin = securitySettings?.requireEmployeePin ?? true
 
   // Calculate countdown for current shift
   useEffect(() => {
@@ -112,24 +99,6 @@ export function ShiftSwitcher({
 
     return () => clearInterval(interval)
   }, [currentShift?.endTime])
-
-  const fetchTodayShifts = async () => {
-    setIsLoading(true)
-    try {
-      const activeUserId = localStorage.getItem('activeUserId')
-      const queryParam = activeUserId ? `?activeUserId=${activeUserId}` : ''
-
-      const response = await fetch(`/api/stores/${storeId}/employee-shifts/today${queryParam}`)
-      if (response.ok) {
-        const data = await response.json()
-        setShifts(data)
-      }
-    } catch (error) {
-      console.error('Error fetching shifts:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const handleSwitchClick = (shift: Shift) => {
     setSelectedShift(shift)

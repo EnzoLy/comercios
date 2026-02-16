@@ -1,22 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
-import { TrendingUp, Trophy, Target, Zap, Box } from 'lucide-react'
+import { TrendingUp, Trophy, Target, Zap } from 'lucide-react'
 import { toast } from 'sonner'
 import { useActiveEmployee } from '@/contexts/active-employee-context'
-
-interface PersonalStatsData {
-  period: string
-  totalSales: number
-  totalRevenue: number
-  averageTransaction: number
-  storeAverageTransaction: number
-  topProduct: { name: string; quantity: number } | null
-  ranking: { rank: number; total: number }
-  isAboveAverage: boolean
-}
+import { usePOSStats } from '@/hooks/use-pos-stats'
 
 interface PersonalStatsProps {
   storeId: string
@@ -25,35 +15,24 @@ interface PersonalStatsProps {
 
 export function PersonalStats({ storeId, refreshTrigger }: PersonalStatsProps) {
   const { activeEmployee } = useActiveEmployee()
-  const [stats, setStats] = useState<PersonalStatsData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const activeUserId = typeof window !== 'undefined' ? localStorage.getItem('activeUserId') : null
 
+  // SWR hook for data fetching with caching
+  const { stats, isLoading, isError, mutate } = usePOSStats(storeId, activeUserId, refreshTrigger)
+
+  // Refresh stats when refreshTrigger changes
   useEffect(() => {
-    fetchStats()
-  }, [storeId, refreshTrigger, activeEmployee?.id])
-
-  const fetchStats = async () => {
-    setIsLoading(true)
-    try {
-      const activeUserId = localStorage.getItem('activeUserId')
-      // Ensure we only send valid IDs, not "undefined" or "null" strings
-      const isValidId = activeUserId && activeUserId !== 'undefined' && activeUserId !== 'null'
-      const queryParam = isValidId ? `&activeUserId=${activeUserId}` : ''
-
-      const response = await fetch(`/api/stores/${storeId}/pos/my-stats?period=today${queryParam}`)
-      if (response.ok) {
-        const data = await response.json()
-        setStats(data)
-      } else {
-        toast.error('Error al cargar estadísticas')
-      }
-    } catch (error) {
-      console.error('Error fetching stats:', error)
-      toast.error('Error al cargar estadísticas')
-    } finally {
-      setIsLoading(false)
+    if (refreshTrigger) {
+      mutate()
     }
-  }
+  }, [refreshTrigger, mutate])
+
+  // Show error toast if fetch fails
+  useEffect(() => {
+    if (isError) {
+      toast.error('Error al cargar estadísticas')
+    }
+  }, [isError])
 
   if (isLoading || !stats) {
     return (

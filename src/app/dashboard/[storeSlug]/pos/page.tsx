@@ -20,6 +20,8 @@ import { EmployeeSelector } from '@/components/pos/employee-selector'
 import { SaleSuccessDialog } from '@/components/pos/sale-success-dialog'
 import { useActiveEmployee } from '@/contexts/active-employee-context'
 import { useStore } from '@/hooks/use-store'
+import { useTaxSettings } from '@/hooks/use-tax-settings'
+import { useEmployeeShifts } from '@/hooks/use-employee-shifts'
 import { formatCurrency } from '@/lib/utils/currency'
 import { LoadingPage } from '@/components/ui/loading'
 import { Camera, Trash2, Plus, Minus, ShoppingCart, Store, Clock, BarChart3, AlertTriangle, Maximize2, Minimize2, Search, Zap } from 'lucide-react'
@@ -73,14 +75,17 @@ export default function POSPage() {
   const router = useRouter()
   const { data: session } = useSession()
   const store = useStore()
+  const { activeEmployee, setActiveEmployee } = useActiveEmployee()
+
+  // SWR hooks for data fetching with caching
+  const { taxSettings } = useTaxSettings(store?.storeId)
+  const { shifts } = useEmployeeShifts(store?.storeId, activeEmployee?.id)
+
   const [cart, setCart] = useState<CartItem[]>([])
   const [scannerOpen, setScannerOpen] = useState(false)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [amountPaid, setAmountPaid] = useState<number | undefined>(undefined)
-  const [taxEnabled, setTaxEnabled] = useState(false)
-  const [defaultTaxRate, setDefaultTaxRate] = useState(0)
-  const [taxName, setTaxName] = useState('IVA')
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
   const [cartDiscount, setCartDiscount] = useState(0)
   const [recentSalesOpen, setRecentSalesOpen] = useState(false)
@@ -94,7 +99,11 @@ export default function POSPage() {
   const [expiredWarningProduct, setExpiredWarningProduct] = useState<any>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
-  const { activeEmployee, setActiveEmployee } = useActiveEmployee()
+
+  // Derived state from SWR
+  const taxEnabled = taxSettings?.taxEnabled ?? false
+  const defaultTaxRate = taxSettings?.defaultTaxRate ?? 0
+  const taxName = taxSettings?.taxName ?? 'IVA'
 
   // Fullscreen toggle
   const toggleFullscreen = () => {
@@ -118,62 +127,38 @@ export default function POSPage() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
 
-  // Fetch tax settings and current shift from store
+  // Auto-detect shift when shifts data is loaded
   useEffect(() => {
-    if (!store) return
+    if (!store || !shifts || shifts.length === 0) return
 
-    const fetchData = async () => {
-      try {
-        // Fetch tax settings
-        const taxResponse = await fetch(`/api/stores/${store.storeId}/tax-settings`)
-        if (taxResponse.ok) {
-          const data = await taxResponse.json()
-          setTaxEnabled(data.taxEnabled)
-          setDefaultTaxRate(data.defaultTaxRate)
-          setTaxName(data.taxName)
-        }
+    const currentUser = session?.user
 
-        // NUEVO: Auto-detección de turno del usuario logueado
-        const currentUser = session?.user
+    // Check for active employee from context first, fallback to localStorage
+    const activeUserId = activeEmployee?.id || localStorage.getItem('activeUserId')
+    const existingActiveShift = activeUserId ? shifts.find((s: any) => s.employeeId === activeUserId) : null
 
-        // Fetch today's shifts
-        const shiftsResponse = await fetch(`/api/stores/${store.storeId}/employee-shifts/today`)
-        if (shiftsResponse.ok) {
-          const shifts = await shiftsResponse.json()
+    // Verificar si el usuario logueado tiene turno hoy
+    const userShift = currentUser && shifts.find((s: any) => s.employeeId === currentUser.id)
 
-          // Check for active employee from context first, fallback to localStorage
-          const activeUserId = activeEmployee?.id || localStorage.getItem('activeUserId')
-          const existingActiveShift = activeUserId ? shifts.find((s: any) => s.employeeId === activeUserId) : null
+    if (existingActiveShift) {
+      setCurrentShift(existingActiveShift)
+    } else if (userShift && currentUser) {
+      setCurrentShift(userShift)
 
-          // Verificar si el usuario logueado tiene turno hoy
-          const userShift = currentUser && shifts.find((s: any) => s.employeeId === currentUser.id)
+      const storeInfo = (currentUser as any).stores?.find((s: any) => s.storeId === store.storeId)
 
-          if (existingActiveShift) {
-            setCurrentShift(existingActiveShift)
-          } else if (userShift && currentUser) {
-            setCurrentShift(userShift)
-
-            const storeInfo = (currentUser as any).stores?.find((s: any) => s.storeId === store.storeId)
-
-            if (storeInfo) {
-              setActiveEmployee({
-                id: currentUser.id || '',
-                name: currentUser.name || '',
-                role: storeInfo.employmentRole,
-                isOwner: storeInfo.isOwner
-              })
-            }
-          } else {
-            setShowEmployeeSelector(true)
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error)
+      if (storeInfo) {
+        setActiveEmployee({
+          id: currentUser.id || '',
+          name: currentUser.name || '',
+          role: storeInfo.employmentRole,
+          isOwner: storeInfo.isOwner
+        })
       }
+    } else if (!currentShift && !activeUserId) {
+      setShowEmployeeSelector(true)
     }
-
-    fetchData()
-  }, [store, session, activeEmployee?.id])
+  }, [store, session, shifts, activeEmployee?.id])
 
   const handleBarcodeDetected = async (barcode: string) => {
     if (!store) return

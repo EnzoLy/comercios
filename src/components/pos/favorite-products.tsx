@@ -1,21 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronDown, ChevronUp, Heart, Package } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/currency'
-import { toast } from 'sonner'
-
-interface FavoriteProduct {
-  productId: string
-  name: string
-  sku: string
-  price: number
-  quantitySold: number
-  currentStock: number
-  imageUrl?: string | null
-}
+import { useFavoriteProducts } from '@/hooks/use-favorite-products'
 
 interface FavoriteProductsProps {
   storeId: string
@@ -26,32 +16,11 @@ export function FavoriteProducts({
   storeId,
   onProductSelect,
 }: FavoriteProductsProps) {
-  const [favorites, setFavorites] = useState<FavoriteProduct[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [isExpanded, setIsExpanded] = useState(true)
+  const activeUserId = typeof window !== 'undefined' ? localStorage.getItem('activeUserId') : null
 
-  useEffect(() => {
-    fetchFavorites()
-  }, [storeId])
-
-  const fetchFavorites = async () => {
-    setIsLoading(true)
-    try {
-      const activeUserId = localStorage.getItem('activeUserId')
-      const queryParam = activeUserId ? `?activeUserId=${activeUserId}` : ''
-
-      const response = await fetch(`/api/stores/${storeId}/pos/favorites${queryParam}`)
-      if (response.ok) {
-        const data = await response.json()
-        setFavorites(data)
-      }
-    } catch (error) {
-      console.error('Error fetching favorites:', error)
-      toast.error('Error al cargar los favoritos')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  // SWR hook for data fetching with caching
+  const { favorites, isLoading, mutate } = useFavoriteProducts(storeId, activeUserId)
 
   const handleAddToCart = (favorite: FavoriteProduct) => {
     if (favorite.currentStock === 0) {
@@ -152,7 +121,7 @@ export function FavoriteProducts({
             variant="ghost"
             size="sm"
             className="w-full mt-3"
-            onClick={fetchFavorites}
+            onClick={() => mutate()}
             disabled={isLoading}
           >
             Actualizar

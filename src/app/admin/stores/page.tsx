@@ -6,10 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Store as StoreIcon, Users, CheckCircle, XCircle, Clock, Infinity, DollarSign, Settings2 } from 'lucide-react'
+import { Plus, Store as StoreIcon, Users, CheckCircle, XCircle, Clock, Infinity, DollarSign, Settings2, Trash2 } from 'lucide-react'
 import { CreateStoreDialog } from '@/components/admin/create-store-dialog'
 import { RecordPaymentDialog } from '@/components/admin/record-payment-dialog'
 import { SubscriptionManagementDialog } from '@/components/admin/subscription-management-dialog'
+import { DeleteStoreDialog } from '@/components/admin/delete-store-dialog'
 import { SubscriptionStatusBadge } from '@/components/admin/subscription-status-badge'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -47,6 +48,7 @@ export default function AdminStoresPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
   const [managementDialogOpen, setManagementDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedStore, setSelectedStore] = useState<Store | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('ALL')
 
@@ -116,6 +118,11 @@ export default function AdminStoresPage() {
   const handleOpenManagementDialog = (store: Store) => {
     setSelectedStore(store)
     setManagementDialogOpen(true)
+  }
+
+  const handleOpenDeleteDialog = (store: Store) => {
+    setSelectedStore(store)
+    setDeleteDialogOpen(true)
   }
 
   const handleDialogSuccess = () => {
@@ -303,6 +310,15 @@ export default function AdminStoresPage() {
                         >
                           <Settings2 className="h-4 w-4" />
                         </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenDeleteDialog(store)}
+                          title="Eliminar Tienda"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -344,6 +360,15 @@ export default function AdminStoresPage() {
             onOpenChange={setManagementDialogOpen}
             onSuccess={handleDialogSuccess}
             store={selectedStore}
+          />
+
+          <DeleteStoreDialog
+            isOpen={deleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
+            onSuccess={handleDialogSuccess}
+            storeId={selectedStore.id}
+            storeName={selectedStore.name}
+            storeSlug={selectedStore.slug}
           />
         </>
       )}

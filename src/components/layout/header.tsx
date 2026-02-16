@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { User, LogOut, UserX, Lock, Palette } from 'lucide-react'
+import { User, LogOut, UserX, Lock, Palette, Settings } from 'lucide-react'
 import { MobileSidebar } from './mobile-sidebar'
 import { useActiveEmployee } from '@/contexts/active-employee-context'
 import { OwnerPinDialog } from '@/components/auth/owner-pin-dialog'
@@ -80,10 +80,13 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
     <header className="h-17 border-b bg-white flex items-center justify-between px-4 md:px-6">
       <div className="flex items-center gap-3">
         <MobileSidebar storeSlug={storeSlug} isOwner={isOwner} role={role} />
-        <div className="flex items-center gap-2">
+        <button
+          onClick={() => router.push('/dashboard')}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           <Image src="/logo-processed.png" alt="Logo" width={32} height={32} className="rounded-lg object-cover" />
           <h1 className="text-lg md:text-xl font-semibold">Orbitus Gestión</h1>
-        </div>
+        </button>
       </div>
 
       <div className="flex items-center gap-4">
@@ -122,14 +125,11 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
                 <DropdownMenuSeparator />
               </>
             )}
-            {isOwner && (
-              <>
-                <DropdownMenuItem onClick={() => setShowSetOwnerPinDialog(true)}>
-                  <Lock className="mr-2 h-4 w-4" />
-                  Configurar PIN
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </>
+            {!isImpersonating && (
+              <DropdownMenuItem onClick={() => router.push('/dashboard/user-settings')}>
+                <Settings className="mr-2 h-4 w-4" />
+                Configuración de Usuario
+              </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={() => setShowThemeSelector(true)}>
               <Palette className="mr-2 h-4 w-4" />

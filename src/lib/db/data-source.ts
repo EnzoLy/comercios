@@ -88,9 +88,11 @@ export async function getDataSource(): Promise<DataSource> {
         migrations: [],
         // Connection pooling settings for Supabase
         extra: {
-          max: 10, // Maximum connections
-          idleTimeoutMillis: 30000, // Close idle connections after 30s
-          connectionTimeoutMillis: 2000, // Timeout for getting a connection
+          max: 20, // Maximum connections (increased for parallel requests)
+          min: 2, // Minimum connections to keep alive
+          idleTimeoutMillis: 60000, // Close idle connections after 60s
+          connectionTimeoutMillis: 10000, // Timeout for getting a connection (10s)
+          statementTimeout: 10000, // Timeout for SQL statements (10s)
         },
       }
       : {
