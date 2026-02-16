@@ -2,15 +2,19 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth/auth'
 
+// Force Node.js runtime for middleware (required for TypeORM)
+export const runtime = 'nodejs'
+
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-  
-  let session = null
   try {
-    session = await auth()
-  } catch (error) {
-    console.error('Auth error in middleware:', error)
-  }
+    const { pathname } = request.nextUrl
+
+    let session = null
+    try {
+      session = await auth()
+    } catch (error) {
+      console.error('Auth error in middleware:', error)
+    }
 
   // Public routes that don't require authentication
   const publicRoutes = ['/auth/signin', '/auth/signup', '/auth/error', '/auth/change-password', '/']
@@ -239,6 +243,14 @@ export async function middleware(request: NextRequest) {
   }
 
   return NextResponse.next()
+  } catch (error) {
+    console.error('Middleware error:', error)
+    console.error('Pathname:', request.nextUrl.pathname)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
+
+    // En caso de error, redirigir al dashboard
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
 }
 
 export const config = {
