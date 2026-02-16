@@ -44,3 +44,6 @@ nul
 
 # uploads
 /public/uploads
+
+/test-results
+/playwright-report

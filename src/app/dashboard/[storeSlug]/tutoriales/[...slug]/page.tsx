@@ -59,6 +59,9 @@ export async function generateStaticParams() {
   }))
 }
 
+// Force dynamic rendering since we use auth()
+export const dynamic = 'force-dynamic'
+
 export default async function TutorialPage({ params }: PageProps) {
   const { storeSlug, slug } = await params
   const tutorialSlug = slug.join('/')

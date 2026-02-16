@@ -17,7 +17,9 @@
       "Bash(timeout 30 tail:*)",
       "Bash(set CI=true)",
       "Bash(timeout:*)",
-      "Bash(if exist .next rmdir /s /q .next)"
+      "Bash(if exist .next rmdir /s /q .next)",
+      "Bash(pnpm test:unit:*)",
+      "Bash(pnpm test:e2e:*)"
     ]
   }
 }

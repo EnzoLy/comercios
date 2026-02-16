@@ -30,7 +30,7 @@ export const authConfig: NextAuthConfig = {
             const validatedEmail = validated.email
             const validatedPassword = validated.password
 
-            // Find user
+            // Find user with employments
             const userRepo = await getRepository(User)
             const user = await userRepo.findOne({
               where: { email: validatedEmail },
@@ -46,27 +46,8 @@ export const authConfig: NextAuthConfig = {
             if (!isValidPassword) {
               return null
             }
-          } else {
-            // QR login - only validate email exists
-            if (!email) {
-              return null
-            }
-          }
 
-          // Find user for both normal and QR login
-          const userRepo = await getRepository(User)
-          const user = await userRepo.findOne({
-            where: { email },
-            relations: ['employments', 'employments.store'],
-          })
-
-          if (!user || !user.isActive) {
-            return null
-          }
-
-          // For normal login, restrict to ADMIN or OWNER
-          // For QR login, allow any active user with valid employment
-          if (!isQrLogin) {
+            // For normal login, restrict to ADMIN or OWNER
             const hasAdminAccess = (user.employments || []).some(
               (emp: Employment) => emp.isActive && (emp.role === 'ADMIN' || emp.store.ownerId === user.id)
             )
@@ -75,28 +56,60 @@ export const authConfig: NextAuthConfig = {
               console.warn(`Login denied: ${email} has no ADMIN/OWNER role`)
               return null
             }
-          }
 
-          // Build stores array from employments
-          const stores = (user.employments || [])
-            .filter((emp: Employment) => emp.isActive)
-            .map((emp: Employment) => ({
-              storeId: emp.storeId,
-              name: emp.store.name,
-              slug: emp.store.slug,
-              employmentRole: emp.role,
-              isOwner: emp.store.ownerId === user.id,
-            }))
+            // Build stores array from employments
+            const stores = (user.employments || [])
+              .filter((emp: Employment) => emp.isActive)
+              .map((emp: Employment) => ({
+                storeId: emp.storeId,
+                name: emp.store.name,
+                slug: emp.store.slug,
+                employmentRole: emp.role,
+                isOwner: emp.store.ownerId === user.id,
+              }))
 
-          // Return user with stores
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-            mustChangePassword: user.mustChangePassword,
-            colorTheme: user.colorTheme,
-            stores,
+            // Return user with stores
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              role: user.role,
+              mustChangePassword: user.mustChangePassword,
+              colorTheme: user.colorTheme,
+              stores,
+            }
+          } else {
+            // QR login - only validate email exists
+            const userRepo = await getRepository(User)
+            const user = await userRepo.findOne({
+              where: { email },
+              relations: ['employments', 'employments.store'],
+            })
+
+            if (!user || !user.isActive) {
+              return null
+            }
+
+            // Build stores array from employments
+            const stores = (user.employments || [])
+              .filter((emp: Employment) => emp.isActive)
+              .map((emp: Employment) => ({
+                storeId: emp.storeId,
+                name: emp.store.name,
+                slug: emp.store.slug,
+                employmentRole: emp.role,
+                isOwner: emp.store.ownerId === user.id,
+              }))
+
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              role: user.role,
+              mustChangePassword: user.mustChangePassword,
+              colorTheme: user.colorTheme,
+              stores,
+            }
           }
         } catch (error) {
           console.error('Auth error:', error)

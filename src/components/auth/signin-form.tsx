@@ -35,7 +35,12 @@ export function SignInForm() {
       })
 
       if (result?.error) {
-        toast.error('Correo o contraseña inválidos')
+        if (result.error === 'Connection terminated due to connection timeout' || 
+            result.error.includes('connection')) {
+          toast.error('Error de conexión. Por favor intenta de nuevo.')
+        } else {
+          toast.error('Correo o contraseña inválidos')
+        }
         return
       }
 

@@ -22,6 +22,7 @@ import {
   QrCode,
   Truck,
   ClipboardList,
+  BookOpen,
 } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
@@ -54,6 +55,11 @@ export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) 
       label: 'Mi Acceso',
       href: `/dashboard/${storeSlug}/my-access`,
       icon: QrCode,
+    },
+    {
+      label: 'Tutoriales',
+      href: `/dashboard/${storeSlug}/tutoriales`,
+      icon: BookOpen,
     },
     {
       label: 'Productos',

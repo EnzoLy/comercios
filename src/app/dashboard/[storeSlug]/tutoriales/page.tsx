@@ -16,6 +16,9 @@ export const metadata = {
   description: 'Aprende a usar todas las funcionalidades del sistema'
 }
 
+// Force dynamic rendering since we use auth()
+export const dynamic = 'force-dynamic'
+
 export default async function TutorialesPage({ params }: PageProps) {
   const { storeSlug } = await params
 
