@@ -49,6 +49,8 @@ export default async function EditProductPage({
     isWeighedProduct: product.isWeighedProduct,
     weightUnit: product.weightUnit || undefined,
     isActive: product.isActive,
+    taxRate: product.taxRate ? Number(product.taxRate) : undefined,
+    overrideTaxRate: product.overrideTaxRate,
   }
 
   return (
