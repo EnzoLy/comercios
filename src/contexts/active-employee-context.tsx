@@ -31,9 +31,33 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
   const [qrProcessed, setQrProcessed] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [previousStoreSlug, setPreviousStoreSlug] = useState<string | undefined>(storeSlug)
+  const [previousSessionUserId, setPreviousSessionUserId] = useState<string | undefined>(session?.user?.id)
 
   // Initialize from session or query params
   useEffect(() => {
+    // Detect session user change (different user logged in) and clear all impersonation data
+    if (session?.user?.id && previousSessionUserId && session.user.id !== previousSessionUserId) {
+      // Different user logged in - clear all localStorage data
+      localStorage.removeItem('activeUserId')
+      localStorage.removeItem('activeUserName')
+      localStorage.removeItem('activeUserRole')
+      localStorage.removeItem('activeUserIsOwner')
+      setQrProcessed(false)
+      setActiveEmployeeState(null)
+    }
+    setPreviousSessionUserId(session?.user?.id)
+
+    // If no session, clear everything
+    if (!session?.user) {
+      localStorage.removeItem('activeUserId')
+      localStorage.removeItem('activeUserName')
+      localStorage.removeItem('activeUserRole')
+      localStorage.removeItem('activeUserIsOwner')
+      setQrProcessed(false)
+      setActiveEmployeeState(null)
+      return
+    }
+
     // Detect store change and clear impersonation
     if (previousStoreSlug && storeSlug && previousStoreSlug !== storeSlug) {
       // Store changed - clear impersonation unless it's the session user

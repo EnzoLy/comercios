@@ -38,6 +38,12 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
   const [showThemeSelector, setShowThemeSelector] = useState(false)
 
   const handleSignOut = async () => {
+    // Limpiar localStorage antes de cerrar sesión
+    localStorage.removeItem('activeUserId')
+    localStorage.removeItem('activeUserName')
+    localStorage.removeItem('activeUserRole')
+    localStorage.removeItem('activeUserIsOwner')
+
     await signOut({ redirect: false })
     router.push('/auth/signin')
     router.refresh()
