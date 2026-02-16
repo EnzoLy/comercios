@@ -30,9 +30,25 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
   const [activeEmployee, setActiveEmployeeState] = useState<ActiveEmployee | null>(null)
   const [qrProcessed, setQrProcessed] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [previousStoreSlug, setPreviousStoreSlug] = useState<string | undefined>(storeSlug)
 
   // Initialize from session or query params
   useEffect(() => {
+    // Detect store change and clear impersonation
+    if (previousStoreSlug && storeSlug && previousStoreSlug !== storeSlug) {
+      // Store changed - clear impersonation unless it's the session user
+      const activeUserId = localStorage.getItem('activeUserId')
+      if (activeUserId && session?.user?.id !== activeUserId) {
+        // Clear impersonation data when switching stores
+        localStorage.removeItem('activeUserId')
+        localStorage.removeItem('activeUserName')
+        localStorage.removeItem('activeUserRole')
+        localStorage.removeItem('activeUserIsOwner')
+        setQrProcessed(false)
+      }
+    }
+    setPreviousStoreSlug(storeSlug)
+
     // Check query params for QR login data first
     const qrUserId = searchParams?.get('qrUserId')
     const qrRole = searchParams?.get('qrRole')
