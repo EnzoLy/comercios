@@ -69,24 +69,13 @@ export function getTutorialBySlug(slug: string): Tutorial | null {
 
 /**
  * Obtiene tutoriales filtrados por rol del usuario
+ * NOTA: Todos los usuarios pueden acceder a todos los tutoriales
  */
 export function getTutorialsForRole(role: EmploymentRole | string, isOwner: boolean = false): Tutorial[] {
   const allTutorials = getAllTutorials()
 
-  return allTutorials.filter(tutorial => {
-    // Si el tutorial no tiene roles definidos, es visible para todos
-    if (!tutorial.frontmatter.roles || tutorial.frontmatter.roles.length === 0) {
-      return true
-    }
-
-    // Si el usuario es owner, puede ver todos
-    if (isOwner) {
-      return true
-    }
-
-    // Verificar si el rol del usuario está en la lista de roles permitidos
-    return tutorial.frontmatter.roles.includes(role as EmploymentRole)
-  })
+  // Permitir acceso a todos los tutoriales sin importar el rol
+  return allTutorials
 }
 
 /**
@@ -138,22 +127,13 @@ export function getAdjacentTutorials(
 
 /**
  * Verifica si un usuario puede acceder a un tutorial
+ * NOTA: Todos los usuarios pueden acceder a todos los tutoriales
  */
 export function canAccessTutorial(
   tutorial: Tutorial,
   role: EmploymentRole | string,
   isOwner: boolean = false
 ): boolean {
-  // Sin restricciones de rol
-  if (!tutorial.frontmatter.roles || tutorial.frontmatter.roles.length === 0) {
-    return true
-  }
-
-  // Owners pueden ver todo
-  if (isOwner) {
-    return true
-  }
-
-  // Verificar rol específico
-  return tutorial.frontmatter.roles.includes(role as EmploymentRole)
+  // Permitir acceso a todos los tutoriales sin importar el rol
+  return true
 }

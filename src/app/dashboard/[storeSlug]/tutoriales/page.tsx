@@ -37,16 +37,9 @@ export default async function TutorialesPage({ params }: PageProps) {
   const role = store.employmentRole
   const isOwner = store.isOwner || false
 
-  // Obtener tutoriales filtrados por rol
+  // Obtener todos los tutoriales (sin filtrar por rol)
   const allTutorials = getTutorialsForRole(role, isOwner)
-  const featuredTutorials = getFeaturedTutorials().filter(tutorial => {
-    // Aplicar el mismo filtro de roles a los destacados
-    if (!tutorial.frontmatter.roles || tutorial.frontmatter.roles.length === 0) {
-      return true
-    }
-    if (isOwner) return true
-    return tutorial.frontmatter.roles.includes(role as EmploymentRole)
-  })
+  const featuredTutorials = getFeaturedTutorials()
 
   return (
     <div className="p-4 md:p-8 space-y-6">
