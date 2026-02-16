@@ -278,7 +278,7 @@ export default function ProductsPage() {
             variant="ghost"
             onClick={handleRefresh}
             size="icon"
-            className="h-11 w-11 rounded-2xl bg-background/50 backdrop-blur-sm border border-border/50 shadow-sm"
+            className="h-11 w-11 rounded-2xl bg-background/50 backdrop-blur-sm border border-border shadow-sm"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
@@ -294,7 +294,7 @@ export default function ProductsPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <Card className="group relative overflow-hidden border-none bg-slate-800/50 backdrop-blur-md text-foreground border border-white/10 shadow-lg shadow-indigo-500/10">
+        <Card className="group relative overflow-hidden border bg-card text-foreground shadow-lg shadow-indigo-500/10 transition-all hover:bg-card/90">
           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
             <Package className="h-24 w-24" />
           </div>
@@ -341,7 +341,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Filters */}
-      <Card className="mb-8 border-none bg-card/50 backdrop-blur-sm shadow-xl shadow-slate-950/5 overflow-hidden">
+      <Card className="mb-8 border-none bg-card shadow-xl shadow-slate-950/5 overflow-hidden">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
             <div className="flex items-center gap-3">
@@ -387,7 +387,7 @@ export default function ProductsPage() {
                 placeholder="Buscar por nombre, SKU o código de barras..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-12 h-14 text-lg border-border/50 bg-background/50 rounded-2xl focus-visible:ring-primary/20 placeholder:text-muted-foreground/50 transition-all shadow-inner"
+                className="pl-12 h-14 text-lg border-border bg-secondary/30 rounded-2xl focus-visible:ring-primary/20 placeholder:text-muted-foreground/50 transition-all shadow-inner"
               />
             </div>
 
@@ -396,10 +396,10 @@ export default function ProductsPage() {
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-2">Categoría</label>
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="h-11 rounded-xl bg-background/50 border-border/50">
+                  <SelectTrigger className="h-11 rounded-xl bg-background/50 border-border">
                     <SelectValue placeholder="Todas" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-border/50 shadow-2xl">
+                  <SelectContent className="rounded-2xl border-border shadow-2xl">
                     <SelectItem value="all">Todas las categorías</SelectItem>
                     {categories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.id}>
@@ -414,10 +414,10 @@ export default function ProductsPage() {
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-2">Estado Stock</label>
                 <Select value={stockFilter} onValueChange={(v) => setStockFilter(v as 'all' | 'low' | 'out')}>
-                  <SelectTrigger className="h-11 rounded-xl bg-background/50 border-border/50">
+                  <SelectTrigger className="h-11 rounded-xl bg-background/50 border-border">
                     <SelectValue placeholder="Todo" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-border/50 shadow-2xl">
+                  <SelectContent className="rounded-2xl border-border shadow-2xl">
                     <SelectItem value="all">Todo el stock</SelectItem>
                     <SelectItem value="low">Stock bajo</SelectItem>
                     <SelectItem value="out">Agotado</SelectItem>
@@ -429,10 +429,10 @@ export default function ProductsPage() {
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-2">Estado Artículo</label>
                 <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'active' | 'inactive')}>
-                  <SelectTrigger className="h-11 rounded-xl bg-background/50 border-border/50">
+                  <SelectTrigger className="h-11 rounded-xl bg-background/50 border-border">
                     <SelectValue placeholder="Todos" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-border/50 shadow-2xl">
+                  <SelectContent className="rounded-2xl border-border shadow-2xl">
                     <SelectItem value="all">Todos los estados</SelectItem>
                     <SelectItem value="active">Activos únicamente</SelectItem>
                     <SelectItem value="inactive">Inactivos únicamente</SelectItem>
@@ -448,10 +448,10 @@ export default function ProductsPage() {
                   setSortBy(sort as any)
                   setSortOrder(order as any)
                 }}>
-                  <SelectTrigger className="h-11 rounded-xl bg-background/50 border-border/50">
+                  <SelectTrigger className="h-11 rounded-xl bg-background/50 border-border">
                     <SelectValue placeholder="Ordenar por..." />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-border/50 shadow-2xl">
+                  <SelectContent className="rounded-2xl border-border shadow-2xl">
                     <SelectItem value="createdAt-DESC">Más recientes</SelectItem>
                     <SelectItem value="createdAt-ASC">Más antiguos</SelectItem>
                     <SelectItem value="name-ASC">Nombre A-Z</SelectItem>
@@ -472,11 +472,11 @@ export default function ProductsPage() {
       {loading && products.length === 0 ? (
         <LoadingPage title="Cargando productos..." description="Obteniendo catálogo..." />
       ) : products.length === 0 ? (
-        <Card className="border-none bg-card/50 backdrop-blur-sm shadow-xl shadow-slate-950/5 overflow-hidden">
+        <Card className="border-none bg-card shadow-xl shadow-slate-950/5 overflow-hidden">
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <Package className="h-16 w-16 text-gray-400 mb-4" />
+            <Package className="h-16 w-16 text-muted-foreground/50 mb-4" />
             <h3 className="text-lg font-semibold mb-2">No se encontraron productos</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-muted-foreground mb-4">
               {search || categoryFilter !== 'all' || stockFilter !== 'all' || statusFilter !== 'all'
                 ? 'Prueba con otros filtros o limpia los filtros actuales'
                 : 'Comienza agregando tu primer producto'}
@@ -492,8 +492,8 @@ export default function ProductsPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card className="border-none bg-card/50 backdrop-blur-sm shadow-xl shadow-slate-950/5 overflow-hidden">
-          <CardHeader className="border-b border-border/50 bg-muted/30 px-6 py-4">
+        <Card className="border-none bg-card shadow-xl shadow-slate-950/5 overflow-hidden">
+          <CardHeader className="border-b border-border bg-muted/30 px-6 py-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl font-bold">
                 {search || categoryFilter !== 'all' || stockFilter !== 'all' || statusFilter !== 'all'
@@ -517,7 +517,7 @@ export default function ProductsPage() {
             <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border/50 bg-muted/20">
+                  <tr className="border-b border-border bg-muted/20">
                     <th className="py-4 px-6 text-center w-12">
                       <Checkbox
                         checked={selectedProducts.length === products.length && products.length > 0}
@@ -550,10 +550,10 @@ export default function ProductsPage() {
                               <img
                                 src={product.imageUrl}
                                 alt={product.name}
-                                className="h-full w-full object-cover rounded-2xl shadow-sm border border-border/50 bg-background"
+                                className="h-full w-full object-cover rounded-2xl shadow-sm border border-border bg-background"
                               />
                             ) : (
-                              <div className="h-full w-full bg-muted rounded-2xl flex items-center justify-center border border-border/50">
+                              <div className="h-full w-full bg-muted rounded-2xl flex items-center justify-center border border-border">
                                 <Package className="h-7 w-7 text-muted-foreground/30" />
                               </div>
                             )}
@@ -567,11 +567,11 @@ export default function ProductsPage() {
                             </p>
                             <div className="flex items-center gap-2 mt-1">
                               {product.category && (
-                                <span className="text-[10px] font-bold text-muted-foreground border border-border/50 px-1.5 py-0.5 rounded-md bg-background/50 uppercase tracking-tighter">
+                                <span className="text-[10px] font-bold text-muted-foreground/80 border border-border px-1.5 py-0.5 rounded-md bg-secondary/50 uppercase tracking-tighter">
                                   {product.category.name}
                                 </span>
                               )}
-                              <span className="text-[10px] font-mono text-muted-foreground opacity-50"># {product.sku}</span>
+                              <span className="text-[10px] font-mono text-muted-foreground/60"># {product.sku}</span>
                             </div>
 
                             <div className="flex gap-1 mt-2 flex-wrap">
@@ -596,7 +596,7 @@ export default function ProductsPage() {
                       </td>
                       <td className="py-4 px-4 hidden md:table-cell">
                         <div className="space-y-1">
-                          <code className="text-[11px] font-mono bg-muted/50 px-2 py-0.5 rounded-lg border border-border/50">SKU: {product.sku}</code>
+                          <code className="text-[11px] font-mono bg-muted/50 px-2 py-0.5 rounded-lg border border-border">SKU: {product.sku}</code>
                           {product.barcode && (
                             <div className="flex items-center gap-1.5 text-muted-foreground">
                               <Search className="h-3 w-3 opacity-30" />
@@ -609,7 +609,7 @@ export default function ProductsPage() {
                         <p className="font-black text-lg gradient-text leading-none">
                           ${Number(product.sellingPrice).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
                         </p>
-                        <p className="text-[10px] font-bold text-muted-foreground mt-1.5 opacity-50 uppercase tracking-widest">
+                        <p className="text-[10px] font-bold text-muted-foreground/80 mt-1.5 uppercase tracking-widest">
                           Costo: ${Number(product.costPrice).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
                         </p>
                       </td>
@@ -626,7 +626,7 @@ export default function ProductsPage() {
                               <AlertTriangle className={`h-4 w-4 ${product.currentStock <= 0 ? 'text-destructive' : 'text-orange-600'}`} />
                             )}
                           </div>
-                          <p className="text-[10px] font-bold text-muted-foreground mt-1.5 opacity-50 uppercase tracking-widest pr-1">
+                          <p className="text-[10px] font-bold text-muted-foreground/80 mt-1.5 uppercase tracking-widest pr-1">
                             Mín: {product.minStockLevel}
                           </p>
                         </div>
@@ -670,14 +670,14 @@ export default function ProductsPage() {
 
             {/* Pagination */}
             {!loading && products.length > 0 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-border/50 bg-muted/20">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-border bg-muted/20">
                 <div className="flex items-center gap-3 text-sm font-bold text-muted-foreground">
                   <span>Mostrar</span>
                   <Select value={pageSize.toString()} onValueChange={(v) => setPageSize(parseInt(v))}>
-                    <SelectTrigger className="w-20 h-9 rounded-xl bg-background/50 border-border/50">
+                    <SelectTrigger className="w-20 h-9 rounded-xl bg-background/50 border-border">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-border/50 shadow-2xl">
+                    <SelectContent className="rounded-2xl border-border shadow-2xl">
                       <SelectItem value="10">10</SelectItem>
                       <SelectItem value="20">20</SelectItem>
                       <SelectItem value="50">50</SelectItem>
@@ -699,7 +699,7 @@ export default function ProductsPage() {
                         <span className="text-xs font-bold text-primary uppercase tracking-widest">Cargando...</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-1 bg-background/50 p-1 rounded-2xl border border-border/50">
+                      <div className="flex items-center gap-1 bg-background/50 p-1 rounded-2xl border border-border">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -757,13 +757,13 @@ export default function ProductsPage() {
         open={!!deletingProduct}
         onOpenChange={(open) => !open && setDeletingProduct(null)}
       >
-        <AlertDialogContent className="rounded-3xl border-border/50 shadow-2xl p-8">
+        <AlertDialogContent className="rounded-3xl border-border shadow-2xl p-8">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl font-black">Eliminar Producto</AlertDialogTitle>
             <AlertDialogDescription className="text-base mt-2">
               ¿Estás seguro de que deseas eliminar <span className="font-bold text-foreground">"{deletingProduct?.name}"</span>?
               {deletingProduct && (
-                <div className="mt-6 p-4 bg-muted/50 rounded-2xl border border-border/50">
+                <div className="mt-6 p-4 bg-muted/50 rounded-2xl border border-border">
                   <p className="text-sm font-medium">Este producto tiene <span className="font-bold text-foreground">{deletingProduct.currentStock}</span> unidades en stock.</p>
                   {deletingProduct.currentStock <= deletingProduct.minStockLevel && (
                     <p className="flex items-center gap-2 mt-2 text-sm text-orange-600 font-bold">
@@ -776,7 +776,7 @@ export default function ProductsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-8 gap-3">
-            <AlertDialogCancel className="h-12 rounded-2xl font-bold border-border/50">Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="h-12 rounded-2xl font-bold border-border">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="h-12 rounded-2xl font-bold bg-destructive hover:bg-destructive/90 text-white shadow-lg shadow-destructive/20"

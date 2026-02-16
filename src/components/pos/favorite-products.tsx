@@ -87,7 +87,7 @@ export function FavoriteProducts({
               {favorites.map((favorite) => (
                 <button
                   key={favorite.productId}
-                  className="group relative flex flex-col items-center justify-center p-4 bg-card hover:bg-primary/5 active:scale-95 border border-border/50 hover:border-primary/50 rounded-2xl transition-all shadow-sm hover:shadow-md h-full aspect-square disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                  className="group relative flex flex-col items-center justify-center p-4 bg-card hover:bg-primary/5 active:scale-95 border border-border hover:border-primary/50 rounded-2xl transition-all shadow-sm hover:shadow-md h-full aspect-square disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
                   onClick={() => handleAddToCart(favorite)}
                   disabled={favorite.currentStock === 0}
                 >

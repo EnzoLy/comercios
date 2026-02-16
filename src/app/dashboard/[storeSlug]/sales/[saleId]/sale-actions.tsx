@@ -23,7 +23,7 @@ export function SaleActions({ saleId, storeId, existingInvoice }: SaleActionsPro
     <div className="flex items-center gap-3 no-print">
       <Button
         variant="outline"
-        className="h-11 rounded-xl font-bold border-border/50 bg-background/50 shadow-sm active:scale-95 transition-all"
+        className="h-11 rounded-xl font-bold border-border bg-background/50 shadow-sm active:scale-95 transition-all"
         onClick={handlePrint}
       >
         <Printer className="mr-2 h-4 w-4" />

@@ -27,7 +27,7 @@ export function TopProducts({ products, storeSlug }: TopProductsProps) {
       </CardHeader>
       <CardContent>
         {products.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">Aún no hay datos de ventas</p>
+          <p className="text-muted-foreground text-center py-4">Aún no hay datos de ventas</p>
         ) : (
           <div className="space-y-4">
             {products.map((product, index) => (
@@ -41,14 +41,14 @@ export function TopProducts({ products, storeSlug }: TopProductsProps) {
                   </Badge>
                   <div>
                     <p className="font-medium">{product.name}</p>
-                    <p className="text-xs text-gray-500">{product.sku}</p>
+                    <p className="text-xs text-muted-foreground">{product.sku}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="font-semibold" style={{ color: 'var(--color-primary)' }}>
                     {product.quantitySold} unidades
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     ${product.revenue.toFixed(2)}
                   </p>
                 </div>

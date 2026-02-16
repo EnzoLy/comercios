@@ -200,7 +200,7 @@ export default function InventoryPage() {
             Controla tus niveles de stock y supervisa cada movimiento.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/50 px-4 py-2 rounded-xl backdrop-blur-sm border border-border/50">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary px-4 py-2 rounded-xl border border-border">
           <Calendar className="h-4 w-4" />
           {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
         </div>
@@ -258,31 +258,31 @@ export default function InventoryPage() {
 
       {/* Main Tabs Section */}
       <Tabs defaultValue="movements" className="space-y-6">
-        <TabsList className="bg-secondary/50 p-1 rounded-xl h-auto flex-wrap sm:flex-nowrap border border-border/50">
-          <TabsTrigger value="movements" className="rounded-lg py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+        <TabsList className="bg-secondary p-1 rounded-xl h-auto flex-wrap sm:flex-nowrap border border-border">
+          <TabsTrigger value="movements" className="rounded-lg py-2 px-4 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm">
             <History className="h-4 w-4 mr-2" />
             Movimientos
           </TabsTrigger>
-          <TabsTrigger value="adjust" className="rounded-lg py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="adjust" className="rounded-lg py-2 px-4 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm">
             <Settings2 className="h-4 w-4 mr-2" />
             Ajustar Stock
           </TabsTrigger>
-          <TabsTrigger value="alerts" className="rounded-lg py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="alerts" className="rounded-lg py-2 px-4 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm">
             <Bell className="h-4 w-4 mr-2" />
             Alertas
           </TabsTrigger>
-          <TabsTrigger value="batches" className="rounded-lg py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="batches" className="rounded-lg py-2 px-4 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm">
             <Calendar className="h-4 w-4 mr-2" />
             Lotes
           </TabsTrigger>
-          <TabsTrigger value="expiring" className="rounded-lg py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="expiring" className="rounded-lg py-2 px-4 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm">
             <AlertTriangle className="h-4 w-4 mr-2" />
             Vencimientos
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="movements" className="animate-in fade-in-50 duration-500">
-          <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm border border-border/50">
+          <Card className="border-none shadow-xl bg-card border border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <div>
                 <CardTitle className="text-xl font-bold">Historial de Movimientos</CardTitle>
@@ -302,7 +302,7 @@ export default function InventoryPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-border/50">
+                      <tr className="border-b border-border">
                         <th className="text-left py-4 px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Fecha</th>
                         <th className="text-left py-4 px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Producto</th>
                         <th className="text-left py-4 px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Tipo</th>
@@ -367,7 +367,7 @@ export default function InventoryPage() {
         </TabsContent>
 
         <TabsContent value="adjust" className="animate-in fade-in-50 duration-500">
-          <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm border border-border/50">
+          <Card className="border-none shadow-xl bg-card border border-border">
             <CardHeader>
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -382,7 +382,7 @@ export default function InventoryPage() {
                     placeholder="Buscar por nombre o SKU..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 h-10 rounded-xl bg-background/50 border-border/50 focus:ring-primary"
+                    className="pl-9 h-10 rounded-xl bg-background/50 border-border focus:ring-primary"
                   />
                 </div>
               </div>
@@ -398,7 +398,7 @@ export default function InventoryPage() {
                   {filteredProducts.map((product) => (
                     <div
                       key={product.id}
-                      className="group border border-border/50 rounded-2xl p-4 bg-background/30 hover:bg-background/80 hover:border-primary/30 transition-all duration-300"
+                      className="group border border-border rounded-2xl p-4 bg-secondary/30 hover:bg-secondary/50 hover:border-primary/30 transition-all duration-300"
                     >
                       <div className="flex flex-col gap-4">
                         <div className="flex items-start justify-between">
@@ -458,7 +458,7 @@ export default function InventoryPage() {
         <TabsContent value="alerts" className="animate-in fade-in-50 duration-500 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Out of Stock */}
-            <Card className="border-none shadow-xl bg-rose-50/50 dark:bg-rose-950/10 border border-rose-200/50 dark:border-rose-900/50 overflow-hidden">
+            <Card className="border-none shadow-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 overflow-hidden">
               <div className="h-1.5 bg-rose-500" />
               <CardHeader className="flex flex-row items-center gap-4">
                 <div className="h-12 w-12 rounded-2xl bg-rose-500/10 flex items-center justify-center">
@@ -487,7 +487,7 @@ export default function InventoryPage() {
             </Card>
 
             {/* Low Stock */}
-            <Card className="border-none shadow-xl bg-orange-50/50 dark:bg-orange-950/10 border border-orange-200/50 dark:border-orange-900/50 overflow-hidden">
+            <Card className="border-none shadow-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900 overflow-hidden">
               <div className="h-1.5 bg-orange-500" />
               <CardHeader className="flex flex-row items-center gap-4">
                 <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center">
@@ -535,7 +535,7 @@ export default function InventoryPage() {
         </TabsContent>
 
         <TabsContent value="batches" className="animate-in fade-in-50 duration-500">
-          <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm border border-border/50">
+          <Card className="border-none shadow-xl bg-card border border-border">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-xl font-bold flex items-center gap-2">
@@ -555,7 +555,7 @@ export default function InventoryPage() {
         </TabsContent>
 
         <TabsContent value="expiring" className="animate-in fade-in-50 duration-500">
-          <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm border border-border/50 overflow-hidden">
+          <Card className="border-none shadow-xl bg-card border border-border overflow-hidden">
             <div className="h-1.5 bg-yellow-400" />
             <CardHeader className="flex flex-row items-center justify-between">
               <div>

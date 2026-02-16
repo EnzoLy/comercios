@@ -80,7 +80,7 @@ export function InvoiceDisplay({ invoice, invoiceUrl }: InvoiceDisplayProps) {
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {/* Premium Action Bar - Hidden when printing */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 no-print bg-card/40 backdrop-blur-xl p-4 sm:p-6 rounded-3xl border border-border/50 shadow-2xl shadow-black/5">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 no-print bg-card/40 backdrop-blur-xl p-4 sm:p-6 rounded-3xl border border-border shadow-2xl shadow-black/5">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
             <Receipt className="h-5 w-5" />
@@ -91,7 +91,7 @@ export function InvoiceDisplay({ invoice, invoiceUrl }: InvoiceDisplayProps) {
           </div>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          <Button onClick={handlePrint} variant="outline" className="flex-1 sm:flex-none h-11 rounded-xl font-bold border-border/50 hover:bg-muted transition-all active:scale-95">
+          <Button onClick={handlePrint} variant="outline" className="flex-1 sm:flex-none h-11 rounded-xl font-bold border-border hover:bg-muted transition-all active:scale-95">
             <Printer className="mr-2 h-4 w-4" />
             Imprimir
           </Button>
@@ -109,7 +109,7 @@ export function InvoiceDisplay({ invoice, invoiceUrl }: InvoiceDisplayProps) {
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl no-print" />
 
         {/* Header Section */}
-        <div className="relative z-10 flex flex-col md:flex-row justify-between gap-8 pb-12 border-b border-border/50">
+        <div className="relative z-10 flex flex-col md:flex-row justify-between gap-8 pb-12 border-b border-border">
           <div className="space-y-4">
             <div className="space-y-1">
               <h1 className="text-4xl font-black tracking-tighter leading-none">
@@ -202,7 +202,7 @@ export function InvoiceDisplay({ invoice, invoiceUrl }: InvoiceDisplayProps) {
             </table>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between gap-12 items-start pt-8 border-t border-border/50">
+          <div className="flex flex-col md:flex-row justify-between gap-12 items-start pt-8 border-t border-border">
             {/* Authenticity Column */}
             <div className="flex flex-col items-center md:items-start gap-4">
               <div className="bg-white p-4 rounded-[2rem] border border-slate-200 shadow-xl shadow-black/5 flex items-center justify-center">
@@ -271,7 +271,7 @@ export function InvoiceDisplay({ invoice, invoiceUrl }: InvoiceDisplayProps) {
         </div>
 
         {/* Official Footer */}
-        <div className="border-t border-border/50 pt-12 mt-12 text-center space-y-6">
+        <div className="border-t border-border pt-12 mt-12 text-center space-y-6">
           <div className="flex flex-col items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center border border-border">
               <Receipt className="h-5 w-5 text-muted-foreground" />

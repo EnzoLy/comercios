@@ -161,14 +161,14 @@ export function BatchesTable({ storeSlug }: { storeSlug: string }) {
               placeholder="Buscar por producto, SKU o # lote..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 h-11 rounded-2xl bg-secondary/30 border-border/50 focus:ring-primary shadow-sm"
+              className="pl-9 h-11 rounded-2xl bg-secondary/30 border-border focus:ring-primary shadow-sm"
             />
           </div>
         </div>
 
         <div className="flex gap-2">
           <Select value={filterStatus} onValueChange={(value: any) => setFilterStatus(value)}>
-            <SelectTrigger className="w-full md:w-52 h-11 rounded-2xl bg-secondary/30 border-border/50 shadow-sm font-medium">
+            <SelectTrigger className="w-full md:w-52 h-11 rounded-2xl bg-secondary/30 border-border shadow-sm font-medium">
               <div className="flex items-center gap-2">
                 <Filter className="h-3.5 w-3.5 opacity-50" />
                 <SelectValue placeholder="Estado de lotes" />
@@ -192,10 +192,10 @@ export function BatchesTable({ storeSlug }: { storeSlug: string }) {
         </div>
       </div>
 
-      <div className="overflow-hidden bg-background/50 border border-border/50 rounded-2xl">
+      <div className="overflow-hidden bg-background/50 border border-border rounded-2xl">
         <Table>
           <TableHeader className="bg-secondary/30">
-            <TableRow className="hover:bg-transparent border-border/50">
+            <TableRow className="hover:bg-transparent border-border">
               <TableHead className="text-[10px] font-black uppercase text-muted-foreground">Producto</TableHead>
               <TableHead className="text-[10px] font-black uppercase text-muted-foreground">SKU / ID</TableHead>
               <TableHead className="text-[10px] font-black uppercase text-muted-foreground"># Lote</TableHead>
@@ -247,7 +247,7 @@ export function BatchesTable({ storeSlug }: { storeSlug: string }) {
                     {batch.batchNumber || <span className="text-muted-foreground/30 opacity-50 italic">S/N</span>}
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="inline-flex items-center gap-2 bg-secondary/5 px-2 py-1 rounded-lg border border-border/50">
+                    <div className="inline-flex items-center gap-2 bg-secondary/5 px-2 py-1 rounded-lg border border-border">
                       <Calendar className="h-3 w-3 text-muted-foreground" />
                       <span className="text-xs font-bold">{new Date(batch.expirationDate).toLocaleDateString('es-ES')}</span>
                     </div>

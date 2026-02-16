@@ -134,7 +134,7 @@ export default function CategoriesPage() {
       <TableRow key={category.id} className="group hover:bg-muted/50 transition-colors border-border/40">
         <TableCell className="py-4">
           <div className="flex items-center gap-3" style={{ paddingLeft: `${level * 24}px` }}>
-            <div className={`p-2 rounded-lg border border-border/50 ${level === 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+            <div className={`p-2 rounded-lg border border-border ${level === 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
               <FolderTree className="h-4 w-4" />
             </div>
             <div className="flex flex-col">
@@ -155,7 +155,7 @@ export default function CategoriesPage() {
           </p>
         </TableCell>
         <TableCell className="text-center">
-          <Badge variant="outline" className="font-mono bg-background/50 border-border/50">
+          <Badge variant="outline" className="font-mono bg-background/50 border-border">
             {category._count?.products || 0}
           </Badge>
         </TableCell>
@@ -249,15 +249,15 @@ export default function CategoriesPage() {
 
       {/* Analytical Tiles (Serious Style) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm">
+        <div className="p-4 rounded-2xl border border-border bg-card/30 backdrop-blur-sm">
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Total Categorías</p>
           <p className="text-2xl font-bold">{categories.length}</p>
         </div>
-        <div className="p-4 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm">
+        <div className="p-4 rounded-2xl border border-border bg-card/30 backdrop-blur-sm">
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Ramas Principales</p>
           <p className="text-2xl font-bold text-primary">{topLevelCategories.length}</p>
         </div>
-        <div className="p-4 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm">
+        <div className="p-4 rounded-2xl border border-border bg-card/30 backdrop-blur-sm">
           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Productos Asignados</p>
           <p className="text-2xl font-bold">
             {categories.reduce((sum, c) => sum + (c._count?.products || 0), 0)}
@@ -318,7 +318,7 @@ export default function CategoriesPage() {
         open={!!deletingCategory}
         onOpenChange={(open: boolean) => !open && setDeletingCategory(null)}
       >
-        <AlertDialogContent className="rounded-2xl border-border/50 shadow-2xl p-6">
+        <AlertDialogContent className="rounded-2xl border-border shadow-2xl p-6">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-xl font-bold">Confirmar Eliminación</AlertDialogTitle>
             <AlertDialogDescription className="text-sm pt-2">

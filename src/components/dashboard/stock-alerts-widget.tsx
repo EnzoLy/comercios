@@ -36,7 +36,7 @@ export function StockAlertsWidget({ alerts, storeSlug }: StockAlertsWidgetProps)
         {alerts.length === 0 ? (
           <div className="text-center py-8">
             <Package className="h-12 w-12 text-green-600 mx-auto mb-3" />
-            <p className="text-gray-600 dark:text-gray-400">Todos los niveles de stock están saludables</p>
+            <p className="text-muted-foreground">Todos los niveles de stock están saludables</p>
           </div>
         ) : (
           <>
@@ -48,13 +48,13 @@ export function StockAlertsWidget({ alerts, storeSlug }: StockAlertsWidgetProps)
                 >
                   <div>
                     <p className="font-medium text-sm">{product.name}</p>
-                    <p className="text-xs text-gray-500">{product.sku}</p>
+                    <p className="text-xs text-muted-foreground">{product.sku}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-semibold text-orange-600">
                       {product.currentStock} restantes
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       Mín: {product.minStockLevel}
                     </p>
                   </div>
@@ -62,7 +62,7 @@ export function StockAlertsWidget({ alerts, storeSlug }: StockAlertsWidgetProps)
               ))}
             </div>
             {alerts.length > 5 && (
-              <p className="text-sm text-gray-500 text-center mb-3">
+              <p className="text-sm text-muted-foreground text-center mb-3">
                 Y {alerts.length - 5} más...
               </p>
             )}

@@ -152,7 +152,7 @@ export default function MyAccessPage() {
 
           <CardContent className="space-y-6">
             {/* Action Card Inner */}
-            <div className="p-6 rounded-3xl bg-muted/40 border border-border/50 space-y-6">
+            <div className="p-6 rounded-3xl bg-muted/40 border border-border space-y-6">
               <div className="flex items-start gap-4">
                 <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
                   <User className="h-7 w-7 text-primary" />
@@ -226,7 +226,7 @@ export default function MyAccessPage() {
                 }
               ].map((step, i) => (
                 <div key={i} className="flex gap-4 group">
-                  <div className="h-10 w-10 rounded-xl bg-background shadow-sm border border-border/50 flex items-center justify-center shrink-0 font-bold group-hover:border-primary/50 transition-colors">
+                  <div className="h-10 w-10 rounded-xl bg-background shadow-sm border border-border flex items-center justify-center shrink-0 font-bold group-hover:border-primary/50 transition-colors">
                     {i + 1}
                   </div>
                   <div>

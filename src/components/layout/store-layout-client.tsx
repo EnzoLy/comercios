@@ -77,10 +77,10 @@ function StoreLayoutContent({
   // Show loading while processing QR employee setup
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-screen items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Configurando acceso...</p>
+          <p className="text-muted-foreground">Configurando acceso...</p>
         </div>
       </div>
     )
@@ -104,7 +104,7 @@ function StoreLayoutContent({
           role={displayRole}
         />
 
-        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+        <main className="flex-1 overflow-auto bg-background">
           {children}
         </main>
       </div>

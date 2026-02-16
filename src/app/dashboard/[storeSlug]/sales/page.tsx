@@ -68,7 +68,7 @@ export default async function SalesPage({
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="h-11 rounded-xl font-bold border-border/50 bg-background/50 backdrop-blur-sm shadow-sm active:scale-95 transition-all">
+          <Button variant="outline" className="h-11 rounded-xl font-bold border-border bg-card shadow-sm active:scale-95 transition-all hover:bg-secondary/50">
             <Calendar className="mr-2 h-4 w-4" />
             Filtro de Fecha
           </Button>
@@ -83,7 +83,7 @@ export default async function SalesPage({
 
       {/* Analytics Tiles */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-none bg-card/40 backdrop-blur-xl shadow-xl shadow-slate-950/5 overflow-hidden">
+        <Card className="border border-border bg-card shadow-xl shadow-slate-950/5 overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-10">
             <DollarSign className="h-12 w-12" />
           </div>
@@ -107,7 +107,7 @@ export default async function SalesPage({
           </CardContent>
         </Card>
 
-        <Card className="border-none bg-card/40 backdrop-blur-xl shadow-xl shadow-slate-950/5 overflow-hidden">
+        <Card className="border border-border bg-card shadow-xl shadow-slate-950/5 overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-10">
             <TrendingUp className="h-12 w-12" />
           </div>
@@ -130,7 +130,7 @@ export default async function SalesPage({
           </CardContent>
         </Card>
 
-        <Card className="border-none bg-card/40 backdrop-blur-xl shadow-xl shadow-slate-950/5 overflow-hidden">
+        <Card className="border border-border bg-card shadow-xl shadow-slate-950/5 overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-10">
             <ShoppingCart className="h-12 w-12" />
           </div>
@@ -154,7 +154,7 @@ export default async function SalesPage({
       </div>
 
       {/* Sales List Container */}
-      <Card className="border-none bg-card/40 backdrop-blur-xl shadow-xl shadow-slate-950/5">
+      <Card className="border border-border bg-card shadow-xl shadow-slate-950/5">
         <CardHeader className="px-6 py-6 border-b border-border/40">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
@@ -166,7 +166,7 @@ export default async function SalesPage({
             <div className="flex items-center gap-2">
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
-                <Input placeholder="Buscar venta..." className="h-10 pl-9 rounded-xl border-border/50 bg-background/50 focus-visible:ring-primary" />
+                <Input placeholder="Buscar venta..." className="h-10 pl-9 rounded-xl border-border bg-secondary/50 focus-visible:ring-primary" />
               </div>
               <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-muted">
                 <Filter className="h-4 w-4" />
@@ -226,7 +226,7 @@ export default async function SalesPage({
                         </div>
                       </td>
                       <td className="py-4 px-6">
-                        <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-border/60 bg-background/50 text-muted-foreground/80">
+                        <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-border/80 bg-secondary/30 text-muted-foreground">
                           {paymentMethodLabels[sale.paymentMethod] || sale.paymentMethod}
                         </Badge>
                       </td>
@@ -240,7 +240,7 @@ export default async function SalesPage({
                                 : 'secondary'
                           }
                           className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 border-none ${sale.status === SaleStatus.COMPLETED ? 'bg-emerald-500/20 text-emerald-600' :
-                              sale.status === SaleStatus.CANCELLED ? 'bg-destructive/20 text-destructive' : ''
+                            sale.status === SaleStatus.CANCELLED ? 'bg-destructive/20 text-destructive' : ''
                             }`}
                         >
                           {statusLabels[sale.status] || sale.status}

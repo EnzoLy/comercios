@@ -166,7 +166,7 @@ export function ProductSearch({ storeId, onProductSelect, categoryId }: ProductS
           ref={dropdownRef}
           className="absolute z-50 w-full md:w-[500px] lg:w-[600px] mt-4 bg-card border border-border rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
         >
-          <div className="p-3 px-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/30 border-b border-border/50">
+          <div className="p-3 px-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/30 border-b border-border">
             {suggestions.length} resultado{suggestions.length !== 1 ? 's' : ''}
           </div>
           <div className="max-h-[400px] overflow-auto custom-scrollbar">
@@ -181,7 +181,7 @@ export function ProductSearch({ storeId, onProductSelect, categoryId }: ProductS
                   key={product.id}
                   onClick={() => handleSelectProduct(product)}
                   onMouseEnter={() => setSelectedIndex(index)}
-                  className={`p-4 cursor-pointer border-b border-border/50 last:border-0 transition-all ${isSelected
+                  className={`p-4 cursor-pointer border-b border-border last:border-0 transition-all ${isSelected
                     ? 'bg-primary/5 pl-6'
                     : 'hover:bg-primary/5 hover:pl-6'
                     } ${!inStock ? 'opacity-60' : ''}`}

@@ -20,7 +20,7 @@ export function TutorialBreadcrumb({ storeSlug, category, title }: TutorialBread
 
   return (
     <nav aria-label="Breadcrumb" className="mb-8">
-      <div className="bg-muted/30 backdrop-blur-sm border border-border/50 rounded-2xl p-4 shadow-sm">
+      <div className="bg-muted/30 border border-border rounded-2xl p-4 shadow-sm">
         <ol className="flex flex-wrap items-center gap-2 text-sm">
           {/* Home */}
           <li>

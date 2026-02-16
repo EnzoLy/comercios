@@ -170,7 +170,7 @@ export default async function StoreDashboard({
 
         {/* Transacciones */}
         <Link href={`/dashboard/${storeSlug}/sales`}>
-          <Card className="group relative overflow-hidden border-none bg-slate-800/50 backdrop-blur-md text-foreground border border-white/10 shadow-indigo-500/20">
+          <Card className="group relative overflow-hidden border bg-card text-foreground shadow-lg shadow-indigo-500/5 transition-all hover:bg-card/90">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
               <ShoppingCart className="h-24 w-24" />
             </div>
@@ -189,7 +189,7 @@ export default async function StoreDashboard({
 
         {/* Total de Productos */}
         <Link href={`/dashboard/${storeSlug}/products`}>
-          <Card className="group relative overflow-hidden border-none bg-slate-800/50 backdrop-blur-md text-foreground border border-white/10 shadow-slate-950/20">
+          <Card className="group relative overflow-hidden border bg-card text-foreground shadow-lg shadow-slate-950/5 transition-all hover:bg-card/90">
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
               <Package className="h-24 w-24" />
             </div>
@@ -265,7 +265,7 @@ export default async function StoreDashboard({
                 {recentSales.map((sale) => (
                   <div
                     key={sale.id}
-                    className="flex items-center justify-between p-4 rounded-xl border border-gray-50 dark:border-gray-900 bg-secondary/5 hover:bg-secondary/10 transition-colors"
+                    className="flex items-center justify-between p-4 rounded-xl border border-border bg-secondary/10 hover:bg-secondary/20 transition-colors"
                   >
                     <div className="flex items-center gap-4">
                       <div className="p-2 rounded-full bg-primary/10">

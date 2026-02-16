@@ -65,7 +65,7 @@ export function PersonalStats({ storeId, refreshTrigger }: PersonalStatsProps) {
       </CardHeader>
       <CardContent className="px-0 space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 bg-card border border-border/50 rounded-3xl shadow-sm hover:shadow-md transition-all">
+          <div className="p-4 bg-card border border-border rounded-3xl shadow-sm hover:shadow-md transition-all">
             <div className="p-2 bg-blue-500/10 rounded-xl w-fit mb-3">
               <Trophy className="h-4 w-4 text-blue-600" />
             </div>
@@ -74,7 +74,7 @@ export function PersonalStats({ storeId, refreshTrigger }: PersonalStatsProps) {
               {stats.totalSales}
             </p>
           </div>
-          <div className="p-4 bg-card border border-border/50 rounded-3xl shadow-sm hover:shadow-md transition-all">
+          <div className="p-4 bg-card border border-border rounded-3xl shadow-sm hover:shadow-md transition-all">
             <div className="p-2 bg-emerald-500/10 rounded-xl w-fit mb-3">
               <Zap className="h-4 w-4 text-emerald-600" />
             </div>

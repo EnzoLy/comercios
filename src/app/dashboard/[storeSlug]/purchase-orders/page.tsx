@@ -164,7 +164,7 @@ export default async function PurchaseOrdersPage({
       </div>
 
       {purchaseOrders.length === 0 ? (
-        <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm border border-border/50">
+        <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm border border-border">
           <CardContent className="flex flex-col items-center justify-center py-24 text-center">
             <div className="h-24 w-24 rounded-full bg-secondary/50 flex items-center justify-center mb-6">
               <ClipboardList className="h-12 w-12 text-muted-foreground opacity-20" />
@@ -182,7 +182,7 @@ export default async function PurchaseOrdersPage({
           </CardContent>
         </Card>
       ) : (
-        <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm border border-border/50">
+        <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm border border-border">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <div>
               <CardTitle className="text-xl font-bold">Historial de Adquisiciones</CardTitle>
@@ -196,7 +196,7 @@ export default async function PurchaseOrdersPage({
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border/50">
+                  <tr className="border-b border-border">
                     <th className="text-left py-4 px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">ID Orden</th>
                     <th className="text-left py-4 px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Proveedor</th>
                     <th className="text-left py-4 px-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Lanzamiento</th>

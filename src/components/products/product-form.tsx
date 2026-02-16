@@ -243,7 +243,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                 disabled={isLoading}
               />
               {errors.name?.message && (
-                <p className="text-sm text-red-500">{String(errors.name.message)}</p>
+                <p className="text-sm text-destructive">{String(errors.name.message)}</p>
               )}
             </div>
 
@@ -256,7 +256,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                 disabled={isLoading}
               />
               {errors.description?.message && (
-                <p className="text-sm text-red-500">{String(errors.description.message)}</p>
+                <p className="text-sm text-destructive">{String(errors.description.message)}</p>
               )}
             </div>
 
@@ -294,11 +294,11 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                     {...register('imageUrl')}
                     disabled={isLoading}
                   />
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Ingresa la URL de una imagen (JPG, PNG, WebP, GIF)
                   </p>
                   {errors.imageUrl?.message && (
-                    <p className="text-sm text-red-500">{String(errors.imageUrl.message)}</p>
+                    <p className="text-sm text-destructive">{String(errors.imageUrl.message)}</p>
                   )}
                 </div>
               ) : (
@@ -313,14 +313,14 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                       className="cursor-pointer"
                     />
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Sube una imagen (JPG, PNG, WebP, GIF - máx. 5MB)
                   </p>
                 </div>
               )}
 
               {watch('imageUrl') && (
-                <div className="relative w-full max-w-xs border rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+                <div className="relative w-full max-w-xs border rounded-lg overflow-hidden bg-secondary/40 dark:bg-gray-800">
                   <div className="relative aspect-square flex items-center justify-center p-2">
                     <img
                       src={watch('imageUrl') || ''}
@@ -346,7 +346,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
               )}
 
               {uploadingImage && (
-                <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Subiendo imagen...
                 </div>
@@ -371,11 +371,11 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Selecciona una categoría para organizar mejor tus productos
               </p>
               {errors.categoryId?.message && (
-                <p className="text-sm text-red-500">{String(errors.categoryId.message)}</p>
+                <p className="text-sm text-destructive">{String(errors.categoryId.message)}</p>
               )}
             </div>
 
@@ -390,11 +390,11 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   {...register('sku')}
                   disabled={isLoading}
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Código único que usarás para identificar este producto
                 </p>
                 {errors.sku?.message && (
-                  <p className="text-sm text-red-500">{String(errors.sku.message)}</p>
+                  <p className="text-sm text-destructive">{String(errors.sku.message)}</p>
                 )}
               </div>
 
@@ -418,11 +418,11 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                     <Camera className="h-4 w-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Código de barras del fabricante (si tiene). Usa 📷 para escanear.
                 </p>
                 {errors.barcode?.message && (
-                  <p className="text-sm text-red-500">{String(errors.barcode.message)}</p>
+                  <p className="text-sm text-destructive">{String(errors.barcode.message)}</p>
                 )}
               </div>
 
@@ -438,7 +438,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                     Producto por peso (frutas, verduras, carnes, etc.)
                   </Label>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Los productos por peso se venden por kilogramo, libra, etc. El código de barras incluye el peso al momento de la venta.
                 </p>
 
@@ -462,7 +462,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
 
               <div className="space-y-3 border-t pt-4">
                 <Label>Códigos de Barras Adicionales</Label>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Agrega códigos de barras alternativos (diferentes proveedores, presentaciones, etc.)
                 </p>
 
@@ -494,7 +494,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                 {additionalBarcodes.length > 0 && (
                   <div className="space-y-2">
                     {additionalBarcodes.map((barcode, index) => (
-                      <div key={index} className="flex items-center justify-between gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-md">
+                      <div key={index} className="flex items-center justify-between gap-2 p-2 bg-secondary/50 dark:bg-gray-800 rounded-md">
                         <span className="text-sm font-mono">{barcode}</span>
                         <Button
                           type="button"
@@ -504,7 +504,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                           disabled={isLoading}
                           title="Eliminar código"
                         >
-                          <X className="h-4 w-4 text-red-500" />
+                          <X className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
                     ))}
@@ -532,7 +532,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   disabled={isLoading}
                 />
                 {errors.costPrice?.message && (
-                  <p className="text-sm text-red-500">{String(errors.costPrice.message)}</p>
+                  <p className="text-sm text-destructive">{String(errors.costPrice.message)}</p>
                 )}
               </div>
 
@@ -547,7 +547,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   disabled={isLoading}
                 />
                 {errors.sellingPrice?.message && (
-                  <p className="text-sm text-red-500">{String(errors.sellingPrice.message)}</p>
+                  <p className="text-sm text-destructive">{String(errors.sellingPrice.message)}</p>
                 )}
               </div>
             </div>
@@ -564,7 +564,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   Configurar tasa de impuesto personalizada para este producto
                 </Label>
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Por defecto, se usa la tasa de impuesto configurada en la tienda. Activa esta opción para usar una tasa diferente.
               </p>
 
@@ -579,11 +579,11 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                     {...register('taxRate', { valueAsNumber: true })}
                     disabled={isLoading}
                   />
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Ingresa el porcentaje de impuesto (ej: 16 para 16%, 8 para 8%)
                   </p>
                   {errors.taxRate?.message && (
-                    <p className="text-sm text-red-500">{String(errors.taxRate.message)}</p>
+                    <p className="text-sm text-destructive">{String(errors.taxRate.message)}</p>
                   )}
                 </div>
               )}
@@ -607,7 +607,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   disabled={isLoading}
                 />
                 {errors.currentStock?.message && (
-                  <p className="text-sm text-red-500">{String(errors.currentStock.message)}</p>
+                  <p className="text-sm text-destructive">{String(errors.currentStock.message)}</p>
                 )}
               </div>
 
@@ -621,7 +621,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   disabled={isLoading}
                 />
                 {errors.minStockLevel?.message && (
-                  <p className="text-sm text-red-500">{String(errors.minStockLevel.message)}</p>
+                  <p className="text-sm text-destructive">{String(errors.minStockLevel.message)}</p>
                 )}
               </div>
 
@@ -635,7 +635,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   disabled={isLoading}
                 />
                 {errors.maxStockLevel?.message && (
-                  <p className="text-sm text-red-500">{String(errors.maxStockLevel.message)}</p>
+                  <p className="text-sm text-destructive">{String(errors.maxStockLevel.message)}</p>
                 )}
               </div>
             </div>
@@ -649,7 +649,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                 disabled={isLoading}
               />
               {errors.unit?.message && (
-                <p className="text-sm text-red-500">{String(errors.unit.message)}</p>
+                <p className="text-sm text-destructive">{String(errors.unit.message)}</p>
               )}
             </div>
 
@@ -665,7 +665,7 @@ export function ProductForm({ product, mode, preselectedCategoryId }: ProductFor
                   Rastrear fechas de vencimiento (productos perecederos)
                 </Label>
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Habilita el seguimiento de lotes con fechas de vencimiento para productos como alimentos, medicinas o cosméticos.
               </p>
             </div>

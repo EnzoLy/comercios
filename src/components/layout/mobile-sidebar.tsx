@@ -23,6 +23,8 @@ import {
   Truck,
   ClipboardList,
   BookOpen,
+  Sun,
+  Moon,
 } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
@@ -44,6 +46,7 @@ interface NavItem {
 export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [isDark, setIsDark] = useState(false)
 
   const navItems: NavItem[] = [
     {
@@ -134,7 +137,25 @@ export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) 
 
   useEffect(() => {
     setMounted(true)
+    // Check current theme
+    const theme = localStorage.getItem('theme')
+    const isDarkMode = theme === 'dark' ||
+      (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    setIsDark(isDarkMode)
   }, [])
+
+  const toggleTheme = () => {
+    const newTheme = isDark ? 'light' : 'dark'
+    localStorage.setItem('theme', newTheme)
+
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+
+    setIsDark(!isDark)
+  }
 
   if (!mounted) {
     return (
@@ -186,6 +207,25 @@ export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) 
               />
             ))}
           </nav>
+
+          <div className="p-4 border-t">
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              {isDark ? (
+                <>
+                  <Sun className="h-5 w-5" />
+                  <span>Modo Claro</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="h-5 w-5" />
+                  <span>Modo Oscuro</span>
+                </>
+              )}
+            </button>
+          </div>
 
         </div>
       </SheetContent>

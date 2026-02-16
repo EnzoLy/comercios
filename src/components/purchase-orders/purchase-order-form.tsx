@@ -223,7 +223,7 @@ export function PurchaseOrderForm({
                 onValueChange={(value) => setValue('supplierId', value)}
                 disabled={isLoading || mode === 'edit'}
               >
-                <SelectTrigger className="h-11 rounded-xl bg-secondary/50 border-border/50 focus:ring-primary font-bold">
+                <SelectTrigger className="h-11 rounded-xl bg-secondary/50 border-border focus:ring-primary font-bold">
                   <SelectValue placeholder="Elegir Proveedor" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
@@ -246,7 +246,7 @@ export function PurchaseOrderForm({
                 <Input
                   id="orderDate"
                   type="date"
-                  className="pl-9 h-11 rounded-xl bg-secondary/50 border-border/50 font-bold"
+                  className="pl-9 h-11 rounded-xl bg-secondary/50 border-border font-bold"
                   {...register('orderDate')}
                   disabled={isLoading}
                 />
@@ -278,7 +278,7 @@ export function PurchaseOrderForm({
 
       {/* Items Section */}
       <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm rounded-3xl overflow-hidden">
-        <CardHeader className="bg-secondary/20 border-b border-border/50">
+        <CardHeader className="bg-secondary/20 border-b border-border">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <Package className="h-5 w-5 text-indigo-500" />
@@ -421,7 +421,7 @@ export function PurchaseOrderForm({
               <Textarea
                 id="notes"
                 placeholder="Indica condiciones de pago, transportista o notas especiales..."
-                className="min-h-[140px] rounded-2xl bg-secondary/30 border-border/50 focus:ring-primary font-medium resize-none shadow-inner"
+                className="min-h-[140px] rounded-2xl bg-secondary/30 border-border focus:ring-primary font-medium resize-none shadow-inner"
                 {...register('notes')}
                 disabled={isLoading}
               />

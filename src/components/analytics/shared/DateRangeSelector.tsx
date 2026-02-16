@@ -73,7 +73,7 @@ export function DateRangeSelector({ startDate, endDate, onDateChange }: DateRang
       <div className={cn(
         "relative flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-2xl border transition-all duration-500",
         "bg-white/80 dark:bg-black/60 backdrop-blur-xl shadow-2xl",
-        "border-border/50 hover:border-primary/30",
+        "border-border hover:border-primary/30",
         "after:absolute after:inset-0 after:rounded-2xl after:shadow-[0_0_30px_-10px_var(--color-primary)] after:opacity-40 after:transition-opacity hover:after:opacity-70"
       )}>
         {presets.map((preset) => (
@@ -110,7 +110,7 @@ export function DateRangeSelector({ startDate, endDate, onDateChange }: DateRang
 
       {showCustom && (
         <Card className={cn(
-          "relative max-w-xl w-full border border-border/50 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)]",
+          "relative max-w-xl w-full border border-border shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)]",
           "bg-white/95 dark:bg-zinc-950/90 backdrop-blur-2xl animate-in zoom-in-95 fade-in duration-300 rounded-3xl overflow-hidden"
         )}>
           <div className="absolute top-0 left-0 w-full h-1 gradient-bg opacity-70" />

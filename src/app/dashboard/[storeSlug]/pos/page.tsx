@@ -456,7 +456,7 @@ export default function POSPage() {
 
   const CartContent = () => (
     <div className="flex flex-col h-full">
-      <div className="p-4 lg:p-6 border-b border-border/50 flex items-center justify-between bg-primary/5">
+      <div className="p-4 lg:p-6 border-b border-border flex items-center justify-between bg-primary/10">
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">
             <ShoppingCart className="h-5 w-5 text-primary" />
@@ -497,7 +497,7 @@ export default function POSPage() {
             {cart.map((item) => (
               <div
                 key={item.productId}
-                className="group relative bg-card/60 hover:bg-card border border-border/50 rounded-2xl p-4 transition-all hover:shadow-lg overflow-hidden"
+                className="group relative bg-card hover:bg-card/90 border border-border rounded-2xl p-4 transition-all hover:shadow-lg overflow-hidden"
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex-1 min-w-0 pr-6">
@@ -522,7 +522,7 @@ export default function POSPage() {
                 </div>
 
                 <div className="flex items-end justify-between">
-                  <div className="flex items-center bg-secondary/40 rounded-xl p-0.5 border border-border/50">
+                  <div className="flex items-center bg-secondary rounded-xl p-0.5 border border-border">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -703,7 +703,7 @@ export default function POSPage() {
           </div>
         </div>
 
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 backdrop-blur-xl border-t border-border/50 z-40 flex items-center justify-between gap-4 shadow-[0_-15px_40px_rgba(0,0,0,0.1)] px-6 rounded-t-[2.5rem]">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 backdrop-blur-xl border-t border-border z-40 flex items-center justify-between gap-4 shadow-[0_-15px_40px_rgba(0,0,0,0.1)] px-6 rounded-t-[2.5rem] bg-card/80">
           <div className="flex flex-col">
             <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none mb-1">Total</span>
             <span className="text-2xl font-black text-primary leading-none">{formatCurrency(total)}</span>
@@ -730,7 +730,7 @@ export default function POSPage() {
         </SheetContent>
       </Sheet>
 
-      <div className="hidden lg:flex w-[420px] glass border-l border-border/50 flex flex-col h-full overflow-hidden shadow-2xl relative shrink-0">
+      <div className="hidden lg:flex w-[420px] glass border-l border-border flex flex-col h-full overflow-hidden shadow-2xl relative shrink-0">
         <CartContent />
       </div>
 
@@ -749,22 +749,22 @@ export default function POSPage() {
               <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Monto Recibido</Label>
               <div className="relative group">
                 <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xl font-bold text-muted-foreground/50 transition-colors group-focus-within:text-primary">$</span>
-                <Input type="number" step="0.01" autoFocus value={amountPaid ?? ''} onChange={(e) => setAmountPaid(e.target.value ? Number(e.target.value) : undefined)} placeholder="0.00" className="pl-10 h-20 text-4xl font-black rounded-3xl bg-secondary/30 border-none shadow-inner focus-visible:ring-primary/20 transition-all" />
+                <Input type="number" step="0.01" autoFocus value={amountPaid ?? ''} onChange={(e) => setAmountPaid(e.target.value ? Number(e.target.value) : undefined)} placeholder="0.00" className="pl-10 h-20 text-4xl font-black rounded-3xl bg-secondary border-none shadow-inner focus-visible:ring-primary/20 transition-all" />
               </div>
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-4">
                 {[100, 500, 1000, 2000, 5000].map(amount => (
-                  <Button key={amount} variant="outline" size="sm" className="h-12 font-black rounded-xl hover:bg-primary/5 hover:border-primary/30 transition-all border-border/50" onClick={() => setAmountPaid((amountPaid || 0) + amount)}>+{amount}</Button>
+                  <Button key={amount} variant="outline" size="sm" className="h-12 font-black rounded-xl hover:bg-primary/5 hover:border-primary/30 transition-all border-border" onClick={() => setAmountPaid((amountPaid || 0) + amount)}>+{amount}</Button>
                 ))}
                 <Button variant="outline" size="sm" className="h-12 font-black rounded-xl bg-primary/5 text-primary border-primary/20" onClick={() => setAmountPaid(total)}>Exacto</Button>
               </div>
             </div>
-            <div className="p-8 bg-gradient-to-br from-card to-secondary/30 rounded-[2rem] border border-border shadow-inner space-y-6 relative overflow-hidden">
+            <div className="p-8 bg-gradient-to-br from-card to-secondary rounded-[2rem] border border-border shadow-inner space-y-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-5"><Zap className="h-24 w-24 fill-primary" /></div>
               <div className="flex justify-between items-center text-xs font-black text-muted-foreground uppercase tracking-[0.2em] relative z-10"><span>Total Venta</span><span className="text-foreground text-xl tracking-normal">{formatCurrency(total)}</span></div>
               {amountPaid && (
                 <>
                   <div className="flex justify-between items-center text-xs font-black text-muted-foreground uppercase tracking-[0.2em] relative z-10"><span>Recibido</span><span className="text-secondary-foreground text-xl tracking-normal">{formatCurrency(amountPaid)}</span></div>
-                  <div className="flex justify-between items-center pt-6 border-t border-border/50 relative z-10"><span className="text-xs font-black uppercase tracking-[0.2em] text-primary">Vuelto/Cambio</span><span className={`text-4xl font-black tracking-tighter ${change < 0 ? 'text-destructive' : 'text-primary'}`}>{formatCurrency(change)}</span></div>
+                  <div className="flex justify-between items-center pt-6 border-t border-border relative z-10"><span className="text-xs font-black uppercase tracking-[0.2em] text-primary">Vuelto/Cambio</span><span className={`text-4xl font-black tracking-tighter ${change < 0 ? 'text-destructive' : 'text-primary'}`}>{formatCurrency(change)}</span></div>
                 </>
               )}
             </div>

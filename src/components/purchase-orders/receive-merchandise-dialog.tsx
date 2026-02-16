@@ -186,7 +186,7 @@ export function ReceiveMerchandiseDialog({
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-6">
           <div className="space-y-4">
-            <div className="overflow-x-auto rounded-2xl border border-border/50">
+            <div className="overflow-x-auto rounded-2xl border border-border">
               <table className="w-full">
                 <thead>
                   <tr className="bg-secondary/30">
@@ -375,7 +375,7 @@ export function ReceiveMerchandiseDialog({
             )}
           </div>
 
-          <DialogFooter className="gap-3 sm:gap-0 bg-secondary/20 -mx-8 -mb-8 p-6 px-8 mt-4 border-t border-border/50">
+          <DialogFooter className="gap-3 sm:gap-0 bg-secondary/20 -mx-8 -mb-8 p-6 px-8 mt-4 border-t border-border">
             <Button
               type="button"
               variant="ghost"

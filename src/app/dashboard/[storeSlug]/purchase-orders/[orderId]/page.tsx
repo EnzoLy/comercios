@@ -200,7 +200,7 @@ export default async function PurchaseOrderDetailPage({
         {/* Main Content - Items */}
         <div className="lg:col-span-2 space-y-6">
           <Card className="border-none shadow-xl bg-card/50 backdrop-blur-sm overflow-hidden rounded-3xl">
-            <CardHeader className="bg-secondary/20 border-b border-border/50">
+            <CardHeader className="bg-secondary/20 border-b border-border">
               <div className="flex items-center gap-2">
                 <Receipt className="h-5 w-5 text-primary" />
                 <CardTitle className="text-xl font-bold">Detalle de Productos</CardTitle>

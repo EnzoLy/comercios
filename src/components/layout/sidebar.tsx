@@ -162,7 +162,7 @@ export function Sidebar({ storeSlug, isOwner, role }: SidebarProps) {
   }
 
   return (
-    <aside className="hidden md:flex w-64 border-r bg-background/50 backdrop-blur-xl flex-col h-screen sticky top-0">
+    <aside className="hidden md:flex w-64 border-r bg-card flex-col h-screen sticky top-0">
       <div className="p-6 border-b border-gray-100 dark:border-gray-800">
         <Link href="/dashboard/select-store" className="group flex items-center gap-3 hover:opacity-100 transition-all">
           <div className="p-0.5 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors overflow-hidden">
