@@ -78,8 +78,15 @@ export function OfflineIndicator() {
     setTimeout(() => setIsSyncing(false), 1000)
   }
 
+  const handleRetryFailed = async () => {
+    setIsSyncing(true)
+    await offlineQueue.retryFailed()
+    await updateCounts()
+    setTimeout(() => setIsSyncing(false), 1000)
+  }
+
   const handleClearFailed = async () => {
-    if (confirm('Deseas limpiar las operaciones fallidas?')) {
+    if (confirm('Deseas eliminar permanentemente las operaciones fallidas? Esta acción no se puede deshacer.')) {
       await offlineQueue.clearFailed()
       await updateCounts()
     }
@@ -212,14 +219,26 @@ export function OfflineIndicator() {
               )}
 
               {failedCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full mt-2 text-destructive"
-                  onClick={handleClearFailed}
-                >
-                  Limpiar fallidos
-                </Button>
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={handleRetryFailed}
+                    disabled={isSyncing || !isOnline}
+                  >
+                    <RefreshCw className={`h-3 w-3 mr-1 ${isSyncing ? 'animate-spin' : ''}`} />
+                    Reintentar
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex-1 text-destructive"
+                    onClick={handleClearFailed}
+                  >
+                    Eliminar
+                  </Button>
+                </div>
               )}
             </div>
           </DropdownMenuContent>

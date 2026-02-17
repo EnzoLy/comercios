@@ -47,8 +47,28 @@ class OfflineQueueManager {
       this.isOnline = navigator.onLine
       window.addEventListener('online', () => this.handleOnline())
       window.addEventListener('offline', () => this.handleOffline())
+      // Reset any operations stuck in 'syncing' state (e.g. after page refresh mid-sync)
+      this.resetStuckSyncingOps()
       // If we start online with pending ops, begin the interval
       if (this.isOnline) this.startSyncInterval()
+    }
+  }
+
+  /**
+   * Reset operations stuck in 'syncing' state back to 'pending'.
+   * This can happen if the browser is closed or the page refreshed during a sync.
+   */
+  private async resetStuckSyncingOps(): Promise<void> {
+    try {
+      const syncingOps = await getQueueOperationsByStatus('syncing')
+      for (const op of syncingOps) {
+        await updateQueueOperation(op.id, { status: 'pending' })
+      }
+      if (syncingOps.length > 0) {
+        console.log(`Reset ${syncingOps.length} stuck syncing operation(s) to pending`)
+      }
+    } catch (error) {
+      console.error('Error resetting stuck syncing operations:', error)
     }
   }
 
@@ -191,7 +211,21 @@ class OfflineQueueManager {
         this.notifyCallbacks({ ...operation, status: 'pending' }) // trigger UI refresh
         return 'synced'
       } else {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        const errorMessage = `HTTP ${response.status}: ${response.statusText}`
+        // 4xx errors (except 408 Request Timeout and 429 Too Many Requests) will never
+        // succeed on retry — mark as failed immediately to avoid burning all retries.
+        const isNonRetryable =
+          response.status >= 400 &&
+          response.status < 500 &&
+          response.status !== 408 &&
+          response.status !== 429
+        if (isNonRetryable) {
+          await this.updateStatus(operation.id, 'failed', errorMessage)
+          console.error(`Non-retryable error for operation ${operation.id}:`, errorMessage)
+          this.notifyCallbacks({ ...operation, status: 'failed', error: errorMessage })
+          return 'failed'
+        }
+        throw new Error(errorMessage)
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
@@ -278,6 +312,24 @@ class OfflineQueueManager {
     if (this.syncInterval) {
       clearInterval(this.syncInterval)
       this.syncInterval = null
+    }
+  }
+
+  /**
+   * Reset all failed operations back to pending so they can be retried.
+   */
+  async retryFailed(): Promise<void> {
+    const failedOps = await getQueueOperationsByStatus('failed')
+    for (const op of failedOps) {
+      await updateQueueOperation(op.id, {
+        status: 'pending',
+        retries: 0,
+        lastRetry: undefined,
+        error: undefined,
+      })
+    }
+    if (failedOps.length > 0 && this.isOnline) {
+      this.processQueue()
     }
   }
 

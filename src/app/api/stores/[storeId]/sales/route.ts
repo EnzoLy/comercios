@@ -101,6 +101,7 @@ export async function POST(
     await requireRole(storeId, [
       EmploymentRole.ADMIN,
       EmploymentRole.MANAGER,
+      EmploymentRole.STOCK_KEEPER,
       EmploymentRole.CASHIER,
     ])
 
