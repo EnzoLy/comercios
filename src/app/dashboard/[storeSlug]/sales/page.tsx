@@ -46,11 +46,14 @@ export default async function SalesPage({
     take: 50,
   })
 
+  const TZ = 'America/Argentina/Buenos_Aires'
+
   // Calculate stats
   const completedSales = sales.filter((s) => s.status === SaleStatus.COMPLETED)
   const totalRevenue = completedSales.reduce((sum, sale) => sum + Number(sale.total), 0)
+  const todayInTZ = new Date().toLocaleDateString('es-ES', { timeZone: TZ })
   const todaySales = completedSales.filter(
-    (s) => new Date(s.createdAt).toDateString() === new Date().toDateString()
+    (s) => new Date(s.createdAt).toLocaleDateString('es-ES', { timeZone: TZ }) === todayInTZ
   )
   const todayRevenue = todaySales.reduce((sum, sale) => sum + Number(sale.total), 0)
 
@@ -210,9 +213,9 @@ export default async function SalesPage({
                             #{sale.id.substring(0, 8).toUpperCase()}
                           </span>
                           <span className="text-[10px] font-bold text-muted-foreground opacity-60 flex items-center gap-1.5 pt-1 uppercase tracking-tighter">
-                            {new Date(sale.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                            {new Date(sale.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', timeZone: TZ })}
                             <span className="bg-muted px-1 rounded text-[8px] font-black">
-                              {new Date(sale.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                              {new Date(sale.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: TZ })}
                             </span>
                           </span>
                         </div>

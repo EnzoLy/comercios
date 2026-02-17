@@ -477,7 +477,7 @@ export default function POSPage() {
       const result = await createOfflineSale(saleData)
 
       if (!result.success) {
-        toast.error('Error al completar la venta')
+        toast.error(result.error || 'Error al completar la venta')
         return
       }
 

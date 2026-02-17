@@ -247,7 +247,7 @@ export default async function SaleDetailsPage({
                 <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1 italic">Fecha y Hora</p>
-                  <p className="text-sm font-bold tracking-tight text-foreground">{new Date(sale.createdAt).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })}</p>
+                  <p className="text-sm font-bold tracking-tight text-foreground">{new Date(sale.createdAt).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short', timeZone: 'America/Argentina/Buenos_Aires' })}</p>
                 </div>
               </div>
 

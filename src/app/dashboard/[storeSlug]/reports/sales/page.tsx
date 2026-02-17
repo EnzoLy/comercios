@@ -73,7 +73,7 @@ export default function SalesReportPage() {
 
   // Daily sales
   const dailySales = sales.reduce((acc: any, sale) => {
-    const date = new Date(sale.createdAt).toLocaleDateString()
+    const date = new Date(sale.createdAt).toLocaleDateString('es-ES', { timeZone: 'America/Argentina/Buenos_Aires' })
     acc[date] = (acc[date] || 0) + Number(sale.total)
     return acc
   }, {})
@@ -86,8 +86,8 @@ export default function SalesReportPage() {
 
     const headers = ['Date', 'Time', 'Total', 'Payment Method', 'Items', 'Cashier']
     const rows = sales.map((sale) => [
-      new Date(sale.createdAt).toLocaleDateString(),
-      new Date(sale.createdAt).toLocaleTimeString(),
+      new Date(sale.createdAt).toLocaleDateString('es-ES', { timeZone: 'America/Argentina/Buenos_Aires' }),
+      new Date(sale.createdAt).toLocaleTimeString('es-ES', { timeZone: 'America/Argentina/Buenos_Aires' }),
       Number(sale.total).toFixed(2),
       sale.paymentMethod,
       sale.items?.length || 0,

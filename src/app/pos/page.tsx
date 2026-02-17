@@ -113,13 +113,16 @@ export default function POSPage() {
 
     const result = await createSale(saleData)
 
-    if (result.success) {
-      setCart([])
-      if (result.queued) {
-        toast.success('Venta guardada localmente. Se sincronizara cuando haya conexion.')
-      } else {
-        toast.success('Venta completada con exito!')
-      }
+    if (!result.success) {
+      toast.error(result.error || 'Error al completar la venta')
+      return
+    }
+
+    setCart([])
+    if (result.queued) {
+      toast.success('Venta guardada localmente. Se sincronizara cuando haya conexion.')
+    } else {
+      toast.success('Venta completada con exito!')
     }
   }
 

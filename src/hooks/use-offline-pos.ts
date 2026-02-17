@@ -21,7 +21,7 @@ export interface UseOfflinePOSResult {
   isOnline: boolean
   pendingCount: number
   cachedProducts: CachedProduct[]
-  createSale: (saleData: any) => Promise<{ success: boolean; saleId?: string; queued?: boolean; invoiceUrl?: string }>
+  createSale: (saleData: any) => Promise<{ success: boolean; saleId?: string; queued?: boolean; invoiceUrl?: string; error?: string }>
   syncNow: () => Promise<void>
   refreshCache: () => Promise<void>
   isCacheValid: boolean
@@ -152,50 +152,56 @@ export function useOfflinePOS(storeId: string): UseOfflinePOSResult {
         status: 'COMPLETED',
       }
 
-      if (isOnline) {
-        try {
-          const response = await fetch(`/api/stores/${storeId}/sales`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(saleWithId),
-          })
+      // Always attempt the fetch regardless of isOnline state.
+      // navigator.onLine is unreliable on some networks/systems — it can report
+      // offline when there is actually connectivity. Letting the fetch itself
+      // determine reachability is more trustworthy.
+      let response: Response | undefined
+      try {
+        const controller = new AbortController()
+        // Abort after 8 s so the cashier isn't left waiting at the register
+        const timeoutId = setTimeout(() => controller.abort(), 8000)
 
-          if (response.ok) {
-            const result = await response.json()
-
-            // Update local cache stock
-            for (const item of saleWithId.items || []) {
-              await productsCache.decreaseStock(item.productId, item.quantity)
-            }
-            const products = await productsCache.getProducts(storeId)
-            setCachedProducts(products)
-
-            return { success: true, saleId: result.id, invoiceUrl: result.invoiceUrl }
-          } else {
-            throw new Error(`HTTP ${response.status}`)
-          }
-        } catch (error) {
-          // Online request failed - queue it
-          console.error('Online sale failed, queuing:', error)
-          return await queueSale(saleWithId)
-        }
-      } else {
+        response = await fetch(`/api/stores/${storeId}/sales`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(saleWithId),
+          signal: controller.signal,
+        })
+        clearTimeout(timeoutId)
+      } catch {
+        // Network failure or timeout — device cannot reach the server, queue for later
         return await queueSale(saleWithId)
       }
-    } catch (error) {
-      console.error('Error creating sale:', error)
-      // Last resort: try to queue
-      const saleId = generateUUID()
-      const saleWithId = {
-        ...saleData,
-        id: saleId,
-        storeId,
-        createdAt: new Date().toISOString(),
-        status: 'COMPLETED',
+
+      if (response.ok) {
+        const result = await response.json()
+
+        // Update local cache stock
+        for (const item of saleWithId.items || []) {
+          await productsCache.decreaseStock(item.productId, item.quantity)
+        }
+        const products = await productsCache.getProducts(storeId)
+        setCachedProducts(products)
+
+        return { success: true, saleId: result.id, invoiceUrl: result.invoiceUrl }
       }
+
+      // 4xx errors are definitive failures — show the error, don't queue
+      // (queuing would just repeat the same failure on sync)
+      if (response.status >= 400 && response.status < 500) {
+        const data = await response.json().catch(() => ({}))
+        const errorMsg = data.error || `Error ${response.status}: no se pudo completar la venta`
+        return { success: false, error: errorMsg }
+      }
+
+      // 5xx — transient server error, queue for later
       return await queueSale(saleWithId)
+    } catch (error) {
+      console.error('Unexpected error creating sale:', error)
+      return { success: false, error: 'Error inesperado al crear la venta' }
     }
-  }, [isOnline, storeId])
+  }, [storeId])
 
   /**
    * Queue a sale for later sync
