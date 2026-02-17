@@ -211,7 +211,13 @@ class OfflineQueueManager {
         this.notifyCallbacks({ ...operation, status: 'pending' }) // trigger UI refresh
         return 'synced'
       } else {
-        const errorMessage = `HTTP ${response.status}: ${response.statusText}`
+        // Read the response body to get the actual error message from the server
+        const body = await response.json().catch(() => ({}))
+        const serverMessage = body?.error || body?.message || ''
+        const errorMessage = serverMessage
+          ? `HTTP ${response.status}: ${serverMessage}`
+          : `HTTP ${response.status}`
+
         // 4xx errors (except 408 Request Timeout and 429 Too Many Requests) will never
         // succeed on retry — mark as failed immediately to avoid burning all retries.
         const isNonRetryable =

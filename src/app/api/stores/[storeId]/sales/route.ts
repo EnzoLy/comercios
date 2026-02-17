@@ -132,6 +132,8 @@ export async function POST(
     const dataSource = await getDataSource()
 
     // CRITICAL: Atomic transaction - all operations succeed or all fail
+    // Uses manager.insert() / manager.update() instead of manager.save() to avoid
+    // TypeORM's topological sorter failing with "Cyclic dependency" on bidirectional relations.
     const sale = await dataSource.transaction(async (manager) => {
       // Step 1: Validate stock for ALL items first
       for (const item of validated.items) {
@@ -164,9 +166,9 @@ export async function POST(
 
       const total = subtotal + validated.tax - validated.discount
 
-      // Step 3: Create sale record
+      // Step 3: Insert sale record
       const amountPaid = validated.amountPaid || total
-      const sale = manager.create(Sale, {
+      const saleInsertResult = await manager.insert(Sale, {
         storeId,
         cashierId,
         paymentMethod: validated.paymentMethod,
@@ -182,10 +184,9 @@ export async function POST(
         customerEmail: validated.customerEmail,
         customerPhone: validated.customerPhone,
       })
+      const saleId = saleInsertResult.identifiers[0].id as string
 
-      await manager.save(sale)
-
-      // Step 4: Create sale items
+      // Step 4: Insert sale items
       for (const item of validated.items) {
         const product = await manager.findOne(Product, {
           where: { id: item.productId },
@@ -199,8 +200,8 @@ export async function POST(
         const itemTaxAmount = item.taxAmount || 0
         const itemTotal = itemSubtotal - itemDiscount + itemTaxAmount
 
-        const saleItem = manager.create(SaleItem, {
-          saleId: sale.id,
+        await manager.insert(SaleItem, {
+          saleId,
           productId: item.productId,
           productName: product.name,
           productSku: product.sku,
@@ -212,11 +213,9 @@ export async function POST(
           taxRate: itemTaxRate,
           taxAmount: itemTaxAmount,
         })
-
-        await manager.save(saleItem)
       }
 
-      // Step 5: Create stock movements and update product stock
+      // Step 5: Insert stock movements and update product stock
       const fefoService = new FEFOService()
 
       for (const item of validated.items) {
@@ -226,18 +225,17 @@ export async function POST(
 
         if (!product || !product.trackStock) continue
 
-        // Create stock movement record
-        const movement = manager.create(StockMovement, {
+        // Insert stock movement record
+        const movementInsertResult = await manager.insert(StockMovement, {
           productId: item.productId,
           type: MovementType.SALE,
           quantity: -item.quantity, // Negative for sale
           unitPrice: item.unitPrice,
           userId,
-          saleId: sale.id,
-          reference: `Sale #${sale.id.substring(0, 8)}`,
+          saleId,
+          reference: `Sale #${saleId.substring(0, 8)}`,
         })
-
-        await manager.save(movement)
+        const movementId = movementInsertResult.identifiers[0].id as string
 
         // If product tracks expiration dates, use FEFO to select batches
         if (product.trackExpirationDates) {
@@ -259,19 +257,17 @@ export async function POST(
                 allocation.quantity
               )
 
-              // Create batch stock movement
-              const batchMovement = manager.create(BatchStockMovement, {
+              // Insert batch stock movement
+              await manager.insert(BatchStockMovement, {
                 batchId: allocation.batchId,
                 productId: product.id,
-                stockMovementId: movement.id,
+                stockMovementId: movementId,
                 type: MovementType.SALE,
                 quantity: -allocation.quantity, // Negative for sale
                 unitPrice: item.unitPrice,
-                saleId: sale.id,
+                saleId,
                 userId,
               })
-
-              await manager.save(batchMovement)
             }
           } catch (fefoError: any) {
             // If FEFO fails due to insufficient valid stock but there are expired batches,
@@ -297,11 +293,12 @@ export async function POST(
       }
 
       // Step 6: Mark sale as completed
-      sale.status = SaleStatus.COMPLETED
-      sale.completedAt = new Date()
-      await manager.save(sale)
+      await manager.update(Sale, { id: saleId }, {
+        status: SaleStatus.COMPLETED,
+        completedAt: new Date(),
+      })
 
-      return sale
+      return { id: saleId }
     })
 
     // Fetch complete sale with relations
