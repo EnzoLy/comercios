@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { offlineQueue } from '@/lib/offline/queue'
 import { productsCache, type CachedProduct } from '@/lib/offline/products-cache'
 
@@ -21,38 +21,67 @@ export interface UseOfflinePOSResult {
   isOnline: boolean
   pendingCount: number
   cachedProducts: CachedProduct[]
-  createSale: (saleData: any) => Promise<{ success: boolean; saleId?: string; queued?: boolean }>
+  createSale: (saleData: any) => Promise<{ success: boolean; saleId?: string; queued?: boolean; invoiceUrl?: string }>
   syncNow: () => Promise<void>
   refreshCache: () => Promise<void>
   isCacheValid: boolean
+  isLoadingCache: boolean
+  cacheProductCount: number
 }
 
 /**
- * Hook for offline POS functionality
- * Handles product caching, sale creation (online/offline), and synchronization
+ * Hook for offline POS functionality.
+ * Handles product caching in IndexedDB, sale creation (online/offline),
+ * and automatic synchronization when connectivity is restored.
  */
 export function useOfflinePOS(storeId: string): UseOfflinePOSResult {
   const [isOnline, setIsOnline] = useState(true)
   const [pendingCount, setPendingCount] = useState(0)
   const [cachedProducts, setCachedProducts] = useState<CachedProduct[]>([])
   const [isCacheValid, setIsCacheValid] = useState(false)
+  const [isLoadingCache, setIsLoadingCache] = useState(true)
+  const [cacheProductCount, setCacheProductCount] = useState(0)
+  const initializedRef = useRef(false)
 
-  // Initialize and listen for status changes
+  // Load initial data from IndexedDB
   useEffect(() => {
-    setIsOnline(offlineQueue.getStatus())
-    setPendingCount(offlineQueue.getPendingCount())
-    setCachedProducts(productsCache.getProducts())
-    setIsCacheValid(productsCache.isCacheValid())
+    if (!storeId || initializedRef.current) return
+    initializedRef.current = true
 
-    // Subscribe to queue updates
-    const unsubscribe = offlineQueue.onSync(() => {
-      setPendingCount(offlineQueue.getPendingCount())
+    async function init() {
+      setIsOnline(offlineQueue.getStatus())
+      setIsLoadingCache(true)
+
+      try {
+        const [pending, products, valid] = await Promise.all([
+          offlineQueue.getPendingCount(),
+          productsCache.getProducts(storeId),
+          productsCache.isCacheValid(storeId),
+        ])
+
+        setPendingCount(pending)
+        setCachedProducts(products)
+        setIsCacheValid(valid)
+        setCacheProductCount(products.length)
+      } catch (error) {
+        console.error('Error initializing offline POS:', error)
+      } finally {
+        setIsLoadingCache(false)
+      }
+    }
+
+    init()
+  }, [storeId])
+
+  // Subscribe to queue updates and online/offline events
+  useEffect(() => {
+    const unsubscribe = offlineQueue.onSync(async () => {
+      const count = await offlineQueue.getPendingCount()
+      setPendingCount(count)
     })
 
-    // Listen for online/offline events
     const handleOnline = () => {
       setIsOnline(true)
-      // Auto-sync when coming back online
       setTimeout(() => offlineQueue.processQueue(), 1000)
     }
     const handleOffline = () => setIsOnline(false)
@@ -68,14 +97,52 @@ export function useOfflinePOS(storeId: string): UseOfflinePOSResult {
   }, [])
 
   /**
-   * Create a sale (works both online and offline)
+   * Fetch ALL products from server (handles pagination) and cache in IndexedDB
+   */
+  const refreshCache = useCallback(async () => {
+    if (!storeId) return
+
+    setIsLoadingCache(true)
+    try {
+      const allProducts: any[] = []
+      let page = 1
+      const pageSize = 100
+      let hasMore = true
+
+      while (hasMore) {
+        const response = await fetch(
+          `/api/stores/${storeId}/products?page=${page}&pageSize=${pageSize}&includeInactive=false`
+        )
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+        const data = await response.json()
+        const products = data.products || data
+        allProducts.push(...products)
+
+        hasMore = data.hasMore === true
+        page++
+      }
+
+      await productsCache.cacheProducts(storeId, allProducts)
+      setCachedProducts(allProducts)
+      setIsCacheValid(true)
+      setCacheProductCount(allProducts.length)
+    } catch (error) {
+      console.error('Error refreshing cache:', error)
+    } finally {
+      setIsLoadingCache(false)
+    }
+  }, [storeId])
+
+  /**
+   * Create a sale (works both online and offline).
+   * When offline, the sale is queued in IndexedDB and local inventory is decremented.
+   * When back online, queued sales sync automatically.
    */
   const createSale = useCallback(async (saleData: any) => {
     try {
-      // Generate sale ID client-side
       const saleId = generateUUID()
 
-      // Prepare sale data
       const saleWithId = {
         ...saleData,
         id: saleId,
@@ -85,44 +152,38 @@ export function useOfflinePOS(storeId: string): UseOfflinePOSResult {
       }
 
       if (isOnline) {
-        // Try to create sale online
-        const response = await fetch(`/api/stores/${storeId}/sales`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(saleWithId),
-        })
+        try {
+          const response = await fetch(`/api/stores/${storeId}/sales`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(saleWithId),
+          })
 
-        if (response.ok) {
-          const result = await response.json()
-          return { success: true, saleId: result.id }
-        } else {
-          throw new Error(`HTTP ${response.status}`)
+          if (response.ok) {
+            const result = await response.json()
+
+            // Update local cache stock
+            for (const item of saleWithId.items || []) {
+              await productsCache.decreaseStock(item.productId, item.quantity)
+            }
+            const products = await productsCache.getProducts(storeId)
+            setCachedProducts(products)
+
+            return { success: true, saleId: result.id, invoiceUrl: result.invoiceUrl }
+          } else {
+            throw new Error(`HTTP ${response.status}`)
+          }
+        } catch (error) {
+          // Online request failed - queue it
+          console.error('Online sale failed, queuing:', error)
+          return await queueSale(saleWithId)
         }
       } else {
-        // Offline - queue the sale
-        await offlineQueue.add({
-          type: 'CREATE_SALE',
-          endpoint: `/api/stores/${storeId}/sales`,
-          method: 'POST',
-          body: saleWithId,
-        })
-
-        // Update local inventory
-        saleWithId.items?.forEach((item: any) => {
-          productsCache.decreaseStock(item.productId, item.quantity)
-        })
-
-        setCachedProducts(productsCache.getProducts())
-        setPendingCount(offlineQueue.getPendingCount())
-
-        return { success: true, saleId, queued: true }
+        return await queueSale(saleWithId)
       }
     } catch (error) {
-      // If online request fails, queue it
-      console.error('Error creating sale, queuing for later:', error)
-
+      console.error('Error creating sale:', error)
+      // Last resort: try to queue
       const saleId = generateUUID()
       const saleWithId = {
         ...saleData,
@@ -131,50 +192,43 @@ export function useOfflinePOS(storeId: string): UseOfflinePOSResult {
         createdAt: new Date().toISOString(),
         status: 'COMPLETED',
       }
-
-      await offlineQueue.add({
-        type: 'CREATE_SALE',
-        endpoint: `/api/stores/${storeId}/sales`,
-        method: 'POST',
-        body: saleWithId,
-      })
-
-      // Update local inventory
-      saleWithId.items?.forEach((item: any) => {
-        productsCache.decreaseStock(item.productId, item.quantity)
-      })
-
-      setCachedProducts(productsCache.getProducts())
-      setPendingCount(offlineQueue.getPendingCount())
-
-      return { success: true, saleId, queued: true }
+      return await queueSale(saleWithId)
     }
   }, [isOnline, storeId])
+
+  /**
+   * Queue a sale for later sync
+   */
+  async function queueSale(saleWithId: any) {
+    await offlineQueue.add({
+      type: 'CREATE_SALE',
+      endpoint: `/api/stores/${storeId}/sales`,
+      method: 'POST',
+      body: saleWithId,
+    })
+
+    // Update local inventory
+    for (const item of saleWithId.items || []) {
+      await productsCache.decreaseStock(item.productId, item.quantity)
+    }
+
+    const products = await productsCache.getProducts(storeId)
+    setCachedProducts(products)
+
+    const count = await offlineQueue.getPendingCount()
+    setPendingCount(count)
+
+    return { success: true, saleId: saleWithId.id, queued: true }
+  }
 
   /**
    * Manually trigger sync
    */
   const syncNow = useCallback(async () => {
     await offlineQueue.processQueue()
-    setPendingCount(offlineQueue.getPendingCount())
+    const count = await offlineQueue.getPendingCount()
+    setPendingCount(count)
   }, [])
-
-  /**
-   * Refresh product cache from server
-   */
-  const refreshCache = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/stores/${storeId}/products`)
-      if (response.ok) {
-        const products = await response.json()
-        await productsCache.cacheProducts(products)
-        setCachedProducts(products)
-        setIsCacheValid(true)
-      }
-    } catch (error) {
-      console.error('Error refreshing cache:', error)
-    }
-  }, [storeId])
 
   return {
     isOnline,
@@ -184,5 +238,7 @@ export function useOfflinePOS(storeId: string): UseOfflinePOSResult {
     syncNow,
     refreshCache,
     isCacheValid,
+    isLoadingCache,
+    cacheProductCount,
   }
 }

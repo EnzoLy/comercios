@@ -1,4 +1,19 @@
 /**
+ * Offline operation queue using IndexedDB.
+ * Stores pending operations persistently and syncs when online.
+ */
+
+import {
+  addQueueOperation,
+  getQueueOperations,
+  getQueueOperationsByStatus,
+  updateQueueOperation,
+  removeQueueOperation,
+  clearQueueByStatus,
+  clearAllQueue,
+} from './indexed-db'
+
+/**
  * Offline operation types
  */
 export interface OfflineOperation {
@@ -15,12 +30,11 @@ export interface OfflineOperation {
 }
 
 /**
- * Offline queue manager using localStorage
+ * Offline queue manager using IndexedDB
  */
 class OfflineQueueManager {
-  private readonly QUEUE_KEY = 'offline_queue'
   private readonly MAX_RETRIES = 5
-  private readonly RETRY_DELAY = 1000 // Start with 1 second
+  private readonly RETRY_DELAY = 1000
   private isOnline: boolean = true
   private isProcessing: boolean = false
   private syncCallbacks: Set<(operation: OfflineOperation) => void> = new Set()
@@ -28,8 +42,6 @@ class OfflineQueueManager {
   constructor() {
     if (typeof window !== 'undefined') {
       this.isOnline = navigator.onLine
-
-      // Listen for online/offline events
       window.addEventListener('online', () => this.handleOnline())
       window.addEventListener('offline', () => this.handleOffline())
     }
@@ -45,12 +57,11 @@ class OfflineQueueManager {
   /**
    * Get all queued operations
    */
-  getQueue(): OfflineOperation[] {
+  async getQueue(): Promise<OfflineOperation[]> {
     if (typeof window === 'undefined') return []
 
     try {
-      const queue = localStorage.getItem(this.QUEUE_KEY)
-      return queue ? JSON.parse(queue) : []
+      return await getQueueOperations()
     } catch (error) {
       console.error('Error reading queue:', error)
       return []
@@ -60,8 +71,13 @@ class OfflineQueueManager {
   /**
    * Get count of pending operations
    */
-  getPendingCount(): number {
-    return this.getQueue().filter(op => op.status === 'pending').length
+  async getPendingCount(): Promise<number> {
+    try {
+      const pending = await getQueueOperationsByStatus('pending')
+      return pending.length
+    } catch {
+      return 0
+    }
   }
 
   /**
@@ -78,12 +94,7 @@ class OfflineQueueManager {
       status: 'pending',
     }
 
-    const queue = this.getQueue()
-    queue.push(newOperation)
-
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.QUEUE_KEY, JSON.stringify(queue))
-    }
+    await addQueueOperation(newOperation)
 
     // Try to sync immediately if online
     if (this.isOnline) {
@@ -96,30 +107,18 @@ class OfflineQueueManager {
   /**
    * Remove operation from queue
    */
-  remove(operationId: string): void {
-    const queue = this.getQueue()
-    const filtered = queue.filter(op => op.id !== operationId)
-
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.QUEUE_KEY, JSON.stringify(filtered))
-    }
+  async remove(operationId: string): Promise<void> {
+    await removeQueueOperation(operationId)
   }
 
   /**
    * Update operation status
    */
-  updateStatus(operationId: string, status: OfflineOperation['status'], error?: string): void {
-    const queue = this.getQueue()
-    const operation = queue.find(op => op.id === operationId)
+  async updateStatus(operationId: string, status: OfflineOperation['status'], error?: string): Promise<void> {
+    const updates: Record<string, any> = { status }
+    if (error) updates.error = error
 
-    if (operation) {
-      operation.status = status
-      if (error) operation.error = error
-
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(this.QUEUE_KEY, JSON.stringify(queue))
-      }
-    }
+    await updateQueueOperation(operationId, updates)
   }
 
   /**
@@ -133,12 +132,10 @@ class OfflineQueueManager {
     this.isProcessing = true
 
     try {
-      const queue = this.getQueue()
-      const pendingOps = queue.filter(op => op.status === 'pending')
+      const pendingOps = await getQueueOperationsByStatus('pending')
 
       for (const operation of pendingOps) {
         await this.processOperation(operation)
-
         // Small delay between operations
         await new Promise(resolve => setTimeout(resolve, 500))
       }
@@ -159,8 +156,8 @@ class OfflineQueueManager {
       return
     }
 
-    this.updateStatus(operation.id, 'syncing')
-    this.notifyCallbacks(operation)
+    await this.updateStatus(operation.id, 'syncing')
+    this.notifyCallbacks({ ...operation, status: 'syncing' })
 
     try {
       const response = await fetch(operation.endpoint, {
@@ -172,37 +169,28 @@ class OfflineQueueManager {
       })
 
       if (response.ok) {
-        // Success - remove from queue
-        this.remove(operation.id)
+        await this.remove(operation.id)
         console.log(`Synced operation: ${operation.id}`)
+        this.notifyCallbacks({ ...operation, status: 'pending' }) // trigger UI refresh
       } else {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
 
-      // Check if we should retry
       if (operation.retries < this.MAX_RETRIES) {
-        const queue = this.getQueue()
-        const op = queue.find(o => o.id === operation.id)
-
-        if (op) {
-          op.retries++
-          op.lastRetry = now
-          op.status = 'pending'
-          op.error = errorMessage
-
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(this.QUEUE_KEY, JSON.stringify(queue))
-          }
-        }
+        await updateQueueOperation(operation.id, {
+          retries: operation.retries + 1,
+          lastRetry: now,
+          status: 'pending',
+          error: errorMessage,
+        })
       } else {
-        // Max retries reached - mark as failed
-        this.updateStatus(operation.id, 'failed', errorMessage)
+        await this.updateStatus(operation.id, 'failed', errorMessage)
         console.error(`Failed to sync operation after ${this.MAX_RETRIES} retries:`, operation)
       }
 
-      this.notifyCallbacks(operation)
+      this.notifyCallbacks({ ...operation, error: errorMessage })
     }
   }
 
@@ -211,8 +199,6 @@ class OfflineQueueManager {
    */
   onSync(callback: (operation: OfflineOperation) => void): () => void {
     this.syncCallbacks.add(callback)
-
-    // Return unsubscribe function
     return () => {
       this.syncCallbacks.delete(callback)
     }
@@ -251,22 +237,15 @@ class OfflineQueueManager {
   /**
    * Clear all failed operations
    */
-  clearFailed(): void {
-    const queue = this.getQueue()
-    const filtered = queue.filter(op => op.status !== 'failed')
-
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.QUEUE_KEY, JSON.stringify(filtered))
-    }
+  async clearFailed(): Promise<void> {
+    await clearQueueByStatus('failed')
   }
 
   /**
    * Clear all operations (use with caution)
    */
-  clearAll(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(this.QUEUE_KEY)
-    }
+  async clearAll(): Promise<void> {
+    await clearAllQueue()
   }
 }
 

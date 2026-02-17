@@ -1,7 +1,19 @@
 /**
- * Offline products cache using localStorage
- * Stores products locally for offline POS functionality
+ * Offline products cache using IndexedDB.
+ * Stores products locally for offline POS functionality.
+ * IndexedDB provides significantly more storage than localStorage (~5MB)
+ * and handles large product catalogs without issues.
  */
+
+import {
+  clearAndPutProducts,
+  getAllProducts,
+  getProductById as idbGetProductById,
+  updateProduct as idbUpdateProduct,
+  decreaseProductStock,
+  getProductsCacheMeta,
+  clearProductsCache,
+} from './indexed-db'
 
 export interface CachedProduct {
   id: string
@@ -23,46 +35,38 @@ export interface CachedProduct {
   overrideTaxRate: boolean
   categoryId?: string
   supplierId?: string
+  barcodes?: { id: string; barcode: string; type?: string; isPrimary?: boolean }[]
   _cachedAt: number
 }
 
-class ProductsCacheManager {
-  private readonly CACHE_KEY = 'offline_products_cache'
-  private readonly CACHE_DURATION = 24 * 60 * 60 * 1000 // 24 hours
-  private readonly CACHE_VERSION_KEY = 'offline_products_version'
-  private currentVersion: number = 1
+const CACHE_DURATION = 24 * 60 * 60 * 1000 // 24 hours
 
+class ProductsCacheManager {
   /**
-   * Check if cache is valid (not expired)
+   * Check if cache is valid (not expired) for a given store
    */
-  isCacheValid(): boolean {
+  async isCacheValid(storeId: string): Promise<boolean> {
     if (typeof window === 'undefined') return false
 
     try {
-      const cached = localStorage.getItem(this.CACHE_KEY)
-      if (!cached) return false
+      const meta = await getProductsCacheMeta(storeId)
+      if (!meta) return false
 
-      const data = JSON.parse(cached)
-      const age = Date.now() - data.timestamp
-
-      return age < this.CACHE_DURATION
+      const age = Date.now() - meta.timestamp
+      return age < CACHE_DURATION
     } catch {
       return false
     }
   }
 
   /**
-   * Get all cached products
+   * Get all cached products for a store
    */
-  getProducts(): CachedProduct[] {
+  async getProducts(storeId: string): Promise<CachedProduct[]> {
     if (typeof window === 'undefined') return []
 
     try {
-      const cached = localStorage.getItem(this.CACHE_KEY)
-      if (!cached) return []
-
-      const data = JSON.parse(cached)
-      return data.products || []
+      return await getAllProducts(storeId)
     } catch (error) {
       console.error('Error reading products cache:', error)
       return []
@@ -72,16 +76,21 @@ class ProductsCacheManager {
   /**
    * Get a single product by ID
    */
-  getProductById(id: string): CachedProduct | null {
-    const products = this.getProducts()
-    return products.find(p => p.id === id) || null
+  async getProductById(id: string): Promise<CachedProduct | null> {
+    try {
+      const product = await idbGetProductById(id)
+      return product || null
+    } catch {
+      return null
+    }
   }
 
   /**
-   * Search products by barcode or SKU (only active products)
+   * Search products by barcode or SKU (only active products).
+   * Also checks product.barcodes array for multi-barcode support.
    */
-  searchByBarcodeOrSKU(query: string): CachedProduct[] {
-    const products = this.getProducts()
+  async searchByBarcodeOrSKU(storeId: string, query: string): Promise<CachedProduct[]> {
+    const products = await this.getProducts(storeId)
     const lowerQuery = query.toLowerCase()
 
     return products.filter(p =>
@@ -89,7 +98,8 @@ class ProductsCacheManager {
         p.barcode === query ||
         p.sku === query ||
         p.barcode?.toLowerCase().includes(lowerQuery) ||
-        p.sku?.toLowerCase().includes(lowerQuery)
+        p.sku?.toLowerCase().includes(lowerQuery) ||
+        p.barcodes?.some(b => b.barcode === query || b.barcode?.toLowerCase().includes(lowerQuery))
       )
     )
   }
@@ -97,8 +107,8 @@ class ProductsCacheManager {
   /**
    * Search products by name (only active products)
    */
-  searchByName(query: string): CachedProduct[] {
-    const products = this.getProducts()
+  async searchByName(storeId: string, query: string): Promise<CachedProduct[]> {
+    const products = await this.getProducts(storeId)
     const lowerQuery = query.toLowerCase()
 
     return products.filter(p =>
@@ -107,69 +117,28 @@ class ProductsCacheManager {
   }
 
   /**
-   * Cache products from server
+   * Cache products from server into IndexedDB.
+   * Clears existing products for the store and replaces with new data.
    */
-  async cacheProducts(products: any[]): Promise<void> {
+  async cacheProducts(storeId: string, products: any[]): Promise<void> {
     if (typeof window === 'undefined') return
 
     try {
-      const data = {
-        version: this.currentVersion,
-        timestamp: Date.now(),
-        products: products.map(p => ({
-          ...p,
-          _cachedAt: Date.now(),
-        })),
-      }
-
-      localStorage.setItem(this.CACHE_KEY, JSON.stringify(data))
-      console.log(`Cached ${products.length} products for offline use`)
+      await clearAndPutProducts(storeId, products)
+      console.log(`Cached ${products.length} products in IndexedDB for store ${storeId}`)
     } catch (error) {
       console.error('Error caching products:', error)
-
-      // If localStorage is full, try to clear old cache first
-      if (error instanceof Error && error.name === 'QuotaExceededError') {
-        this.clearCache()
-        // Retry once
-        try {
-          const data = {
-            version: this.currentVersion,
-            timestamp: Date.now(),
-            products: products.map(p => ({
-              ...p,
-              _cachedAt: Date.now(),
-            })),
-          }
-          localStorage.setItem(this.CACHE_KEY, JSON.stringify(data))
-        } catch (retryError) {
-          console.error('Still failed to cache products:', retryError)
-        }
-      }
     }
   }
 
   /**
    * Update a single product in cache
    */
-  updateProduct(product: Partial<CachedProduct> & { id: string }): void {
+  async updateProduct(product: Partial<CachedProduct> & { id: string }): Promise<void> {
     if (typeof window === 'undefined') return
 
     try {
-      const cached = localStorage.getItem(this.CACHE_KEY)
-      if (!cached) return
-
-      const data = JSON.parse(cached)
-      const index = data.products.findIndex((p: CachedProduct) => p.id === product.id)
-
-      if (index !== -1) {
-        data.products[index] = {
-          ...data.products[index],
-          ...product,
-          _cachedAt: Date.now(),
-        }
-
-        localStorage.setItem(this.CACHE_KEY, JSON.stringify(data))
-      }
+      await idbUpdateProduct(product)
     } catch (error) {
       console.error('Error updating product cache:', error)
     }
@@ -178,66 +147,42 @@ class ProductsCacheManager {
   /**
    * Decrease stock for a product (after offline sale)
    */
-  decreaseStock(productId: string, quantity: number): void {
-    const product = this.getProductById(productId)
-    if (product && product.trackStock) {
-      this.updateProduct({
-        id: productId,
-        currentStock: Math.max(0, product.currentStock - quantity),
-      })
+  async decreaseStock(productId: string, quantity: number): Promise<void> {
+    try {
+      await decreaseProductStock(productId, quantity)
+    } catch (error) {
+      console.error('Error decreasing stock:', error)
     }
   }
 
   /**
-   * Clear cache
+   * Clear cache for a specific store
    */
-  clearCache(): void {
+  async clearCache(storeId: string): Promise<void> {
     if (typeof window === 'undefined') return
 
-    localStorage.removeItem(this.CACHE_KEY)
-    console.log('Products cache cleared')
-  }
-
-  /**
-   * Get cache size estimate
-   */
-  getCacheSize(): number {
-    if (typeof window === 'undefined') return 0
-
-    try {
-      const cached = localStorage.getItem(this.CACHE_KEY)
-      return cached ? new Blob([cached]).size : 0
-    } catch {
-      return 0
-    }
+    await clearProductsCache(storeId)
+    console.log(`Products cache cleared for store ${storeId}`)
   }
 
   /**
    * Get cache info for debugging
    */
-  getCacheInfo(): {
+  async getCacheInfo(storeId: string): Promise<{
     isValid: boolean
     productCount: number
-    size: number
     age: number | null
-  } {
-    const products = this.getProducts()
-    const size = this.getCacheSize()
-
-    let age: number | null = null
-    try {
-      const cached = localStorage.getItem(this.CACHE_KEY)
-      if (cached) {
-        const data = JSON.parse(cached)
-        age = Date.now() - data.timestamp
-      }
-    } catch {}
+  }> {
+    const [isValid, products, meta] = await Promise.all([
+      this.isCacheValid(storeId),
+      this.getProducts(storeId),
+      getProductsCacheMeta(storeId),
+    ])
 
     return {
-      isValid: this.isCacheValid(),
+      isValid,
       productCount: products.length,
-      size,
-      age,
+      age: meta ? Date.now() - meta.timestamp : null,
     }
   }
 }

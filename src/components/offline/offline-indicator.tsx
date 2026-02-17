@@ -1,31 +1,41 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Wifi, WifiOff, RefreshCw, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { offlineQueue } from '@/lib/offline/queue'
 import type { OfflineOperation } from '@/lib/offline/queue'
 
 export function OfflineIndicator() {
-  const [isOnline, setIsOnline] = useState(true)
+  const [isOnline, setIsOnline] = useState(() =>
+    typeof window !== 'undefined' ? navigator.onLine : true
+  )
   const [pendingCount, setPendingCount] = useState(0)
   const [failedCount, setFailedCount] = useState(0)
   const [isSyncing, setIsSyncing] = useState(false)
   const [operations, setOperations] = useState<OfflineOperation[]>([])
 
-  useEffect(() => {
-    // Check initial status
-    setIsOnline(offlineQueue.getStatus())
-    updateCounts()
+  const updateCounts = useCallback(async () => {
+    try {
+      const queue = await offlineQueue.getQueue()
+      setPendingCount(queue.filter(op => op.status === 'pending').length)
+      setFailedCount(queue.filter(op => op.status === 'failed').length)
+      setOperations(queue)
+    } catch {
+      // Ignore errors during count update
+    }
+  }, [])
 
-    // Subscribe to queue updates
+  useEffect(() => {
+    // Defer initial counts to avoid synchronous setState in effect
+    const timer = setTimeout(updateCounts, 0)
+
     const unsubscribe = offlineQueue.onSync((operation) => {
       updateCounts()
       setOperations(prev => {
@@ -38,49 +48,40 @@ export function OfflineIndicator() {
         return [...prev, operation]
       })
 
-      // Update syncing state
       if (operation.status === 'syncing') {
         setIsSyncing(true)
         setTimeout(() => setIsSyncing(false), 1000)
       }
     })
 
-    // Listen for online/offline events
     const handleOnline = () => setIsOnline(true)
     const handleOffline = () => setIsOnline(false)
 
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
-    // Periodic update
     const interval = setInterval(updateCounts, 5000)
 
     return () => {
+      clearTimeout(timer)
       unsubscribe()
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
       clearInterval(interval)
     }
-  }, [])
-
-  const updateCounts = () => {
-    const queue = offlineQueue.getQueue()
-    setPendingCount(queue.filter(op => op.status === 'pending').length)
-    setFailedCount(queue.filter(op => op.status === 'failed').length)
-    setOperations(queue)
-  }
+  }, [updateCounts])
 
   const handleSyncNow = async () => {
     setIsSyncing(true)
     await offlineQueue.processQueue()
-    updateCounts()
+    await updateCounts()
     setTimeout(() => setIsSyncing(false), 1000)
   }
 
-  const handleClearFailed = () => {
-    if (confirm('¿Estás seguro de que deseas limpiar las operaciones fallidas?')) {
-      offlineQueue.clearFailed()
-      updateCounts()
+  const handleClearFailed = async () => {
+    if (confirm('Deseas limpiar las operaciones fallidas?')) {
+      await offlineQueue.clearFailed()
+      await updateCounts()
     }
   }
 
@@ -89,7 +90,7 @@ export function OfflineIndicator() {
       case 'CREATE_SALE':
         return 'Venta'
       case 'UPDATE_PRODUCT':
-        return 'Actualización de producto'
+        return 'Actualizacion de producto'
       case 'CREATE_PRODUCT':
         return 'Nuevo producto'
       default:
@@ -120,14 +121,14 @@ export function OfflineIndicator() {
           <>
             <Wifi className="h-4 w-4 text-green-600 dark:text-green-400" />
             <span className="text-sm font-medium text-green-700 dark:text-green-300">
-              En línea
+              En linea
             </span>
           </>
         ) : (
           <>
             <WifiOff className="h-4 w-4 text-orange-600 dark:text-orange-400" />
             <span className="text-sm font-medium text-orange-700 dark:text-orange-300">
-              Sin conexión
+              Sin conexion
             </span>
           </>
         )}
