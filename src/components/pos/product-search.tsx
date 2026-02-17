@@ -18,15 +18,20 @@ interface Product {
   currentStock: number
   imageUrl?: string
   isActive?: boolean
+  barcode?: string
+  barcodes?: { barcode: string }[]
+  categoryId?: string
 }
 
 interface ProductSearchProps {
   storeId: string
   onProductSelect: (product: Product) => void
   categoryId?: string | null
+  isOnline?: boolean
+  cachedProducts?: Product[]
 }
 
-export function ProductSearch({ storeId, onProductSelect, categoryId }: ProductSearchProps) {
+export function ProductSearch({ storeId, onProductSelect, categoryId, isOnline = true, cachedProducts = [] }: ProductSearchProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [suggestions, setSuggestions] = useState<Product[]>([])
   const [isOpen, setIsOpen] = useState(false)
@@ -63,6 +68,26 @@ export function ProductSearch({ storeId, onProductSelect, categoryId }: ProductS
 
       setIsLoading(true)
       try {
+        // Offline: filter from cached products locally
+        if (!isOnline) {
+          const query = debouncedSearchTerm.toLowerCase()
+          let results = cachedProducts.filter(p => {
+            if (!p.isActive) return false
+            const matchesQuery =
+              p.name.toLowerCase().includes(query) ||
+              p.sku.toLowerCase().includes(query) ||
+              p.barcode?.toLowerCase().includes(query) ||
+              p.barcodes?.some(b => b.barcode.toLowerCase().includes(query))
+            if (!matchesQuery) return false
+            if (categoryId && p.categoryId !== categoryId) return false
+            return true
+          })
+          setSuggestions(results.slice(0, 8))
+          setIsOpen(true)
+          setSelectedIndex(-1)
+          return
+        }
+
         const params = new URLSearchParams({
           search: debouncedSearchTerm,
         })
@@ -92,7 +117,7 @@ export function ProductSearch({ storeId, onProductSelect, categoryId }: ProductS
     }
 
     searchProducts()
-  }, [debouncedSearchTerm, storeId, categoryId])
+  }, [debouncedSearchTerm, storeId, categoryId, isOnline, cachedProducts])
 
   const handleSelectProduct = (product: Product) => {
     onProductSelect(product)

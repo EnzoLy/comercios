@@ -735,7 +735,7 @@ export default function POSPage() {
             <div className="flex-1 flex items-center bg-card border border-border rounded-2xl px-4 shadow-sm focus-within:ring-2 ring-primary/20 transition-all h-12 md:h-14 relative">
               <Search className="h-5 w-5 text-muted-foreground mr-2 shrink-0" />
               <div className="flex-1 min-w-0">
-                <ProductSearch storeId={store.storeId} categoryId={selectedCategoryId} onProductSelect={(product) => { addToCart(product); toast.success(`Se añadió ${product.name} al carrito`) }} />
+                <ProductSearch storeId={store.storeId} categoryId={selectedCategoryId} isOnline={isOnline} cachedProducts={cachedProducts} onProductSelect={(product) => { addToCart(product); toast.success(`Se añadió ${product.name} al carrito`) }} />
               </div>
             </div>
             <Button onClick={() => setScannerOpen(true)} size="icon" className="h-12 w-12 md:h-14 md:w-14 rounded-2xl shadow-lg shadow-primary/10 hover:shadow-primary/20 transition-all active:scale-95 flex-shrink-0">
