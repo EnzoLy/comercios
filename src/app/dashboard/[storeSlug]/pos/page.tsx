@@ -6,7 +6,6 @@ import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarcodeScanner } from '@/components/products/barcode-scanner'
 import { ProductSearch } from '@/components/pos/product-search'
 import { CategoryFilter } from '@/components/pos/category-filter'
@@ -24,8 +23,11 @@ import { useTaxSettings } from '@/hooks/use-tax-settings'
 import { useEmployeeShifts } from '@/hooks/use-employee-shifts'
 import { formatCurrency } from '@/lib/utils/currency'
 import { LoadingPage } from '@/components/ui/loading'
-import { Camera, Trash2, Plus, Minus, ShoppingCart, Store, Clock, BarChart3, AlertTriangle, Maximize2, Minimize2, Search, Zap, Banknote, CreditCard, Smartphone, Receipt } from 'lucide-react'
+import { Camera, Trash2, Plus, Minus, ShoppingCart, Store, Clock, BarChart3, AlertTriangle, Maximize2, Minimize2, Search, Zap, Banknote, CreditCard, Smartphone, Receipt, WifiOff, Wifi, RefreshCw, CloudOff } from 'lucide-react'
 import { PaymentMethod } from '@/lib/db/entities/sale.entity'
+import { useOfflinePOS } from '@/hooks/use-offline-pos'
+import { OfflineIndicator } from '@/components/offline/offline-indicator'
+import { productsCache } from '@/lib/offline/products-cache'
 import {
   Dialog,
   DialogContent,
@@ -80,6 +82,28 @@ export default function POSPage() {
   // SWR hooks for data fetching with caching
   const { taxSettings } = useTaxSettings(store?.storeId)
   const { shifts } = useEmployeeShifts(store?.storeId, activeEmployee?.id)
+
+  // Offline POS support
+  const {
+    isOnline,
+    pendingCount,
+    cachedProducts,
+    createSale: createOfflineSale,
+    syncNow,
+    refreshCache,
+    isCacheValid,
+    isLoadingCache,
+    cacheProductCount,
+  } = useOfflinePOS(store?.storeId || '')
+
+  // Initialize product cache when store is loaded
+  useEffect(() => {
+    if (!store?.storeId) return
+    // Auto-refresh cache if expired or empty
+    if (!isCacheValid && isOnline) {
+      refreshCache()
+    }
+  }, [store?.storeId, isCacheValid, isOnline])
 
   const [cart, setCart] = useState<CartItem[]>([])
   const [scannerOpen, setScannerOpen] = useState(false)
@@ -164,21 +188,39 @@ export default function POSPage() {
   const handleBarcodeDetected = async (barcode: string) => {
     if (!store) return
 
-    try {
-      const response = await fetch(
-        `/api/stores/${store.storeId}/products/barcode/${barcode}`
-      )
+    if (isOnline) {
+      try {
+        const response = await fetch(
+          `/api/stores/${store.storeId}/products/barcode/${barcode}`
+        )
 
-      if (!response.ok) {
-        toast.error('Producto no encontrado')
-        return
+        if (!response.ok) {
+          toast.error('Producto no encontrado')
+          return
+        }
+
+        const product = await response.json()
+        addToCart(product)
+        toast.success(`Se añadió ${product.name} al carrito`)
+      } catch (error) {
+        // Online failed, try cache
+        const cached = await productsCache.searchByBarcodeOrSKU(store.storeId, barcode)
+        if (cached.length > 0) {
+          addToCart(cached[0])
+          toast.success(`Se añadió ${cached[0].name} al carrito (cache)`)
+        } else {
+          toast.error('Error al buscar el producto')
+        }
       }
-
-      const product = await response.json()
-      addToCart(product)
-      toast.success(`Se añadió ${product.name} al carrito`)
-    } catch (error) {
-      toast.error('Error al buscar el producto')
+    } else {
+      // Offline: search in cached products
+      const cached = await productsCache.searchByBarcodeOrSKU(store.storeId, barcode)
+      if (cached.length > 0) {
+        addToCart(cached[0])
+        toast.success(`Se añadió ${cached[0].name} al carrito`)
+      } else {
+        toast.error('Producto no encontrado en cache local')
+      }
     }
   }
 
@@ -410,18 +452,25 @@ export default function POSPage() {
         discount: Number(cartDiscount),
         amountPaid: amountPaid ? Number(amountPaid) : undefined,
       }
-      const response = await fetch(`/api/stores/${store.storeId}/sales`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(saleData),
-      })
-      const result = await response.json()
-      if (!response.ok) {
-        toast.error(result.error || 'Error al completar la venta')
+
+      // Use offline-capable sale creation
+      const result = await createOfflineSale(saleData)
+
+      if (!result.success) {
+        toast.error('Error al completar la venta')
         return
       }
-      toast.success('¡Venta completada con éxito!')
-      setLastSale({ id: result.id, total: result.total, invoiceUrl: result.invoiceUrl })
+
+      if (result.queued) {
+        toast.success('Venta guardada localmente. Se sincronizará cuando vuelva la conexión.', {
+          icon: <CloudOff className="h-4 w-4" />,
+          duration: 5000,
+        })
+      } else {
+        toast.success('Venta completada con éxito!')
+      }
+
+      setLastSale({ id: result.saleId, total, invoiceUrl: result.invoiceUrl })
       clearCart()
       setCheckoutOpen(false)
       setAmountPaid(undefined)
@@ -639,6 +688,7 @@ export default function POSPage() {
 
             <div className="flex items-center gap-2">
               <div className="hidden md:flex items-center gap-2">
+                <OfflineIndicator />
                 <ShiftSwitcher storeId={store.storeId} currentShift={currentShift} onShiftChange={handleShiftChange} />
                 <Button variant="outline" size="sm" onClick={() => setRecentSalesOpen(true)} className="h-9 font-bold rounded-xl px-4">
                   <BarChart3 className="h-4 w-4 mr-2" /> Ventas
@@ -695,6 +745,29 @@ export default function POSPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 pt-0 pb-32 lg:pb-6">
+          {/* Offline mode banner */}
+          {!isOnline && (
+            <div className="mb-4 flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-2xl">
+              <div className="p-2 bg-orange-100 dark:bg-orange-900/40 rounded-xl">
+                <WifiOff className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-orange-800 dark:text-orange-200">Modo sin conexión</p>
+                <p className="text-xs text-orange-600 dark:text-orange-400">
+                  {cacheProductCount > 0
+                    ? `${cacheProductCount} productos en cache local. Las ventas se sincronizarán al volver la conexión.`
+                    : 'Sin productos en cache. Conecta a internet para cargar productos.'}
+                  {pendingCount > 0 && ` (${pendingCount} venta${pendingCount !== 1 ? 's' : ''} pendiente${pendingCount !== 1 ? 's' : ''})`}
+                </p>
+              </div>
+              {pendingCount > 0 && (
+                <div className="px-3 py-1 bg-orange-200 dark:bg-orange-800 rounded-full">
+                  <span className="text-xs font-black text-orange-800 dark:text-orange-200">{pendingCount}</span>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 space-y-6">
               <FavoriteProducts storeId={store.storeId} onProductSelect={(product) => { addToCart(product); toast.success(`Se añadió ${product.name} al carrito`) }} />

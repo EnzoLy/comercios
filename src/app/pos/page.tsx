@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { LoadingPage } from '@/components/ui/loading'
-import { Search, ShoppingCart, Package, WifiOff, Banknote, CreditCard, Smartphone, Receipt } from 'lucide-react'
+import { Search, ShoppingCart, Package, WifiOff, Banknote, CreditCard, Smartphone, Receipt, RefreshCw, Database } from 'lucide-react'
 import { PaymentMethod } from '@/lib/db/entities/sale.entity'
+import { toast } from 'sonner'
 
 export default function POSPage() {
   const store = useStore()
@@ -25,9 +26,10 @@ export default function POSPage() {
     pendingCount,
     cachedProducts,
     createSale,
-    syncNow,
     refreshCache,
     isCacheValid,
+    isLoadingCache,
+    cacheProductCount,
   } = useOfflinePOS(store?.storeId || '')
 
   useEffect(() => {
@@ -36,11 +38,11 @@ export default function POSPage() {
       return
     }
 
-    // Refresh product cache if not valid or empty
-    if (!isCacheValid || cachedProducts.length === 0) {
+    // Refresh product cache if not valid
+    if (!isCacheValid && isOnline) {
       refreshCache()
     }
-  }, [store])
+  }, [store, isCacheValid, isOnline])
 
   const filteredProducts = cachedProducts.filter(product => {
     if (!product.isActive) return false
@@ -114,9 +116,10 @@ export default function POSPage() {
     if (result.success) {
       setCart([])
       if (result.queued) {
-        alert('Venta guardada localmente. Se sincronizará cuando haya conexión.')
+        toast.success('Venta guardada localmente. Se sincronizara cuando haya conexion.')
+      } else {
+        toast.success('Venta completada con exito!')
       }
-      router.push(`/dashboard/${store?.slug}`)
     }
   }
 
@@ -135,10 +138,19 @@ export default function POSPage() {
           </div>
           <div className="flex items-center gap-4">
             <OfflineIndicator />
-            {!isCacheValid && (
-              <Button size="sm" variant="outline" onClick={refreshCache}>
-                <Package className="h-4 w-4 mr-2" />
-                Actualizar productos
+            {isOnline && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={refreshCache}
+                disabled={isLoadingCache}
+              >
+                {isLoadingCache ? (
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Database className="h-4 w-4 mr-2" />
+                )}
+                {isLoadingCache ? 'Cargando...' : `${cacheProductCount} productos`}
               </Button>
             )}
           </div>
@@ -151,7 +163,8 @@ export default function POSPage() {
           <div className="container mx-auto flex items-center gap-2 text-sm">
             <WifiOff className="h-4 w-4 text-orange-600 dark:text-orange-400" />
             <span className="text-orange-700 dark:text-orange-300">
-              Modo sin conexión - Las ventas se guardarán localmente y se sincronizarán cuando vuelva internet
+              Modo sin conexion - Las ventas se guardaran localmente y se sincronizaran cuando vuelva internet
+              {pendingCount > 0 && ` (${pendingCount} pendiente${pendingCount !== 1 ? 's' : ''})`}
             </span>
           </div>
         </div>
@@ -172,7 +185,7 @@ export default function POSPage() {
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Buscar por nombre, SKU o escanear código..."
+                      placeholder="Buscar por nombre, SKU o escanear codigo..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10"
@@ -182,50 +195,57 @@ export default function POSPage() {
                   <Button
                     variant="outline"
                     onClick={refreshCache}
-                    disabled={!isOnline}
+                    disabled={!isOnline || isLoadingCache}
                   >
-                    Actualizar
+                    {isLoadingCache ? <RefreshCw className="h-4 w-4 animate-spin" /> : 'Actualizar'}
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {filteredProducts.map((product) => (
-                    <Card
-                      key={product.id}
-                      className="cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() => addToCart(product)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="aspect-square bg-muted rounded-lg mb-3 flex items-center justify-center">
-                          {product.imageUrl ? (
-                            <img
-                              src={product.imageUrl}
-                              alt={product.name}
-                              className="w-full h-full object-cover rounded-lg"
-                            />
-                          ) : (
-                            <Package className="h-12 w-12 text-muted-foreground" />
-                          )}
-                        </div>
-                        <h3 className="font-medium text-sm mb-1 line-clamp-2">
-                          {product.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          SKU: {product.sku}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold">
-                            ${product.sellingPrice.toFixed(2)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            Stock: {product.currentStock}
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                {isLoadingCache && cachedProducts.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                    <RefreshCw className="h-8 w-8 animate-spin mb-4" />
+                    <p>Cargando productos...</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {filteredProducts.map((product) => (
+                      <Card
+                        key={product.id}
+                        className="cursor-pointer hover:shadow-md transition-shadow"
+                        onClick={() => addToCart(product)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="aspect-square bg-muted rounded-lg mb-3 flex items-center justify-center">
+                            {product.imageUrl ? (
+                              <img
+                                src={product.imageUrl}
+                                alt={product.name}
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                            ) : (
+                              <Package className="h-12 w-12 text-muted-foreground" />
+                            )}
+                          </div>
+                          <h3 className="font-medium text-sm mb-1 line-clamp-2">
+                            {product.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            SKU: {product.sku}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold">
+                              ${Number(product.sellingPrice).toFixed(2)}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              Stock: {product.currentStock}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -242,7 +262,7 @@ export default function POSPage() {
               <CardContent>
                 {cart.length === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
-                    El carrito está vacío
+                    El carrito esta vacio
                   </p>
                 ) : (
                   <>
@@ -257,7 +277,7 @@ export default function POSPage() {
                               {item.productName}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              ${item.unitPrice.toFixed(2)} c/u
+                              ${Number(item.unitPrice).toFixed(2)} c/u
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
@@ -350,12 +370,12 @@ export default function POSPage() {
                       onClick={handleCheckout}
                       disabled={cart.length === 0}
                     >
-                      Completar Venta
+                      {!isOnline ? 'Guardar Venta (Offline)' : 'Completar Venta'}
                     </Button>
 
-                    {!isOnline && pendingCount > 0 && (
+                    {pendingCount > 0 && (
                       <p className="text-xs text-center text-muted-foreground mt-2">
-                        {pendingCount} venta{pendingCount !== 1 ? 's' : ''} pendiente{pendingCount !== 1 ? 's' : ''} de sincronización
+                        {pendingCount} venta{pendingCount !== 1 ? 's' : ''} pendiente{pendingCount !== 1 ? 's' : ''} de sincronizacion
                       </p>
                     )}
                   </>
