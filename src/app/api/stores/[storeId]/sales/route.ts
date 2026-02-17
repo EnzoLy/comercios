@@ -334,7 +334,7 @@ export async function POST(
     console.error('Create sale error:', error)
 
     if (error instanceof Error) {
-      if (error.message.includes('Insufficient stock')) {
+      if (error.message.includes('Insufficient stock') || error.message.includes('Stock insuficiente')) {
         return NextResponse.json({ error: error.message }, { status: 400 })
       }
 
@@ -344,6 +344,17 @@ export async function POST(
           { status: 400 }
         )
       }
+
+      if (error.name === 'ForbiddenError') {
+        return NextResponse.json({ error: error.message }, { status: 403 })
+      }
+
+      if (error.name === 'UnauthorizedError') {
+        return NextResponse.json({ error: error.message }, { status: 401 })
+      }
+
+      // Return the actual error message so it appears in the POS indicator
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json(

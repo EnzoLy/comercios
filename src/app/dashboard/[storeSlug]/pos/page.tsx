@@ -719,6 +719,7 @@ export default function POSPage() {
               </div>
 
               <div className="md:hidden flex items-center gap-2">
+                <OfflineIndicator />
                 <ShiftSwitcher storeId={store.storeId} currentShift={currentShift} onShiftChange={handleShiftChange} />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
