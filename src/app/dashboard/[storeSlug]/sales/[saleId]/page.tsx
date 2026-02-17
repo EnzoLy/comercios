@@ -24,8 +24,8 @@ const statusLabels: Record<string, string> = {
 const paymentMethodLabels: Record<string, string> = {
   CASH: 'Efectivo',
   CARD: 'Tarjeta',
-  MOBILE: 'Móvil',
-  CREDIT: 'Crédito',
+  TRANSFER: 'Transferencia Bancaria',
+  QR: 'QR',
 }
 
 export default async function SaleDetailsPage({

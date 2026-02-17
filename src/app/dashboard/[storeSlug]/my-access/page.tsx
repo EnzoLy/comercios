@@ -10,18 +10,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { GenerateQRDialog } from '@/components/employees/generate-qr-dialog'
-import { QrCode, ShieldCheck, Mail, User, Info, Smartphone, Link as LinkIcon, Lock, ChevronRight, Fingerprint, Plus } from 'lucide-react'
+import { QrCode, ShieldCheck, Mail, User, Info, Smartphone, Link as LinkIcon, Lock, ChevronRight, Fingerprint, Plus, Users, Search, ChevronDown } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 
 export default function MyAccessPage() {
   const store = useStore()
   const { data: session } = useSession()
   const { activeEmployee } = useActiveEmployee()
+  const canManageEmployees = usePermission('manage_employees')
   const [employment, setEmployment] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [qrDialogOpen, setQrDialogOpen] = useState(false)
+  const [employeeSelectorOpen, setEmployeeSelectorOpen] = useState(false)
+  const [allEmployees, setAllEmployees] = useState<any[]>([])
+  const [employeeSearch, setEmployeeSearch] = useState('')
+  const [loadingEmployees, setLoadingEmployees] = useState(false)
 
   useEffect(() => {
     if (store && session?.user?.id) {
@@ -87,6 +94,33 @@ export default function MyAccessPage() {
     }
   }
 
+  const openEmployeeSelector = async () => {
+    if (!store) return
+    setEmployeeSelectorOpen(true)
+    setLoadingEmployees(true)
+    try {
+      const response = await fetch(`/api/stores/${store.storeId}/employees`)
+      if (!response.ok) throw new Error()
+      const data = await response.json()
+      setAllEmployees(data.filter((e: any) => e.isActive))
+    } catch {
+      toast.error('Error al cargar empleados')
+    } finally {
+      setLoadingEmployees(false)
+    }
+  }
+
+  const handleSelectEmployee = (emp: any) => {
+    setEmployment(emp)
+    setEmployeeSelectorOpen(false)
+    setEmployeeSearch('')
+  }
+
+  const filteredEmployees = allEmployees.filter((e) =>
+    e.user?.name?.toLowerCase().includes(employeeSearch.toLowerCase()) ||
+    e.user?.email?.toLowerCase().includes(employeeSearch.toLowerCase())
+  )
+
   if (isLoading) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
@@ -130,9 +164,22 @@ export default function MyAccessPage() {
             Credenciales de acceso rápido y seguridad.
           </p>
         </div>
-        <Badge variant="outline" className="h-10 px-4 rounded-xl border-primary/20 bg-primary/5 text-primary font-bold">
-          ID Empleado: {employment.id.slice(0, 8).toUpperCase()}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant="outline" className="h-10 px-4 rounded-xl border-primary/20 bg-primary/5 text-primary font-bold">
+            ID Empleado: {employment.id.slice(0, 8).toUpperCase()}
+          </Badge>
+          {canManageEmployees && (
+            <Button
+              variant="outline"
+              className="h-10 rounded-xl gap-2 font-bold border-border"
+              onClick={openEmployeeSelector}
+            >
+              <Users className="h-4 w-4" />
+              Cambiar empleado
+              <ChevronDown className="h-3 w-3 opacity-60" />
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -248,6 +295,63 @@ export default function MyAccessPage() {
           </Alert>
         </div>
       </div>
+
+      {/* Employee Selector Dialog */}
+      <Dialog open={employeeSelectorOpen} onOpenChange={setEmployeeSelectorOpen}>
+        <DialogContent className="max-w-md rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="text-xl font-black flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              Elegir Empleado
+            </DialogTitle>
+            <DialogDescription>
+              Selecciona el empleado para generar su pase digital.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-6 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre o email..."
+                value={employeeSearch}
+                onChange={(e) => setEmployeeSearch(e.target.value)}
+                className="pl-9 rounded-xl"
+                autoFocus
+              />
+            </div>
+            <div className="max-h-80 overflow-y-auto space-y-2 pr-1">
+              {loadingEmployees ? (
+                <div className="flex justify-center py-10">
+                  <Fingerprint className="h-6 w-6 animate-pulse text-primary" />
+                </div>
+              ) : filteredEmployees.length === 0 ? (
+                <p className="text-center text-sm text-muted-foreground py-8">No se encontraron empleados</p>
+              ) : (
+                filteredEmployees.map((emp) => (
+                  <button
+                    key={emp.id}
+                    onClick={() => handleSelectEmployee(emp)}
+                    className="w-full p-4 text-left rounded-2xl border border-border hover:border-primary/40 hover:bg-primary/5 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                        <User className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-sm truncate">{emp.user?.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{emp.user?.email}</p>
+                      </div>
+                      <Badge className="ml-auto shrink-0 bg-primary/10 text-primary border-none text-[10px] font-black uppercase">
+                        {emp.role}
+                      </Badge>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* QR Dialog */}
       {employment && store && (
