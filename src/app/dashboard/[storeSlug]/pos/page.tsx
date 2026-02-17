@@ -695,7 +695,7 @@ export default function POSPage() {
     <div className={`h-full flex flex-col lg:flex-row transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-50 overflow-hidden' : ''}`}>
       <div className="flex-1 min-h-0 flex flex-col h-full relative">
         <div className="p-4 md:p-6 pb-2 md:pb-6 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-col md:flex-row">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-primary/10 rounded-lg">
                 <Zap className="h-5 w-5 text-primary" />

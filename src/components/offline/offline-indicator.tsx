@@ -119,11 +119,10 @@ export function OfflineIndicator() {
   return (
     <div className="flex items-center gap-2">
       {/* Status indicator */}
-      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${
-        isOnline
+      <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${isOnline
           ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
           : 'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800'
-      }`}>
+        }`}>
         {isOnline ? (
           <>
             <Wifi className="h-4 w-4 text-green-600 dark:text-green-400" />
