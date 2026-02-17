@@ -38,6 +38,7 @@ class OfflineQueueManager {
   private isOnline: boolean = true
   private isProcessing: boolean = false
   private syncCallbacks: Set<(operation: OfflineOperation) => void> = new Set()
+  private syncCompleteCallbacks: Set<(synced: number, failed: number) => void> = new Set()
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -130,14 +131,25 @@ class OfflineQueueManager {
     }
 
     this.isProcessing = true
+    let synced = 0
+    let failed = 0
 
     try {
       const pendingOps = await getQueueOperationsByStatus('pending')
+      if (pendingOps.length === 0) return
 
       for (const operation of pendingOps) {
-        await this.processOperation(operation)
+        const result = await this.processOperation(operation)
+        if (result === 'synced') synced++
+        else if (result === 'failed') failed++
         // Small delay between operations
         await new Promise(resolve => setTimeout(resolve, 500))
+      }
+
+      if (synced > 0 || failed > 0) {
+        this.syncCompleteCallbacks.forEach(cb => {
+          try { cb(synced, failed) } catch {}
+        })
       }
     } finally {
       this.isProcessing = false
@@ -147,13 +159,13 @@ class OfflineQueueManager {
   /**
    * Process a single operation
    */
-  private async processOperation(operation: OfflineOperation): Promise<void> {
+  private async processOperation(operation: OfflineOperation): Promise<'synced' | 'failed' | 'retry'> {
     const now = Date.now()
     const retryDelay = this.RETRY_DELAY * Math.pow(2, operation.retries)
 
     // Check if we should retry yet
     if (operation.lastRetry && now - operation.lastRetry < retryDelay) {
-      return
+      return 'retry'
     }
 
     await this.updateStatus(operation.id, 'syncing')
@@ -172,6 +184,7 @@ class OfflineQueueManager {
         await this.remove(operation.id)
         console.log(`Synced operation: ${operation.id}`)
         this.notifyCallbacks({ ...operation, status: 'pending' }) // trigger UI refresh
+        return 'synced'
       } else {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
@@ -185,12 +198,14 @@ class OfflineQueueManager {
           status: 'pending',
           error: errorMessage,
         })
+        this.notifyCallbacks({ ...operation, error: errorMessage })
+        return 'retry'
       } else {
         await this.updateStatus(operation.id, 'failed', errorMessage)
         console.error(`Failed to sync operation after ${this.MAX_RETRIES} retries:`, operation)
+        this.notifyCallbacks({ ...operation, error: errorMessage })
+        return 'failed'
       }
-
-      this.notifyCallbacks({ ...operation, error: errorMessage })
     }
   }
 
@@ -201,6 +216,17 @@ class OfflineQueueManager {
     this.syncCallbacks.add(callback)
     return () => {
       this.syncCallbacks.delete(callback)
+    }
+  }
+
+  /**
+   * Register callback for when the full queue finishes processing.
+   * Receives the count of successfully synced and failed operations.
+   */
+  onSyncComplete(callback: (synced: number, failed: number) => void): () => void {
+    this.syncCompleteCallbacks.add(callback)
+    return () => {
+      this.syncCompleteCallbacks.delete(callback)
     }
   }
 

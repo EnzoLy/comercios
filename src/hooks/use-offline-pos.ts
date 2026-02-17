@@ -27,6 +27,7 @@ export interface UseOfflinePOSResult {
   isCacheValid: boolean
   isLoadingCache: boolean
   cacheProductCount: number
+  onSyncComplete: (callback: (synced: number, failed: number) => void) => () => void
 }
 
 /**
@@ -230,6 +231,12 @@ export function useOfflinePOS(storeId: string): UseOfflinePOSResult {
     setPendingCount(count)
   }, [])
 
+  const onSyncComplete = useCallback(
+    (callback: (synced: number, failed: number) => void) =>
+      offlineQueue.onSyncComplete(callback),
+    []
+  )
+
   return {
     isOnline,
     pendingCount,
@@ -240,5 +247,6 @@ export function useOfflinePOS(storeId: string): UseOfflinePOSResult {
     isCacheValid,
     isLoadingCache,
     cacheProductCount,
+    onSyncComplete,
   }
 }

@@ -94,6 +94,7 @@ export default function POSPage() {
     isCacheValid,
     isLoadingCache,
     cacheProductCount,
+    onSyncComplete,
   } = useOfflinePOS(store?.storeId || '')
 
   // Initialize product cache when store is loaded
@@ -104,6 +105,25 @@ export default function POSPage() {
       refreshCache()
     }
   }, [store?.storeId, isCacheValid, isOnline])
+
+  // Notify when offline sales finish syncing
+  useEffect(() => {
+    const unsubscribe = onSyncComplete((synced, failed) => {
+      if (synced > 0) {
+        toast.success(
+          `${synced} venta${synced !== 1 ? 's' : ''} sincronizada${synced !== 1 ? 's' : ''} correctamente`,
+          { icon: <Wifi className="h-4 w-4" />, duration: 5000 }
+        )
+      }
+      if (failed > 0) {
+        toast.error(
+          `${failed} venta${failed !== 1 ? 's' : ''} no se pudo${failed !== 1 ? 'ieron' : ''} sincronizar`,
+          { duration: 7000 }
+        )
+      }
+    })
+    return unsubscribe
+  }, [onSyncComplete])
 
   const [cart, setCart] = useState<CartItem[]>([])
   const [scannerOpen, setScannerOpen] = useState(false)
