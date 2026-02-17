@@ -35,16 +35,20 @@ export interface OfflineOperation {
 class OfflineQueueManager {
   private readonly MAX_RETRIES = 5
   private readonly RETRY_DELAY = 1000
+  private readonly SYNC_INTERVAL_MS = 15000 // retry pending ops every 15s while online
   private isOnline: boolean = true
   private isProcessing: boolean = false
   private syncCallbacks: Set<(operation: OfflineOperation) => void> = new Set()
   private syncCompleteCallbacks: Set<(synced: number, failed: number) => void> = new Set()
+  private syncInterval: ReturnType<typeof setInterval> | null = null
 
   constructor() {
     if (typeof window !== 'undefined') {
       this.isOnline = navigator.onLine
       window.addEventListener('online', () => this.handleOnline())
       window.addEventListener('offline', () => this.handleOffline())
+      // If we start online with pending ops, begin the interval
+      if (this.isOnline) this.startSyncInterval()
     }
   }
 
@@ -97,9 +101,10 @@ class OfflineQueueManager {
 
     await addQueueOperation(newOperation)
 
-    // Try to sync immediately if online
+    // Try to sync immediately if online and start interval to handle retries
     if (this.isOnline) {
       this.processQueue()
+      this.startSyncInterval()
     }
 
     return id
@@ -250,6 +255,7 @@ class OfflineQueueManager {
     this.isOnline = true
     console.log('Device is online - syncing queue')
     this.processQueue()
+    this.startSyncInterval()
   }
 
   /**
@@ -258,6 +264,21 @@ class OfflineQueueManager {
   private handleOffline(): void {
     this.isOnline = false
     console.log('Device is offline - queueing operations')
+    this.stopSyncInterval()
+  }
+
+  private startSyncInterval(): void {
+    if (this.syncInterval) return
+    this.syncInterval = setInterval(() => {
+      if (this.isOnline) this.processQueue()
+    }, this.SYNC_INTERVAL_MS)
+  }
+
+  private stopSyncInterval(): void {
+    if (this.syncInterval) {
+      clearInterval(this.syncInterval)
+      this.syncInterval = null
+    }
   }
 
   /**
