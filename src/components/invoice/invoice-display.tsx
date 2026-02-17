@@ -63,8 +63,8 @@ export function InvoiceDisplay({ invoice, invoiceUrl }: InvoiceDisplayProps) {
   const paymentMethodLabels: Record<string, string> = {
     CASH: 'Efectivo',
     CARD: 'Tarjeta',
-    MOBILE: 'Pago Móvil',
-    CREDIT: 'Crédito',
+    TRANSFER: 'Transferencia Bancaria',
+    QR: 'QR',
   }
 
   const formattedDate = new Date(

@@ -17,8 +17,8 @@ import type { StockMovement } from './stock-movement.entity'
 export enum PaymentMethod {
   CASH = 'CASH',
   CARD = 'CARD',
-  MOBILE = 'MOBILE',
-  CREDIT = 'CREDIT',
+  TRANSFER = 'TRANSFER',
+  QR = 'QR',
 }
 
 export enum SaleStatus {

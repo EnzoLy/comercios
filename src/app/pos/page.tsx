@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { LoadingPage } from '@/components/ui/loading'
-import { Search, ShoppingCart, Package, WifiOff, RefreshCw, Database } from 'lucide-react'
+import { Search, ShoppingCart, Package, WifiOff, Banknote, CreditCard, Smartphone, Receipt, RefreshCw, Database } from 'lucide-react'
+import { PaymentMethod } from '@/lib/db/entities/sale.entity'
 import { toast } from 'sonner'
 
 export default function POSPage() {
@@ -17,6 +18,8 @@ export default function POSPage() {
   const router = useRouter()
   const [cart, setCart] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [scanning, setScanning] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH)
 
   const {
     isOnline,
@@ -105,7 +108,7 @@ export default function POSPage() {
       subtotal: cart.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0),
       tax: cart.reduce((sum, item) => sum + item.quantity * item.unitPrice * (item.taxRate / 100), 0),
       total: getCartTotal(),
-      paymentMethod: 'CASH',
+      paymentMethod,
     }
 
     const result = await createSale(saleData)
@@ -314,6 +317,50 @@ export default function POSPage() {
                       <div className="flex justify-between font-bold text-lg">
                         <span>Total:</span>
                         <span>${getCartTotal().toFixed(2)}</span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 space-y-2">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        Método de pago
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          type="button"
+                          variant={paymentMethod === PaymentMethod.CASH ? 'default' : 'outline'}
+                          className="flex items-center gap-2 h-11"
+                          onClick={() => setPaymentMethod(PaymentMethod.CASH)}
+                        >
+                          <Banknote className="h-4 w-4" />
+                          Efectivo
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={paymentMethod === PaymentMethod.CARD ? 'default' : 'outline'}
+                          className="flex items-center gap-2 h-11"
+                          onClick={() => setPaymentMethod(PaymentMethod.CARD)}
+                        >
+                          <CreditCard className="h-4 w-4" />
+                          Tarjeta
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={paymentMethod === PaymentMethod.TRANSFER ? 'default' : 'outline'}
+                          className="flex items-center gap-2 h-11"
+                          onClick={() => setPaymentMethod(PaymentMethod.TRANSFER)}
+                        >
+                          <Receipt className="h-4 w-4" />
+                          Transferencia
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={paymentMethod === PaymentMethod.QR ? 'default' : 'outline'}
+                          className="flex items-center gap-2 h-11"
+                          onClick={() => setPaymentMethod(PaymentMethod.QR)}
+                        >
+                          <Smartphone className="h-4 w-4" />
+                          QR
+                        </Button>
                       </div>
                     </div>
 

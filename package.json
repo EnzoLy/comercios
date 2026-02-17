@@ -21,6 +21,7 @@
     "db:create-admin": "ts-node -r dotenv/config -r tsconfig-paths/register --project tsconfig.ts-node.json scripts/create-admin-user.ts",
     "db:seed-products": "ts-node -r dotenv/config -r tsconfig-paths/register --project tsconfig.ts-node.json scripts/seed-products.ts",
     "db:migrate-subscription": "ts-node -r dotenv/config -r tsconfig-paths/register --project tsconfig.ts-node.json scripts/run-subscription-migration.ts",
+    "db:migrate-payment-methods": "ts-node -r dotenv/config -r tsconfig-paths/register --project tsconfig.ts-node.json scripts/migrate-payment-methods.ts",
     "db:migrate": "ts-node -r dotenv/config -r tsconfig-paths/register --project tsconfig.ts-node.json node_modules/typeorm/cli.js migration:run -d src/lib/db/data-source.ts"
   },
   "dependencies": {

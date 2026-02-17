@@ -23,7 +23,7 @@ import { useTaxSettings } from '@/hooks/use-tax-settings'
 import { useEmployeeShifts } from '@/hooks/use-employee-shifts'
 import { formatCurrency } from '@/lib/utils/currency'
 import { LoadingPage } from '@/components/ui/loading'
-import { Camera, Trash2, Plus, Minus, ShoppingCart, Store, Clock, BarChart3, AlertTriangle, Maximize2, Minimize2, Search, Zap, WifiOff, Wifi, RefreshCw, CloudOff } from 'lucide-react'
+import { Camera, Trash2, Plus, Minus, ShoppingCart, Store, Clock, BarChart3, AlertTriangle, Maximize2, Minimize2, Search, Zap, Banknote, CreditCard, Smartphone, Receipt, WifiOff, Wifi, RefreshCw, CloudOff } from 'lucide-react'
 import { PaymentMethod } from '@/lib/db/entities/sale.entity'
 import { useOfflinePOS } from '@/hooks/use-offline-pos'
 import { OfflineIndicator } from '@/components/offline/offline-indicator'
@@ -57,7 +57,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
-import { MoreVertical, Menu, LayoutGrid, Smartphone, ChevronUp } from 'lucide-react'
+import { MoreVertical, Menu, LayoutGrid, ChevronUp } from 'lucide-react'
 
 interface CartItem {
   productId: string
@@ -123,6 +123,7 @@ export default function POSPage() {
   const [expiredWarningProduct, setExpiredWarningProduct] = useState<any>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH)
 
   // Derived state from SWR
   const taxEnabled = taxSettings?.taxEnabled ?? false
@@ -446,7 +447,7 @@ export default function POSPage() {
             taxAmount: Number(itemTax),
           }
         }),
-        paymentMethod: PaymentMethod.CASH,
+        paymentMethod,
         tax: Number(tax),
         discount: Number(cartDiscount),
         amountPaid: amountPaid ? Number(amountPaid) : undefined,
@@ -474,6 +475,7 @@ export default function POSPage() {
       setCheckoutOpen(false)
       setAmountPaid(undefined)
       setCartDiscount(0)
+      setPaymentMethod(PaymentMethod.CASH)
       setSuccessDialogOpen(true)
       setStatRefreshTrigger((prev) => prev + 1)
     } catch (error) {
@@ -819,22 +821,46 @@ export default function POSPage() {
           </DialogHeader>
           <div className="space-y-6 p-8">
             <div className="space-y-3">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Monto Recibido</Label>
-              <div className="relative group">
-                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xl font-bold text-muted-foreground/50 transition-colors group-focus-within:text-primary">$</span>
-                <Input type="number" step="0.01" autoFocus value={amountPaid ?? ''} onChange={(e) => setAmountPaid(e.target.value ? Number(e.target.value) : undefined)} placeholder="0.00" className="pl-10 h-20 text-4xl font-black rounded-3xl bg-secondary border-none shadow-inner focus-visible:ring-primary/20 transition-all" />
-              </div>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-4">
-                {[100, 500, 1000, 2000, 5000].map(amount => (
-                  <Button key={amount} variant="outline" size="sm" className="h-12 font-black rounded-xl hover:bg-primary/5 hover:border-primary/30 transition-all border-border" onClick={() => setAmountPaid((amountPaid || 0) + amount)}>+{amount}</Button>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Método de Pago</Label>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { method: PaymentMethod.CASH, label: 'Efectivo', icon: Banknote },
+                  { method: PaymentMethod.CARD, label: 'Tarjeta', icon: CreditCard },
+                  { method: PaymentMethod.TRANSFER, label: 'Transferencia', icon: Receipt },
+                  { method: PaymentMethod.QR, label: 'QR', icon: Smartphone },
+                ].map(({ method, label, icon: Icon }) => (
+                  <Button
+                    key={method}
+                    type="button"
+                    variant={paymentMethod === method ? 'default' : 'outline'}
+                    className="flex flex-col items-center gap-1 h-16 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+                    onClick={() => setPaymentMethod(method)}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {label}
+                  </Button>
                 ))}
-                <Button variant="outline" size="sm" className="h-12 font-black rounded-xl bg-primary/5 text-primary border-primary/20" onClick={() => setAmountPaid(total)}>Exacto</Button>
               </div>
             </div>
+            {paymentMethod === PaymentMethod.CASH && (
+              <div className="space-y-3">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Monto Recibido</Label>
+                <div className="relative group">
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xl font-bold text-muted-foreground/50 transition-colors group-focus-within:text-primary">$</span>
+                  <Input type="number" step="0.01" autoFocus value={amountPaid ?? ''} onChange={(e) => setAmountPaid(e.target.value ? Number(e.target.value) : undefined)} placeholder="0.00" className="pl-10 h-20 text-4xl font-black rounded-3xl bg-secondary border-none shadow-inner focus-visible:ring-primary/20 transition-all" />
+                </div>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-4">
+                  {[100, 500, 1000, 2000, 5000].map(amount => (
+                    <Button key={amount} variant="outline" size="sm" className="h-12 font-black rounded-xl hover:bg-primary/5 hover:border-primary/30 transition-all border-border" onClick={() => setAmountPaid((amountPaid || 0) + amount)}>+{amount}</Button>
+                  ))}
+                  <Button variant="outline" size="sm" className="h-12 font-black rounded-xl bg-primary/5 text-primary border-primary/20" onClick={() => setAmountPaid(total)}>Exacto</Button>
+                </div>
+              </div>
+            )}
             <div className="p-8 bg-gradient-to-br from-card to-secondary rounded-[2rem] border border-border shadow-inner space-y-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-5"><Zap className="h-24 w-24 fill-primary" /></div>
               <div className="flex justify-between items-center text-xs font-black text-muted-foreground uppercase tracking-[0.2em] relative z-10"><span>Total Venta</span><span className="text-foreground text-xl tracking-normal">{formatCurrency(total)}</span></div>
-              {amountPaid && (
+              {paymentMethod === PaymentMethod.CASH && amountPaid && (
                 <>
                   <div className="flex justify-between items-center text-xs font-black text-muted-foreground uppercase tracking-[0.2em] relative z-10"><span>Recibido</span><span className="text-secondary-foreground text-xl tracking-normal">{formatCurrency(amountPaid)}</span></div>
                   <div className="flex justify-between items-center pt-6 border-t border-border relative z-10"><span className="text-xs font-black uppercase tracking-[0.2em] text-primary">Vuelto/Cambio</span><span className={`text-4xl font-black tracking-tighter ${change < 0 ? 'text-destructive' : 'text-primary'}`}>{formatCurrency(change)}</span></div>
@@ -844,7 +870,7 @@ export default function POSPage() {
           </div>
           <DialogFooter className="p-8 pt-0 gap-3 sm:gap-0">
             <Button variant="ghost" className="flex-1 h-14 rounded-2xl font-bold text-muted-foreground hover:bg-destructive/5 hover:text-destructive" onClick={() => setCheckoutOpen(false)} disabled={isProcessing}>Cancelar</Button>
-            <Button className="flex-1 h-20 rounded-2xl font-black uppercase text-xs tracking-widest shadow-2xl shadow-primary/20 transition-all active:scale-95" onClick={handleCheckout} disabled={isProcessing || (amountPaid !== undefined && amountPaid < total)}>{isProcessing ? 'Procesando...' : 'Confirmar Venta'}</Button>
+            <Button className="flex-1 h-20 rounded-2xl font-black uppercase text-xs tracking-widest shadow-2xl shadow-primary/20 transition-all active:scale-95" onClick={handleCheckout} disabled={isProcessing || (paymentMethod === PaymentMethod.CASH && amountPaid !== undefined && amountPaid < total)}>{isProcessing ? 'Procesando...' : 'Confirmar Venta'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
