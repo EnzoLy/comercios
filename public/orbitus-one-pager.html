@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbitus Gestión - One Pager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: white;
+            color: #1f2937;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            margin: 0 auto;
+            background: white;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 40px 30px 35px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .header .subtitle {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            opacity: 0.95;
+        }
+
+        .header .bajada {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        /* ===== BENEFICIOS - 3 COLUMNAS ===== */
+        .benefits {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            padding: 32px 30px;
+            background: #f9fafb;
+        }
+
+        .benefit-card {
+            background: white;
+            padding: 24px 20px;
+            border-radius: 8px;
+            text-align: center;
+            border-top: 4px solid #10b981;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .benefit-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 12px;
+        }
+
+        .benefit-card p {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #4b5563;
+        }
+
+        /* ===== PROBLEMA VS SOLUCIÓN ===== */
+        .problem-solution {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            padding: 0;
+            min-height: 160px;
+        }
+
+        .problem-col, .solution-col {
+            padding: 28px 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .problem-col {
+            background: #fef2f2;
+            border-right: 1px solid #fee2e2;
+        }
+
+        .solution-col {
+            background: #f0fdf4;
+        }
+
+        .problem-col h4, .solution-col h4 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .problem-col h4 {
+            color: #dc2626;
+        }
+
+        .solution-col h4 {
+            color: #10b981;
+        }
+
+        .problem-col ul, .solution-col ul {
+            list-style: none;
+        }
+
+        .problem-col li, .solution-col li {
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .problem-col li:before {
+            content: "✕";
+            position: absolute;
+            left: 0;
+            color: #dc2626;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .solution-col li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* ===== FEATURES ===== */
+        .features {
+            padding: 28px 30px;
+            background: white;
+        }
+
+        .features-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+        }
+
+        .feature-item {
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .feature-item h5 {
+            font-size: 11px;
+            font-weight: 600;
+            color: #1f2937;
+            line-height: 1.3;
+        }
+
+        /* ===== CTA / QR ===== */
+        .cta-section {
+            padding: 24px 30px;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-top: 2px solid #10b981;
+        }
+
+        .cta-header {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .cta-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 4px;
+        }
+
+        .cta-header p {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 12px 0;
+            flex: 1;
+        }
+
+        .qr-placeholder {
+            width: 110px;
+            height: 110px;
+            border: 2px dashed #10b981;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            font-size: 48px;
+            color: #d1fae5;
+        }
+
+        .cta-footer {
+            text-align: center;
+            font-size: 11px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .cta-footer strong {
+            color: #10b981;
+        }
+
+        /* ===== PRINT ===== */
+        @media print {
+            body, html {
+                margin: 0;
+                padding: 0;
+                background: white;
+            }
+            .page {
+                width: 100%;
+                height: 100%;
+                box-shadow: none;
+                margin: 0;
+                page-break-after: avoid;
+            }
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>Orbitus Gestión</h1>
+            <p class="subtitle">Control total de tu negocio en tiempo real</p>
+            <p class="bajada">Stock, ventas y empleados en un solo lugar.</p>
+        </div>
+
+        <!-- BENEFICIOS -->
+        <div class="benefits">
+            <div class="benefit-card">
+                <h3>MENOS PÉRDIDAS</h3>
+                <p>Sabés exactamente qué tenés en stock y qué se vende.</p>
+            </div>
+            <div class="benefit-card">
+                <h3>MÁS CONTROL</h3>
+                <p>Ves ventas por día, por empleado y por producto.</p>
+            </div>
+            <div class="benefit-card">
+                <h3>MÁS TIEMPO</h3>
+                <p>Se acabaron las planillas y los errores al cobrar.</p>
+            </div>
+        </div>
+
+        <!-- PROBLEMA VS SOLUCIÓN -->
+        <div class="problem-solution">
+            <div class="problem-col">
+                <h4>❌ LOS PROBLEMAS</h4>
+                <ul>
+                    <li>No sabés qué producto te deja más ganancia</li>
+                    <li>Te quedás sin stock sin darte cuenta</li>
+                    <li>Errores en la caja</li>
+                    <li>Falta de control de empleados</li>
+                </ul>
+            </div>
+            <div class="solution-col">
+                <h4>✓ CON ORBITUS GESTIÓN</h4>
+                <ul>
+                    <li>Alertas de stock bajo</li>
+                    <li>Reportes claros en segundos</li>
+                    <li>Ventas registradas automáticamente</li>
+                    <li>Cada empleado con su usuario</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- FEATURES -->
+        <div class="features">
+            <h3 class="features-title">Qué hace el sistema</h3>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <span class="feature-icon">📦</span>
+                    <h5>Control de stock en tiempo real</h5>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">💳</span>
+                    <h5>Punto de venta rápido (POS)</h5>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">👤</span>
+                    <h5>Usuarios por empleado</h5>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">📊</span>
+                    <h5>Reportes diarios, semanales y mensuales</h5>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">📡</span>
+                    <h5>Funciona aunque se corte internet</h5>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA / QR -->
+        <div class="cta-section">
+            <div class="cta-header">
+                <h3>Escaneá el QR y mirá cómo funciona en 2 minutos</h3>
+                <p>Video real del sistema en uso</p>
+            </div>
+
+            <div class="qr-container">
+                <div class="qr-placeholder">📱</div>
+            </div>
+
+            <div class="cta-footer">
+                <strong>Demo gratuita disponible</strong> |
+                WhatsApp: <strong>+54 9 11 XXXX-XXXX</strong> |
+                Web: <strong>www.orbitus.com</strong>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
