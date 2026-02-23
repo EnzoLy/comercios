@@ -51,9 +51,8 @@ export async function POST(
 
     const dataSource = await getDataSource()
 
-    // Get all cash sales for the shift
+    // Get all cash sales for the shift — use actual shiftStart time, not midnight
     const shiftStart = shiftStartTime ? new Date(shiftStartTime) : new Date()
-    shiftStart.setHours(0, 0, 0, 0)
 
     const shiftEnd = new Date()
 

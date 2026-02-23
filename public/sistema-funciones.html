@@ -3,8 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión Comercial - Funciones</title>
+    <title>Orbitus OS | Gestión de Negocios</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
+        :root {
+            --brand-primary: #000000;
+            --brand-accent: #c084fc;
+            --bg-main: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,227 +26,473 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.4;
-            color: #333;
-            background: white;
+            font-family: 'Inter', sans-serif;
+            background-color: #e2e8f0;
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            line-height: 1.1;
         }
 
         .container {
             width: 210mm;
             height: 297mm;
-            padding: 15mm;
             margin: 0 auto;
             background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
+        .bg-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 300px;
+            background-image:
+                linear-gradient(to right, #f1f5f9 1px, transparent 1px),
+                linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 0;
+            mask-image: linear-gradient(to bottom, black, transparent);
+        }
+
+        /* HEADER */
         header {
-            text-align: center;
-            margin-bottom: 12px;
-            border-bottom: 3px solid #2563eb;
-            padding-bottom: 8px;
+            position: relative;
+            z-index: 1;
+            padding: 44px 60px 20px;
         }
 
-        h1 {
-            font-size: 22px;
-            color: #1e40af;
-            margin-bottom: 2px;
+        .badge {
+            display: inline-block;
+            background: var(--brand-accent);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
         }
 
-        .subtitle {
-            font-size: 11px;
-            color: #666;
-            font-style: italic;
+        header h1 {
+            font-size: 52px;
+            font-weight: 900;
+            letter-spacing: -2.5px;
+            margin-bottom: 10px;
+            color: var(--brand-primary);
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 12px;
+        header .description {
+            font-size: 15px;
+            color: var(--text-muted);
+            max-width: 500px;
+            line-height: 1.5;
         }
 
-        .feature {
-            background: #f8fafc;
-            padding: 10px;
-            border-left: 3px solid #2563eb;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-
-        .feature h3 {
-            color: #1e40af;
-            font-size: 12px;
-            margin-bottom: 4px;
+        .logo-stat {
+            position: absolute;
+            top: 38px;
+            right: 60px;
+            width: 90px;
+            height: 90px;
+            background: var(--brand-primary);
+            color: white;
             display: flex;
             align-items: center;
-            gap: 5px;
+            justify-content: center;
+            border-radius: 18px;
+            font-size: 52px;
+            font-family: 'Outfit';
+            font-weight: 900;
+            transform: rotate(-10deg);
+            box-shadow: 8px 8px 0 var(--brand-accent);
         }
 
-        .feature p {
-            color: #555;
-            font-size: 10px;
+        /* STATS BAR */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            padding: 0 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-item {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-main);
             line-height: 1.3;
         }
 
-        .icon {
-            font-size: 14px;
-        }
-
-        .section-title {
-            background: #2563eb;
-            color: white;
-            padding: 6px 8px;
-            font-size: 12px;
-            font-weight: bold;
-            margin: 10px 0 8px 0;
-            border-radius: 3px;
-        }
-
-        .roles {
-            background: #f0f9ff;
-            padding: 8px;
-            border-radius: 4px;
-            margin: 8px 0;
+        .stat-sub {
             font-size: 10px;
+            color: var(--text-muted);
         }
 
-        .roles-grid {
+        /* MAIN CONTENT */
+        main {
+            position: relative;
+            z-index: 1;
+            padding: 0 60px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 16px 18px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .feature-card .icon {
+            width: 34px;
+            height: 34px;
+            background: #f8fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            margin-bottom: 10px;
+        }
+
+        .feature-card h3 {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .feature-card p {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* TRANSFORMATION */
+        .transformation {
+            background: #0f172a;
+            border-radius: 20px;
+            padding: 26px 32px;
+            color: white;
+            display: grid;
+            grid-template-columns: 1fr 1.1fr;
+            gap: 28px;
+            align-items: center;
+        }
+
+        .transformation h2 {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: var(--brand-accent);
+        }
+
+        .transformation p {
+            font-size: 13px;
+            opacity: 0.75;
+            line-height: 1.55;
+        }
+
+        .checklist {
+            list-style: none;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 4px;
-            margin-top: 4px;
+            gap: 8px 16px;
         }
 
-        .role {
-            background: white;
-            padding: 4px 6px;
+        .checklist li {
+            font-size: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            line-height: 1.4;
+        }
+
+        .checklist li::before {
+            content: "";
+            width: 12px;
+            height: 12px;
+            background: var(--brand-accent);
             border-radius: 3px;
-            font-size: 9px;
-            border-left: 2px solid #2563eb;
+            display: block;
+            flex-shrink: 0;
+            margin-top: 1px;
         }
 
+        /* FOOTER / CTA */
         footer {
+            background: #f8fafc;
+            padding: 24px 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .cta-info h4 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .contact-item {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .qr-section {
             text-align: center;
-            font-size: 9px;
-            color: #999;
-            border-top: 1px solid #ddd;
-            padding-top: 8px;
-            margin-top: 12px;
         }
 
-        .highlight {
-            background: #fef08a;
-            padding: 2px 4px;
-            border-radius: 2px;
-            font-weight: 500;
+        .qr-holder {
+            background: white;
+            padding: 10px;
+            border-radius: 14px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 6px;
+            display: inline-block;
         }
 
+        #qrcode {
+            width: 100px;
+            height: 100px;
+        }
+
+        .qr-caption {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        /* PRINT */
         @media print {
-            body {
-                margin: 0;
-                padding: 0;
-            }
+            body { background: white; margin: 0; padding: 0; }
             .container {
-                width: 100%;
-                height: 100%;
                 box-shadow: none;
+                width: 100%;
+                height: 100vh;
                 margin: 0;
-                padding: 20px;
             }
+            .bg-grid { display: none; }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .feature-card { border: 1.5px solid #000; }
+            .stat-item { border: 1px solid #ccc; }
+            .transformation { border: 1.5px solid #000; background: #000 !important; }
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="bg-grid"></div>
+
+        <div class="logo-stat">
+            <img src="logo-processed.png" alt="Orbitus Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 12px;">
+        </div>
+
         <header>
-            <h1>🏪 Sistema de Gestión Comercial</h1>
-            <p class="subtitle">POS e Inventario Multi-Tenant • Next.js + PostgreSQL</p>
+            <span class="badge">Sistema POS &amp; Inventario</span>
+            <h1>Orbitus <br>para Negocios.</h1>
+            <p class="description">
+                Todo lo que necesita tu comercio en una sola plataforma: ventas, stock,
+                empleados, proveedores y facturación. Sin papeles, sin errores, sin caos.
+            </p>
         </header>
 
-        <div class="section-title">📱 MÓDULOS PRINCIPALES</div>
-
-        <div class="grid">
-            <div class="feature">
-                <h3><span class="icon">🛍️</span> POS (Punto de Venta)</h3>
-                <p>Escaneo de códigos de barras, múltiples métodos de pago, cálculo automático de impuestos, descuentos, modo offline completo.</p>
+        <!-- STATS BAR -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-icon">⚡</div>
+                <div>
+                    <div class="stat-label">Funciona sin internet</div>
+                    <div class="stat-sub">Modo offline automático</div>
+                </div>
             </div>
-
-            <div class="feature">
-                <h3><span class="icon">📦</span> Inventario</h3>
-                <p>Control de stock en tiempo real, movimientos de inventario, alertas de bajo stock, múltiples códigos de barras por producto.</p>
+            <div class="stat-item">
+                <div class="stat-icon">🏪</div>
+                <div>
+                    <div class="stat-label">Multi-sucursal</div>
+                    <div class="stat-sub">Un solo panel</div>
+                </div>
             </div>
-
-            <div class="feature">
-                <h3><span class="icon">📊</span> Analytics</h3>
-                <p>Dashboard con ventas por período, categoría, empleado. Gráficos interactivos, exportación de reportes en Excel y PDF.</p>
+            <div class="stat-item">
+                <div class="stat-icon">📲</div>
+                <div>
+                    <div class="stat-label">Acceso por QR o PIN</div>
+                    <div class="stat-sub">Para cajas y empleados</div>
+                </div>
             </div>
-
-            <div class="feature">
-                <h3><span class="icon">👥</span> Empleados</h3>
-                <p>Gestión de personal, autenticación QR y PIN, control de turnos, cierre de caja, historial de actividades.</p>
-            </div>
-
-            <div class="feature">
-                <h3><span class="icon">🛒</span> Órdenes Compra</h3>
-                <p>Creación de órdenes a proveedores, seguimiento de estado, recepción parcial/total, gestión de costos.</p>
-            </div>
-
-            <div class="feature">
-                <h3><span class="icon">🧾</span> Facturas</h3>
-                <p>Generación automática de facturas digitales, código QR de verificación, impresión optimizada, almacenamiento de historial.</p>
+            <div class="stat-item">
+                <div class="stat-icon">🔐</div>
+                <div>
+                    <div class="stat-label">Roles de acceso</div>
+                    <div class="stat-sub">Admin, caja, depósito</div>
+                </div>
             </div>
         </div>
 
-        <div class="section-title">🔐 SEGURIDAD & ROLES</div>
-
-        <div class="roles">
-            <div><span class="highlight">SUPER_ADMIN</span> - Administrador global</div>
-            <div><span class="highlight">ADMIN</span> - Administrador de tienda</div>
-            <div><span class="highlight">MANAGER</span> - Gerente con acceso limitado</div>
-            <div><span class="highlight">STOCK_KEEPER</span> - Gestor de inventario</div>
-            <div><span class="highlight">CASHIER</span> - Operario de caja (solo POS)</div>
-        </div>
-
-        <div class="section-title">⚙️ CARACTERÍSTICAS TÉCNICAS</div>
-
-        <div class="grid">
-            <div class="feature">
-                <h3><span class="icon">🌐</span> Multi-Tenant</h3>
-                <p>Múltiples tiendas/sucursales independientes con separación completa de datos.</p>
+        <main>
+            <!-- FEATURES 2x3 -->
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon">🛒</div>
+                    <h3>Punto de Venta</h3>
+                    <p>Cobra con lector de código de barras. Funciona aunque se corte internet.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">📦</div>
+                    <h3>Control de Stock</h3>
+                    <p>Stock actualizado en tiempo real. Alertas automáticas cuando el producto es bajo.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">👥</div>
+                    <h3>Gestión de Empleados</h3>
+                    <p>Turnos, cierres de caja y permisos individuales para cada empleado.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🛍️</div>
+                    <h3>Proveedores &amp; Compras</h3>
+                    <p>Órdenes de compra, historial de pagos y contactos de proveedores en un lugar.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🧾</div>
+                    <h3>Facturación Digital</h3>
+                    <p>Facturas con código QR verificable generadas automáticamente en cada venta.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">📊</div>
+                    <h3>Reportes &amp; Analíticas</h3>
+                    <p>Ventas por día, turno o empleado. Exportación lista para contabilidad.</p>
+                </div>
             </div>
 
-            <div class="feature">
-                <h3><span class="icon">📡</span> Modo Offline</h3>
-                <p>Operación sin conexión, sincronización automática, cola inteligente de operaciones.</p>
+            <!-- TRANSFORMATION -->
+            <div class="transformation">
+                <div class="left">
+                    <h2>¿Qué resuelve Orbitus?</h2>
+                    <p>
+                        Comercios que trabajan con planillas, tickets de papel y sistemas
+                        desconectados pierden tiempo y dinero todos los días. Orbitus centraliza
+                        todo: ventas, stock, empleados y compras en una sola plataforma segura.
+                    </p>
+                </div>
+                <ul class="checklist">
+                    <li>Cierre de caja con arqueo automático</li>
+                    <li>Historial completo de movimientos</li>
+                    <li>Lector de código de barras integrado</li>
+                    <li>Ventas en modo sin conexión</li>
+                    <li>Productos vendidos por peso o unidad</li>
+                    <li>Roles diferenciados por empleado</li>
+                    <li>Soporte técnico prioritario 24/7</li>
+                    <li>Datos 100% seguros en la nube</li>
+                </ul>
             </div>
-
-            <div class="feature">
-                <h3><span class="icon">🔄</span> Autenticación QR</h3>
-                <p>Tokens QR únicos para inicio rápido de sesión en terminales POS.</p>
-            </div>
-
-            <div class="feature">
-                <h3><span class="icon">💾</span> Base de Datos</h3>
-                <p>PostgreSQL con TypeORM, pool de conexiones, sincronización automática.</p>
-            </div>
-        </div>
-
-        <div class="section-title">🎯 BENEFICIOS</div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 10px;">
-            <div style="background: #dcfce7; padding: 8px; border-radius: 3px;">✓ <strong>Ventas rápidas</strong> sin conexión</div>
-            <div style="background: #dbeafe; padding: 8px; border-radius: 3px;">✓ <strong>Control total</strong> de inventario</div>
-            <div style="background: #fef3c7; padding: 8px; border-radius: 3px;">✓ <strong>Reportes</strong> en tiempo real</div>
-            <div style="background: #fecaca; padding: 8px; border-radius: 3px;">✓ <strong>Seguridad</strong> RBAC</div>
-            <div style="background: #d8b4fe; padding: 8px; border-radius: 3px;">✓ <strong>Multi-tienda</strong> escalable</div>
-            <div style="background: #c7d2fe; padding: 8px; border-radius: 3px;">✓ <strong>Interfaz</strong> responsive</div>
-        </div>
+        </main>
 
         <footer>
-            Documento generado: Febrero 2026 | Sistema de Gestión Comercial v1.0 | Para imprimir: Ctrl+P o Archivo > Imprimir
+            <div class="cta-info">
+                <h4>Pedí una demo personalizada.</h4>
+                <p style="color: var(--text-muted); font-size: 12px;">Te mostramos el sistema funcionando en tu tipo de negocio, sin costo.</p>
+
+                <div class="contact-grid">
+                    <div class="contact-item">📞 +54 2954 393274</div>
+                    <div class="contact-item">📍 Santa Rosa, La Pampa</div>
+                    <div class="contact-item">🌐 orbitus.vercel.app</div>
+                    <div class="contact-item">💬 WhatsApp disponible</div>
+                </div>
+            </div>
+
+            <div class="qr-section">
+                <div class="qr-holder">
+                    <div id="qrcode"></div>
+                </div>
+                <div class="qr-caption">Escanear para Demo</div>
+            </div>
         </footer>
     </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            new QRCode(document.getElementById("qrcode"), {
+                text: "https://comercios-ashen.vercel.app/",
+                width: 100,
+                height: 100,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        });
+    </script>
 </body>
 </html>
+
+
+Plan Gratuito
+Hasta 50 productos
+1 usuario
+Sin analíticas
+Con anuncios internos
+Sin avisos de stock
+Sin caja
+💼 Plan Básico
+5 usuarios
+Hasta 250 Productos
+Caja
+Sin anuncios
+Categorías
+Historial de ventas
+📊 Plan Pro 
+Precio más alto (pero justificable)
+Incluye:
+Todo lo anterior +
+Analíticas
+Avisos de stock bajo
+Control de empleados
+Roles / permisos
+Reportes
+Ideal para negocios en crecimiento

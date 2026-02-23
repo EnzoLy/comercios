@@ -26,6 +26,8 @@ export async function GET(
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date')
     const employeeId = searchParams.get('employeeId')
+    const startDate = searchParams.get('startDate')
+    const endDate = searchParams.get('endDate')
 
     const dataSource = await getDataSource()
     let query = dataSource
@@ -36,6 +38,14 @@ export async function GET(
 
     if (date) {
       query = query.andWhere('shift.date = :date', { date })
+    } else if (startDate && endDate) {
+      // Return REGULAR shifts within the date range, and SPECIAL shifts
+      // whose date range overlaps with the requested range.
+      query = query.andWhere(
+        `(shift.type = :regular AND shift.date >= :startDate AND shift.date <= :endDate)
+         OR (shift.type = :special AND shift.date <= :endDate AND shift.endDate >= :startDate)`,
+        { regular: 'REGULAR', special: 'SPECIAL', startDate, endDate }
+      )
     }
 
     if (employeeId) {
@@ -69,16 +79,12 @@ export async function POST(
       return NextResponse.json({ error: 'Store ID required' }, { status: 400 })
     }
 
-    // Only admins/managers can create shifts
-    await requireRole(storeId, [
-      EmploymentRole.ADMIN,
-      EmploymentRole.MANAGER,
-    ])
+    await requireRole(storeId, [EmploymentRole.ADMIN, EmploymentRole.MANAGER])
 
     const body = await request.json()
-    const { employeeId, date, startTime, endTime, type, endDate, notes } = body
+    const { employeeId, date, startTime, endTime, type, endDate, notes, repeatWeeks } = body
 
-    if (!employeeId || !date || !startTime) {
+    if (!employeeId || !date || (type !== 'SPECIAL' && !startTime)) {
       return NextResponse.json(
         { error: 'Missing required fields: employeeId, date, startTime' },
         { status: 400 }
@@ -93,21 +99,51 @@ export async function POST(
     }
 
     const dataSource = await getDataSource()
+    const shiftRepo = dataSource.getRepository(EmployeeShift)
 
-    const shift = dataSource.getRepository(EmployeeShift).create({
+    // Parse date strings as LOCAL dates to avoid UTC-midnight timezone shift
+    // new Date("2026-02-23") = UTC midnight, which in UTC-3 is Feb 22 21:00 local → stores wrong day
+    const parseLocalDate = (str: string) => {
+      const [y, m, d] = str.split('-').map(Number)
+      return new Date(y, m - 1, d)
+    }
+
+    const baseDate = parseLocalDate(date)
+    const weeks = type === 'REGULAR' && repeatWeeks > 0 ? Number(repeatWeeks) : 0
+
+    if (weeks > 0) {
+      // Batch create one shift per week
+      const shiftsToCreate = Array.from({ length: weeks + 1 }, (_, i) => {
+        const shiftDate = new Date(baseDate)
+        shiftDate.setDate(baseDate.getDate() + i * 7)
+        return shiftRepo.create({
+          storeId,
+          employeeId,
+          date: shiftDate,
+          startTime: startTime || '00:00',
+          endTime,
+          type: type || 'REGULAR',
+          status: ShiftStatus.ACTIVE,
+          notes,
+        })
+      })
+      const saved = await shiftRepo.save(shiftsToCreate)
+      return NextResponse.json(saved, { status: 201 })
+    }
+
+    const shift = shiftRepo.create({
       storeId,
       employeeId,
-      date: new Date(date),
-      startTime,
+      date: baseDate,
+      startTime: startTime || '00:00',
       endTime,
       type: type || 'REGULAR',
-      endDate: endDate ? new Date(endDate) : undefined,
+      endDate: endDate ? parseLocalDate(endDate) : undefined,
       status: ShiftStatus.ACTIVE,
       notes,
     })
 
-    await dataSource.getRepository(EmployeeShift).save(shift)
-
+    await shiftRepo.save(shift)
     return NextResponse.json(shift, { status: 201 })
   } catch (error) {
     console.error('Create employee shift error:', error)

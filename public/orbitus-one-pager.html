@@ -1,378 +1,225 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbitus OS | Gestión de Negocios</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        :root {
-            --brand-primary: #000000;
-            --brand-accent: #c084fc;
-            --bg-main: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #e2e8f0;
-            color: var(--text-main);
-            -webkit-font-smoothing: antialiased;
-        }
-
-        h1, h2, h3, h4 {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 700;
-            line-height: 1.1;
-        }
-
-        .container {
-            width: 210mm;
-            height: 297mm; /* Forced A4 Height */
-            margin: 0 auto;
-            background: white;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Modern Grid Decorations */
-        .bg-grid {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 350px;
-            background-image: 
-                linear-gradient(to right, #f1f5f9 1px, transparent 1px),
-                linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
-            background-size: 30px 30px;
-            z-index: 0;
-            mask-image: linear-gradient(to bottom, black, transparent);
-        }
-
-        /* HEADER SECTION */
-        header {
-            position: relative;
-            z-index: 1;
-            padding: 60px 60px 30px;
-        }
-
-        .badge {
-            display: inline-block;
-            background: var(--brand-accent);
-            color: white;
-            padding: 5px 14px;
-            border-radius: 100px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 20px;
-        }
-
-        header h1 {
-            font-size: 58px;
-            font-weight: 900;
-            letter-spacing: -2.5px;
-            margin-bottom: 15px;
-            color: var(--brand-primary);
-        }
-
-        header .description {
-            font-size: 18px;
-            color: var(--text-muted);
-            max-width: 480px;
-            line-height: 1.4;
-        }
-
-        /* LOGO STAT */
-        .logo-stat {
-            position: absolute;
-            top: 50px;
-            right: 60px;
-            width: 100px;
-            height: 100px;
-            background: var(--brand-primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 20px;
-            font-size: 56px;
-            font-family: 'Outfit';
-            font-weight: 900;
-            transform: rotate(-10deg);
-            box-shadow: 10px 10px 0 var(--brand-accent);
-        }
-
-        /* MAIN CONTENT */
-        main {
-            position: relative;
-            z-index: 1;
-            padding: 0 60px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly; /* Evenly distribute sections */
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-
-        .feature-card {
-            background: white;
-            padding: 24px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            height: 100%;
-        }
-
-        .feature-card .icon {
-            width: 40px;
-            height: 40px;
-            background: #f8fafc;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            margin-bottom: 16px;
-        }
-
-        .feature-card h3 {
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-
-        .feature-card p {
-            font-size: 13px;
-            color: var(--text-muted);
-            line-height: 1.5;
-        }
-
-        /* KEY TAKEAWAYS */
-        .transformation {
-            background: #0f172a;
-            border-radius: 24px;
-            padding: 35px 40px;
-            color: white;
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 30px;
-        }
-
-        .transformation h2 {
-            font-size: 26px;
-            margin-bottom: 12px;
-            color: var(--brand-accent);
-        }
-
-        .transformation p {
-            font-size: 14px;
-            opacity: 0.8;
-            line-height: 1.5;
-        }
-
-        .checklist {
-            list-style: none;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 8px;
-        }
-
-        .checklist li {
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .checklist li::before {
-            content: "";
-            width: 14px;
-            height: 14px;
-            background: var(--brand-accent);
-            border-radius: 4px;
-            display: block;
-            flex-shrink: 0;
-        }
-
-        /* FOOTER / CTA */
-        footer {
-            background: #f8fafc;
-            padding: 40px 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .cta-info h4 {
-            font-size: 22px;
-            margin-bottom: 8px;
-        }
-
-        .contact-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .contact-item {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .qr-section {
-            text-align: center;
-        }
-
-        .qr-holder {
-            background: white;
-            padding: 12px;
-            border-radius: 16px;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 8px;
-            display: inline-block;
-        }
-
-        #qrcode {
-            width: 110px;
-            height: 110px;
-        }
-
-        .qr-caption {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-        }
-
-        /* PRINT STYLES */
-        @media print {
-            body { background: white; margin: 0; padding: 0; }
-            .container {
-                box-shadow: none;
-                width: 100%;
-                height: 100vh;
-                margin: 0;
-            }
-            .bg-grid { display: none; }
-            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .feature-card { border: 1.5px solid #000; }
-            .transformation { border: 1.5px solid #000; background: #000 !important; }
-        }
-
-        @page {
-            size: A4;
-            margin: 0;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orbitus | Gestión para Comercios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    :root {
+      --brand-primary: #000000;
+      --brand-accent: #c084fc;
+      --bg-main: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #e2e8f0;
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; font-weight: 500; line-height: 1.1; }
+    .container {
+      width: 210mm; height: 297mm; margin: 0 auto; background: white;
+      position: relative; overflow: hidden; display: flex; flex-direction: column;
+    }
+    .bg-grid {
+      position: absolute; top: 0; left: 0; right: 0; height: 350px;
+      background-image:
+        linear-gradient(to right, #f1f5f9 1px, transparent 1px),
+        linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
+      background-size: 30px 30px; z-index: 0;
+      mask-image: linear-gradient(to bottom, black, transparent);
+    }
+    header { position: relative; z-index: 1; padding: 60px 60px 30px; }
+    .badge {
+      display: inline-block; background: var(--brand-accent); color: white;
+      padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 20px;
+    }
+    header h1 {
+      font-size: 42px; font-weight: 900; letter-spacing: -2px; margin-bottom: 12px;
+      color: var(--brand-primary); max-width: 500px;
+    }
+    header .description { font-size: 18px; color: var(--text-muted); max-width: 520px; line-height: 1.4; }
+    .logo-stat {
+      position: absolute; top: 50px; right: 60px; width: 100px; height: 100px;
+      background: var(--brand-primary); color: white; display: flex; align-items: center; justify-content: center;
+      border-radius: 20px; font-size: 56px; font-family: 'Outfit'; font-weight: 900;
+      transform: rotate(-10deg); box-shadow: 10px 10px 0 var(--brand-accent);
+      overflow: hidden;
+    }
+    .logo-stat img { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; }
+    main {
+      position: relative; z-index: 1; padding: 0 60px; flex: 1;
+      display: flex; flex-direction: column; justify-content: space-evenly;
+    }
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .feature-card {
+      background: white; padding: 24px; border-radius: 20px; border: 1px solid var(--border-color); height: 100%;
+    }
+    .feature-card .icon {
+      width: 40px; height: 40px; background: #f8fafc; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px;
+    }
+    .feature-card h3 { font-size: 16px; margin-bottom: 8px; }
+    .feature-card p { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      font-size: 11px; font-weight: 600; color: var(--text-main);
+      background: #f1f5f9; border-radius: 6px; padding: 3px 8px;
+    }
+    .transformation {
+      background: #0f172a; border-radius: 24px; padding: 35px 40px; color: white;
+      display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px;
+    }
+    .transformation h2 { font-size: 24px; margin-bottom: 12px; color: var(--brand-accent); }
+    .transformation p { font-size: 14px; opacity: 0.9; line-height: 1.5; }
+    .checklist { list-style: none; display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .checklist li { font-size: 13px; display: flex; align-items: center; gap: 10px; }
+    .checklist li::before {
+      content: ""; width: 14px; height: 14px; background: var(--brand-accent);
+      border-radius: 4px; display: block; flex-shrink: 0;
+    }
+    footer {
+      background: #f8fafc; padding: 40px 60px; display: flex; align-items: center;
+      justify-content: space-between; border-top: 1px solid var(--border-color);
+    }
+    .cta-info h4 { font-size: 22px; margin-bottom: 8px; }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+    .contact-item { font-size: 13px; font-weight: 600; color: var(--text-main); }
+    .qr-section { text-align: center; }
+    .qr-holder {
+      background: white; padding: 12px; border-radius: 16px; box-shadow: var(--card-shadow);
+      margin-bottom: 8px; display: inline-block;
+    }
+    #qrcode { width: 110px; height: 110px; }
+    .qr-caption {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);
+    }
+    @media print {
+      body { background: white; margin: 0; padding: 0; }
+      .container { box-shadow: none; width: 100%; height: 100vh; margin: 0; }
+      .bg-grid { display: none; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .feature-card { border: 1.5px solid #000; }
+      .transformation { border: 1.5px solid #000; background: #000 !important; }
+    }
+    @page { size: A4; margin: 0; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="bg-grid"></div>
-        
-        <div class="logo-stat">
-            <img src="logo-processed.png" alt="Orbitus Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 12px;">
-        </div>
+  <div class="container">
+    <div class="bg-grid"></div>
 
-        <header>
-            <span class="badge">Gestión Eficiente</span>
-            <h1>Orbitus <br>para Negocios.</h1>
-            <p class="description">
-                La plataforma de control definitivo para comercios modernos. 
-                Escalabilidad, seguridad y simplicidad en una sola interfaz.
-            </p>
-        </header>
-
-        <main>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="icon">📦</div>
-                    <h3>Inventario Vivo</h3>
-                    <p>Sincronización total entre depósitos y puntos de venta en tiempo real.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">⚡</div>
-                    <h3>Punto de Venta</h3>
-                    <p>Vende a máxima velocidad, incluso si la conexión a internet es inestable.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="icon">📊</div>
-                    <h3>Analíticas IA</h3>
-                    <p>Reportes inteligentes que predicen tendencias y alertan sobre stock bajo.</p>
-                </div>
-            </div>
-
-            <div class="transformation">
-                <div class="left">
-                    <h2>Evoluciona tu gestión.</h2>
-                    <p>
-                        Orbitus elimina el caos administrativo. Nuestra arquitectura permite 
-                        retomar el control total de sus operaciones diarias.
-                    </p>
-                </div>
-                <ul class="checklist">
-                    <li>Seguridad de datos nivel bancario</li>
-                    <li>Roles de empleados personalizables</li>
-                    <li>Auditoría completa de transacciones</li>
-                    <li>Soporte técnico prioritario 24/7</li>
-                </ul>
-            </div>
-        </main>
-
-        <footer>
-            <div class="cta-info">
-                <h4>Empieza hoy mismo.</h4>
-                <p style="color: var(--text-muted); font-size: 13px;">Transforma tu comercio con una demo personalizada.</p>
-                
-                <div class="contact-grid">
-                    <div class="contact-item">📞 +54 2954 393274</div>
-                    <div class="contact-item">📍 Santa Rosa, La Pampa, AR</div>
-                </div>
-            </div>
-
-            <div class="qr-section">
-                <div class="qr-holder">
-                    <div id="qrcode"></div>
-                </div>
-                <div class="qr-caption">Escanear para Demo</div>
-            </div>
-        </footer>
+    <div class="logo-stat">
+      <img src="logo-processed.png" alt="Orbitus Logo">
     </div>
 
-    <script>
-        window.addEventListener('load', () => {
-            new QRCode(document.getElementById("qrcode"), {
-                text: "https://comercios-ashen.vercel.app/",
-                width: 110,
-                height: 110,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-        });
-    </script>
+    <header>
+      <span class="badge">Gestión Eficiente</span>
+      <h1>Dejá de perder plata por no controlar tu negocio.</h1>
+      <p class="description">
+        Controlá ventas, stock y empleados desde el celular.
+        Sin cuadernos. Sin planillas. Sin complicaciones.
+      </p>
+    </header>
+
+    <main>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="icon">📦</div>
+          <h3>Menos pérdidas</h3>
+          <p>Sabés exactamente qué tenés en stock y qué productos se venden más. Evitá faltantes y pérdidas.</p>
+          <div class="tags">
+            <span class="tag">Lector de barras</span>
+            <span class="tag">Alertas de stock bajo</span>
+            <span class="tag">Gestión de proveedores</span>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="icon">⚡</div>
+          <h3>Ventas más rápidas</h3>
+          <p>Cobrás sin errores, con o sin internet, y cada venta queda registrada automáticamente.</p>
+          <div class="tags">
+            <span class="tag">Modo offline</span>
+            <span class="tag">Facturas con QR</span>
+            <span class="tag">Cierre de caja</span>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📊</div>
+          <h3>Decisiones claras</h3>
+          <p>Ves qué conviene vender, cuándo reponer y quién vende más en tu local.</p>
+          <div class="tags">
+            <span class="tag">Por turno</span>
+            <span class="tag">Por empleado</span>
+            <span class="tag">Historial de ventas</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="transformation">
+        <div class="left">
+          <h2>En 7 días vas a entender mejor tu negocio que en el último año.</h2>
+          <p>
+            Dejá de depender de cuadernos, planillas y memoria.
+            Con Orbitus sabés en todo momento cuánto vendés, qué te falta y quién vende qué.
+          </p>
+        </div>
+        <ul class="checklist">
+          <li>Alertas cuando falta mercadería</li>
+          <li>Control por empleado y turnos</li>
+          <li>Cierres de caja claros</li>
+          <li>Historial completo de ventas</li>
+          <li>Migramos tu Excel sin que pierdas datos</li>
+          <li>No procesa pagos ni requiere datos bancarios</li>
+        </ul>
+      </div>
+    </main>
+
+    <footer>
+      <div class="cta-info">
+        <h4>Probalo en 2 minutos.</h4>
+        <p style="color: var(--text-muted); font-size: 13px;">
+          Escaneá el QR y mirá cómo funciona en un negocio real. No necesitás instalar nada.
+        </p>
+        <div class="contact-grid">
+          <div class="contact-item">📞 +54 2954 393274</div>
+          <div class="contact-item">📍 Santa Rosa, La Pampa, AR</div>
+        </div>
+      </div>
+
+      <div class="qr-section">
+        <div class="qr-holder">
+          <div id="qrcode"></div>
+        </div>
+        <div class="qr-caption">Escanear para ver como funciona</div>
+        <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+          No requiere instalación • Funciona en celular, tablet o PC
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    window.addEventListener('load', () => {
+      new QRCode(document.getElementById("qrcode"), {
+        text: "https://comercios-ashen.vercel.app/",
+        width: 110,
+        height: 110,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    });
+  </script>
 </body>
 </html>
