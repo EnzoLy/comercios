@@ -1,3 +1,8 @@
+'use client'
+
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Check, X, Star, Zap, Shield, Crown, MessageCircle } from 'lucide-react'
@@ -47,6 +52,46 @@ const proFeatures = [
 ]
 
 export default function PricingPage() {
+  const { data: session } = useSession()
+  const router = useRouter()
+  const [checkoutUrls, setCheckoutUrls] = useState<{ [key: string]: string | null }>({
+    basico: null,
+    pro: null,
+  })
+  const [loading, setLoading] = useState(false)
+
+  // If user is logged in, fetch checkout URLs for upgrades
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetchCheckoutUrls()
+    }
+  }, [session?.user?.id])
+
+  const fetchCheckoutUrls = async () => {
+    // Note: We need the storeId, which requires getting the user's first store
+    // For now, fetch from the user's dashboard context
+    try {
+      setLoading(true)
+      // When user is on pricing while logged in, they should have access to their store
+      // This would require passing store context, but for now redirect to dashboard
+      // to select store first
+    } catch (error) {
+      console.error('Failed to fetch checkout URLs:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handlePlanClick = (plan: 'free' | 'basico' | 'pro') => {
+    if (!session?.user?.id) {
+      // Not logged in - go to signup with plan
+      router.push(`/auth/signup?plan=${plan}`)
+    } else {
+      // Logged in - go to dashboard to select store and upgrade
+      router.push('/dashboard/select-store')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-950">
       {/* Header */}
@@ -74,12 +119,20 @@ export default function PricingPage() {
             </Link>
           </nav>
           <div className="flex gap-2">
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/auth/signin">Iniciar Sesión</Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link href="/auth/signup">Empezar</Link>
-            </Button>
+            {session?.user ? (
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/dashboard">{session.user.name || session.user.email}</Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/auth/signin">Iniciar Sesión</Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link href="/auth/signup">Empezar</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -135,8 +188,12 @@ export default function PricingPage() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/auth/signup?plan=free">Empezar gratis</Link>
+              <Button
+                onClick={() => handlePlanClick('free')}
+                variant="outline"
+                className="w-full"
+              >
+                {session?.user ? 'Ya tienes acceso' : 'Empezar gratis'}
               </Button>
             </CardFooter>
           </Card>
@@ -174,8 +231,11 @@ export default function PricingPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button asChild className="w-full">
-                <Link href="/auth/signup?plan=basico">Elegir Básico</Link>
+              <Button
+                onClick={() => handlePlanClick('basico')}
+                className="w-full"
+              >
+                {session?.user ? 'Elegir Básico' : 'Elegir Básico'}
               </Button>
             </CardFooter>
           </Card>
@@ -209,10 +269,10 @@ export default function PricingPage() {
               </div>
               <div className="p-6 pt-4">
                 <Button
-                  asChild
+                  onClick={() => handlePlanClick('pro')}
                   className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 border-0 shadow-md text-white"
                 >
-                  <Link href="/auth/signup?plan=pro">Elegir Pro</Link>
+                  Elegir Pro
                 </Button>
               </div>
             </div>
@@ -250,9 +310,9 @@ export default function PricingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-8 text-center text-muted-foreground">
-          <p>&copy; 2025 Orbitus. Todos los derechos reservados.</p>
+      <footer className="border-t py-8">
+        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+          <p>&copy; 2025 Orbitus Gestión. Todos los derechos reservados.</p>
         </div>
       </footer>
     </div>

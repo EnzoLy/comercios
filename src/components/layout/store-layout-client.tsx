@@ -113,7 +113,7 @@ function StoreLayoutContent({
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar
-        key={`${displayRole}-${displayIsOwner}`}
+        key={`${displayRole}-${displayIsOwner}-${plan}`}
         storeSlug={storeSlug}
         isOwner={displayIsOwner}
         role={displayRole}

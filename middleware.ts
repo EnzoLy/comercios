@@ -127,6 +127,22 @@ export async function middleware(request: NextRequest) {
         )
         const page = pageMatch ? pageMatch[1] : ''
 
+        // Check plan-based access restrictions
+        const plan = (store as any).subscriptionPlan || 'FREE'
+        console.log(`[Middleware] Store: ${storeSlug}, Plan: ${plan}, Page: ${page}`)
+
+        // Restrict pages based on subscription plan
+        const restrictedByPlan: Record<string, string[]> = {
+          'FREE': ['products', 'categories', 'inventory', 'employees', 'shifts', 'suppliers', 'purchase-orders', 'analytics', 'sales', 'reports'],
+          'BASICO': ['suppliers', 'purchase-orders', 'analytics', 'reports'],
+        }
+
+        const restrictedPages = restrictedByPlan[plan] || []
+        if (page && restrictedPages.includes(page)) {
+          console.log(`[Middleware] Blocking access to ${page} for plan ${plan}`)
+          return NextResponse.redirect(new URL(`/dashboard/${storeSlug}`, request.url))
+        }
+
         // Define allowed routes by role
         // Note: 'settings' is owner-only, 'my-access' and 'tutoriales' are available to all authenticated users
         const allowedRoutes: Record<string, string[]> = {

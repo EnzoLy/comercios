@@ -180,18 +180,53 @@ export function Sidebar({ storeSlug, isOwner, role, plan, checkoutUrl }: Sidebar
         </Link>
       </div>
 
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto scrollbar-hide">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto overflow-x-visible scrollbar-hide">
         <AnimatePresence mode="popLayout">
-          {navItems.map((item, index) => (
-            <SidebarItem
-              key={item.href}
-              item={item}
-              storeSlug={storeSlug}
-              isOwner={isOwner}
-              pathname={pathname}
-              index={index}
-            />
-          ))}
+          {navItems.map((item, index) => {
+            // Determine if item should be disabled based on plan
+            let isDisabled = false
+            let disabledReason = ''
+
+            // Define plan requirements for each page
+            const planRequirements: Record<string, string> = {
+              'Productos': 'BÁSICO',
+              'Categorías': 'BÁSICO',
+              'Inventario': 'BÁSICO',
+              'Empleados': 'BÁSICO',
+              'Turnos': 'BÁSICO',
+              'Proveedores': 'PRO',
+              'Órdenes de Compra': 'PRO',
+              'Analíticas': 'PRO',
+              'Reportes': 'PRO',
+              'Ventas': 'BÁSICO',
+            }
+
+            const requiredPlan = planRequirements[item.label]
+            if (requiredPlan) {
+              const planHierarchy = { 'FREE': 0, 'BASICO': 1, 'PRO': 2 }
+              const currentLevel = planHierarchy[plan as keyof typeof planHierarchy] || 0
+              const requiredLevel = planHierarchy[requiredPlan as keyof typeof planHierarchy] || 0
+
+              if (currentLevel < requiredLevel) {
+                isDisabled = true
+                disabledReason = `Necesitas plan ${requiredPlan} para usarlo`
+              }
+            }
+
+            return (
+              <SidebarItem
+                key={item.href}
+                item={item}
+                storeSlug={storeSlug}
+                isOwner={isOwner}
+                pathname={pathname}
+                index={index}
+                plan={plan}
+                isDisabled={isDisabled}
+                disabledReason={disabledReason}
+              />
+            )
+          })}
         </AnimatePresence>
       </nav>
 
@@ -222,12 +257,18 @@ function SidebarItem({
   isOwner,
   pathname,
   index,
+  plan,
+  isDisabled,
+  disabledReason,
 }: {
   item: NavItem
   storeSlug: string
   isOwner: boolean
   pathname: string
   index: number
+  plan?: 'FREE' | 'BASICO' | 'PRO' | null
+  isDisabled?: boolean
+  disabledReason?: string
 }) {
   const hasPermission = usePermission(item.permission as any)
 
@@ -237,35 +278,47 @@ function SidebarItem({
   const isActive = pathname === item.href
   const Icon = item.icon
 
+  const content = (
+    <div className={cn(
+      'group relative flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300',
+      isActive
+        ? 'text-white shadow-lg shadow-primary/20 bg-primary'
+        : isDisabled
+          ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+          : 'text-gray-500 hover:text-primary hover:bg-primary/5 dark:text-gray-400 dark:hover:text-primary-foreground dark:hover:bg-primary/20'
+    )}>
+      <div className="flex items-center gap-3">
+        <Icon className={cn("h-5 w-5 transition-transform duration-300 group-hover:scale-110", isActive ? "scale-110" : "")} />
+        <span>{item.label}</span>
+      </div>
+      {isActive && (
+        <motion.div
+          layoutId="active-indicator"
+          className="h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+        />
+      )}
+      {!isActive && !isDisabled && (
+        <ChevronRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+      )}
+    </div>
+  )
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.03 }}
+      title={disabledReason}
     >
-      <Link
-        href={item.href}
-        className={cn(
-          'group relative flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300',
-          isActive
-            ? 'text-white shadow-lg shadow-primary/20 bg-primary'
-            : 'text-gray-500 hover:text-primary hover:bg-primary/5 dark:text-gray-400 dark:hover:text-primary-foreground dark:hover:bg-primary/20'
-        )}
-      >
-        <div className="flex items-center gap-3">
-          <Icon className={cn("h-5 w-5 transition-transform duration-300 group-hover:scale-110", isActive ? "scale-110" : "")} />
-          <span>{item.label}</span>
+      {isDisabled ? (
+        <div className="cursor-not-allowed">
+          {content}
         </div>
-        {isActive && (
-          <motion.div
-            layoutId="active-indicator"
-            className="h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-          />
-        )}
-        {!isActive && (
-          <ChevronRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
-        )}
-      </Link>
+      ) : (
+        <Link href={item.href}>
+          {content}
+        </Link>
+      )}
     </motion.div>
   )
 }

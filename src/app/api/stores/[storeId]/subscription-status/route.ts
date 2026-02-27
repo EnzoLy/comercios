@@ -38,28 +38,34 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   // Build checkout URL for upgrade/renewal if needed
   let checkoutUrl: string | null = null
-  const needsUpgrade =
-    store.subscriptionPlan === 'FREE' ||
-    store.subscriptionStatus === 'EXPIRED' ||
-    store.subscriptionStatus === 'EXPIRING_SOON'
 
-  console.log("subscriptionPlan: " + store.subscriptionPlan)
-  console.log("subscriptionStatus: " + store.subscriptionStatus)
-
-  if (needsUpgrade && userId) {
+  if (userId) {
     try {
-      const user = session.user;
+      const user = session.user
+      let targetPlan: 'BASICO' | 'PRO' | null = null
 
-      // Default to BASICO for upgrades; expired PRO users get PRO checkout
-      const targetPlan = store.subscriptionPlan === 'PRO' ? 'PRO' : 'BASICO'
+      // Determine which plan to offer based on current plan
+      if (store.subscriptionPlan === 'FREE') {
+        // FREE users can upgrade to BASICO
+        targetPlan = 'BASICO'
+      } else if (store.subscriptionPlan === 'BASICO') {
+        // BASICO users can upgrade to PRO
+        targetPlan = 'PRO'
+      } else if (store.subscriptionPlan === 'PRO' && (store.subscriptionStatus === 'EXPIRED' || store.subscriptionStatus === 'EXPIRING_SOON')) {
+        // Expired PRO users can renew PRO
+        targetPlan = 'PRO'
+      }
+      // If plan is PRO and active, no checkout URL (already at max)
 
-      checkoutUrl = buildCheckoutUrl(
-        targetPlan,
-        storeId,
-        store.slug,
-        user?.email ?? '',
-        user?.name ?? '',
-      )
+      if (targetPlan) {
+        checkoutUrl = buildCheckoutUrl(
+          targetPlan,
+          storeId,
+          store.slug,
+          user?.email ?? '',
+          user?.name ?? '',
+        )
+      }
     } catch {
       // LS env vars not configured — fail silently
     }

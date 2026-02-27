@@ -18,13 +18,19 @@ type Plan = 'free' | 'basico' | 'pro'
 
 export async function POST(request: Request) {
   try {
+    console.log('[Register] Starting registration')
     const body = await request.json()
+    console.log('[Register] Body:', { email: body.email, storeName: body.storeName, plan: body.plan })
+
     const validated = signUpSchema.parse(body)
+    console.log('[Register] Validation passed')
 
     // Extract plan from body (not part of signUpSchema validation)
     const plan: Plan = (['basico', 'pro'] as Plan[]).includes(body.plan) ? body.plan : 'free'
+    console.log('[Register] Plan:', plan)
 
     const dataSource = await getDataSource()
+    console.log('[Register] DataSource connected')
 
     // Check if user already exists
     const userRepo = dataSource.getRepository(User)
@@ -41,17 +47,22 @@ export async function POST(request: Request) {
 
     // Use transaction to create user + store + employment atomically
     const result = await dataSource.transaction(async (manager) => {
-      // Hash password
-      const hashedPassword = await bcrypt.hash(validated.password, 10)
+      try {
+        console.log('[Register] Starting transaction')
+        // Hash password
+        const hashedPassword = await bcrypt.hash(validated.password, 10)
+        console.log('[Register] Password hashed')
 
-      // Create user
-      const user = manager.create(User, {
-        name: validated.name,
-        email: validated.email,
-        password: hashedPassword,
-        role: UserRole.STORE_OWNER,
-      })
-      await manager.save(user)
+        // Create user
+        const user = manager.create(User, {
+          name: validated.name,
+          email: validated.email,
+          password: hashedPassword,
+          role: UserRole.STORE_OWNER,
+        })
+        console.log('[Register] User entity created, saving...')
+        await manager.save(user)
+        console.log('[Register] User saved with ID:', user.id)
 
       // Generate unique slug for store
       let slug = generateSlug(validated.storeName)
@@ -79,35 +90,48 @@ export async function POST(request: Request) {
           ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7-day grace period
           : undefined
 
-      // Create store
-      const store = manager.create(Store, {
-        name: validated.storeName,
-        slug,
-        ownerId: user.id,
-        subscriptionPlan,
-        isPermanent,
-        subscriptionStatus: subscriptionStatus as Store['subscriptionStatus'],
-        subscriptionEndDate,
-      })
-      await manager.save(store)
+        // Create store
+        console.log('[Register] Creating store with slug:', slug)
+        const store = manager.create(Store, {
+          name: validated.storeName,
+          slug,
+          ownerId: user.id,
+          subscriptionPlan,
+          isPermanent,
+          subscriptionStatus: subscriptionStatus as Store['subscriptionStatus'],
+          subscriptionEndDate,
+        })
+        console.log('[Register] Store entity created, saving...')
+        await manager.save(store)
+        console.log('[Register] Store saved with ID:', store.id)
 
-      // Create employment linking user to store
-      const employment = manager.create(Employment, {
-        userId: user.id,
-        storeId: store.id,
-        role: EmploymentRole.ADMIN,
-        isActive: true,
-        startDate: new Date(),
-      })
-      await manager.save(employment)
+        // Create employment linking user to store
+        console.log('[Register] Creating employment')
+        const employment = manager.create(Employment, {
+          userId: user.id,
+          storeId: store.id,
+          role: EmploymentRole.ADMIN,
+          isActive: true,
+          startDate: new Date(),
+        })
+        console.log('[Register] Employment entity created, saving...')
+        await manager.save(employment)
+        console.log('[Register] Employment saved')
 
-      return { user, store, employment }
+        return { user, store, employment }
+      } catch (txError) {
+        console.error('[Register] Transaction error:', txError)
+        throw txError
+      }
     })
+
+    console.log('[Register] Transaction completed successfully')
 
     // Build LemonSqueezy checkout URL for paid plans
     let checkoutUrl: string | null = null
     if (plan !== 'free') {
       try {
+        console.log('[Register] Building checkout URL for plan:', plan)
         checkoutUrl = buildCheckoutUrl(
           plan === 'basico' ? 'BASICO' : 'PRO',
           result.store.id,
@@ -115,12 +139,14 @@ export async function POST(request: Request) {
           result.user.email,
           result.user.name,
         )
+        console.log('[Register] Checkout URL built')
       } catch (error) {
         // Log but don't fail registration — user can upgrade from dashboard
-        console.error('Failed to build checkout URL:', error)
+        console.error('[Register] Failed to build checkout URL:', error)
       }
     }
 
+    console.log('[Register] Registration completed successfully')
     return NextResponse.json(
       {
         message: 'Registration successful',
@@ -139,9 +165,15 @@ export async function POST(request: Request) {
       { status: 201 }
     )
   } catch (error) {
-    console.error('Registration error:', error)
+    console.error('[Register] CAUGHT ERROR:', error)
+    console.error('[Register] Error type:', error instanceof Error ? error.constructor.name : typeof error)
+    if (error instanceof Error) {
+      console.error('[Register] Error message:', error.message)
+      console.error('[Register] Error stack:', error.stack)
+    }
 
     if (error instanceof Error && error.name === 'ZodError') {
+      console.error('[Register] ZodError details:', error)
       return NextResponse.json(
         { error: 'Invalid input data', details: error },
         { status: 400 }
@@ -149,7 +181,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

@@ -66,6 +66,7 @@ export const authConfig: NextAuthConfig = {
                 slug: emp.store.slug,
                 employmentRole: emp.role,
                 isOwner: emp.store.ownerId === user.id,
+                subscriptionPlan: emp.store.subscriptionPlan || 'FREE',
               }))
 
             // Return user with stores
@@ -99,6 +100,7 @@ export const authConfig: NextAuthConfig = {
                 slug: emp.store.slug,
                 employmentRole: emp.role,
                 isOwner: emp.store.ownerId === user.id,
+                subscriptionPlan: emp.store.subscriptionPlan || 'FREE',
               }))
 
             return {
@@ -163,6 +165,7 @@ export const authConfig: NextAuthConfig = {
                 slug: emp.store.slug,
                 employmentRole: emp.role,
                 isOwner: emp.store.ownerId === freshUser.id,
+                subscriptionPlan: emp.store.subscriptionPlan || 'FREE',
               }))
 
             token.name = freshUser.name
@@ -191,6 +194,7 @@ export const authConfig: NextAuthConfig = {
           slug: string
           employmentRole: string
           isOwner: boolean
+          subscriptionPlan: string
         }>
       }
       return session

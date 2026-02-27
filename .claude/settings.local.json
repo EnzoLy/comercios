@@ -19,7 +19,16 @@
       "Bash(timeout:*)",
       "Bash(if exist .next rmdir /s /q .next)",
       "Bash(pnpm test:unit:*)",
-      "Bash(pnpm test:e2e:*)"
+      "Bash(pnpm test:e2e:*)",
+      "Bash(playwright-cli snapshot:*)",
+      "Bash(playwright-cli click:*)",
+      "Bash(playwright-cli fill:*)",
+      "Bash(playwright-cli press:*)",
+      "Bash(playwright-cli goto:*)",
+      "Bash(playwright-cli close:*)",
+      "Bash(playwright-cli open:*)",
+      "Bash(playwright-cli tab-select:*)",
+      "Bash(playwright-cli:*)"
     ]
   }
 }
