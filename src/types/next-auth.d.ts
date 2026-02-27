@@ -15,6 +15,7 @@ declare module 'next-auth' {
         slug: string
         employmentRole: string
         isOwner: boolean
+        subscriptionPlan?: string
       }>
       mustChangePassword: boolean
     } & DefaultSession['user']
@@ -32,6 +33,7 @@ declare module 'next-auth' {
       slug: string
       employmentRole: string
       isOwner: boolean
+      subscriptionPlan?: string
     }>
     mustChangePassword: boolean
   }
@@ -50,6 +52,7 @@ declare module 'next-auth/jwt' {
       slug: string
       employmentRole: string
       isOwner: boolean
+      subscriptionPlan?: string
     }>
     mustChangePassword: boolean
   }
