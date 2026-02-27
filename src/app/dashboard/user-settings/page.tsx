@@ -53,6 +53,7 @@ export default function UserSettingsPage() {
           isOwner={defaultStore?.isOwner || false}
           isImpersonating={false}
           role={session.user.role}
+          plan="FREE"
         />
         <main className="min-h-[calc(100vh-68px)]">
           <div className="p-4 md:p-8 space-y-6">
@@ -81,27 +82,27 @@ export default function UserSettingsPage() {
             </Alert>
 
             <Tabs defaultValue="password" className="w-full">
-        <TabsList className="grid w-full max-w-2xl grid-cols-2">
-          <TabsTrigger value="password" className="gap-2">
-            <Lock className="h-4 w-4" />
-            Contraseña
-          </TabsTrigger>
-          <TabsTrigger value="pin" className="gap-2">
-            <Key className="h-4 w-4" />
-            PIN de Usuario
-          </TabsTrigger>
-        </TabsList>
+              <TabsList className="grid w-full max-w-2xl grid-cols-2">
+                <TabsTrigger value="password" className="gap-2">
+                  <Lock className="h-4 w-4" />
+                  Contraseña
+                </TabsTrigger>
+                <TabsTrigger value="pin" className="gap-2">
+                  <Key className="h-4 w-4" />
+                  PIN de Usuario
+                </TabsTrigger>
+              </TabsList>
 
-        {/* Tab de Contraseña */}
-        <TabsContent value="password" className="space-y-6 mt-6">
-          <ChangePasswordForm />
-        </TabsContent>
+              {/* Tab de Contraseña */}
+              <TabsContent value="password" className="space-y-6 mt-6">
+                <ChangePasswordForm />
+              </TabsContent>
 
-        {/* Tab de PIN */}
-        <TabsContent value="pin" className="space-y-6 mt-6">
-          <UserPinForm />
-        </TabsContent>
-      </Tabs>
+              {/* Tab de PIN */}
+              <TabsContent value="pin" className="space-y-6 mt-6">
+                <UserPinForm />
+              </TabsContent>
+            </Tabs>
           </div>
         </main>
       </div>

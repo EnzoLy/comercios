@@ -27,9 +27,10 @@ interface HeaderProps {
   isOwner: boolean
   isImpersonating?: boolean
   role?: string
+  plan?: 'FREE' | 'BASICO' | 'PRO' | null
 }
 
-export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: HeaderProps) {
+export function Header({ userName, storeSlug, isOwner, isImpersonating, role, plan }: HeaderProps) {
   const router = useRouter()
   const { data: session } = useSession()
   const { clearImpersonation } = useActiveEmployee()
@@ -96,6 +97,12 @@ export function Header({ userName, storeSlug, isOwner, isImpersonating, role }: 
       </div>
 
       <div className="flex items-center gap-4">
+        {isOwner && plan && (
+          <span className="hidden md:inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full border bg-muted text-muted-foreground">
+            Plan: {plan === 'FREE' ? 'Gratis' : plan === 'BASICO' ? 'Básico' : 'Pro'}
+          </span>
+        )}
+
         {isImpersonating && (
           <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white" style={{ backgroundColor: 'var(--color-primary)' }}>
             <UserX className="h-4 w-4" />

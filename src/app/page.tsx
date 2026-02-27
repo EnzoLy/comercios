@@ -23,6 +23,10 @@ export default async function Home() {
             <Image src="/logo-processed.png" alt="Logo" width={32} height={32} className="rounded-lg object-cover" />
             <h1 className="text-xl font-bold">Commerce System</h1>
           </div>
+          <nav className="hidden md:flex items-center gap-6">
+            <Link href="/" className="text-sm font-semibold text-foreground">Inicio</Link>
+            <Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Precios</Link>
+          </nav>
           <div className="flex gap-2">
             <Button asChild variant="ghost">
               <Link href="/auth/signin">Iniciar Sesión</Link>

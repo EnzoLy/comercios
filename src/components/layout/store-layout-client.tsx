@@ -5,10 +5,11 @@ import { Header } from './header'
 import { ActiveEmployeeProvider, useActiveEmployee } from '@/contexts/active-employee-context'
 import { useSession } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 interface StoreLayoutClientProps {
   children: React.ReactNode
+  storeId: string
   storeSlug: string
   initialUserName: string
   initialUserEmail: string
@@ -17,6 +18,7 @@ interface StoreLayoutClientProps {
 
 function StoreLayoutContent({
   children,
+  storeId,
   storeSlug,
   initialUserName,
   initialUserEmail,
@@ -26,6 +28,20 @@ function StoreLayoutContent({
   const { data: session } = useSession()
   const pathname = usePathname()
   const router = useRouter()
+
+  const [plan, setPlan] = useState<'FREE' | 'BASICO' | 'PRO' | null>(null)
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!initialIsOwner) return
+    fetch(`/api/stores/${storeId}/subscription-status`)
+      .then((r) => r.json())
+      .then((data) => {
+        setPlan(data.plan ?? null)
+        setCheckoutUrl(data.checkoutUrl ?? null)
+      })
+      .catch(() => {})
+  }, [storeId, initialIsOwner])
 
   // Use active employee if impersonating, otherwise use session/initial props
   const displayName = activeEmployee?.name || initialUserName
@@ -96,7 +112,14 @@ function StoreLayoutContent({
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar key={`${displayRole}-${displayIsOwner}`} storeSlug={storeSlug} isOwner={displayIsOwner} role={displayRole} />
+      <Sidebar
+        key={`${displayRole}-${displayIsOwner}`}
+        storeSlug={storeSlug}
+        isOwner={displayIsOwner}
+        role={displayRole}
+        plan={plan}
+        checkoutUrl={checkoutUrl}
+      />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header
@@ -105,6 +128,7 @@ function StoreLayoutContent({
           isOwner={displayIsOwner}
           isImpersonating={isImpersonating}
           role={displayRole}
+          plan={plan}
         />
 
         <main className="flex-1 overflow-auto bg-background">

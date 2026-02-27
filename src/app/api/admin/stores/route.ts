@@ -36,6 +36,7 @@ export async function GET() {
         employmentCount: store.employments?.length || 0,
         subscription: {
           status: store.subscriptionStatus,
+          plan: store.subscriptionPlan ?? 'FREE',
           startDate: store.subscriptionStartDate,
           endDate: store.subscriptionEndDate,
           isPermanent: store.isPermanent,

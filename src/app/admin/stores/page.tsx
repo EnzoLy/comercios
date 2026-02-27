@@ -25,6 +25,7 @@ interface Store {
   employmentCount: number
   subscription: {
     status: 'ACTIVE' | 'EXPIRING_SOON' | 'EXPIRED' | 'PERMANENT'
+    plan?: 'FREE' | 'BASICO' | 'PRO'
     startDate?: Date | null
     endDate?: Date | null
     isPermanent: boolean

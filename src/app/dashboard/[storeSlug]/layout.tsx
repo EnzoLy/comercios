@@ -18,6 +18,7 @@ export default async function StoreLayout({
 
   return (
     <StoreLayoutClient
+      storeId={context.storeId}
       storeSlug={context.slug}
       initialUserName={context.userName}
       initialUserEmail={context.userEmail}

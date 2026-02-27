@@ -87,6 +87,22 @@ export class Store {
   @Column({ type: 'varchar', length: 20, default: 'MONTHLY', name: 'subscription_period_type' })
   subscriptionPeriodType!: 'MONTHLY' | 'YEARLY' | 'CUSTOM'
 
+  // LemonSqueezy Integration
+  @Column({ type: 'varchar', length: 20, nullable: true, name: 'subscription_plan' })
+  subscriptionPlan?: 'FREE' | 'BASICO' | 'PRO'
+
+  @Column({ type: 'varchar', length: 100, nullable: true, name: 'lemonsqueezy_subscription_id' })
+  lemonSqueezySubscriptionId?: string
+
+  @Column({ type: 'varchar', length: 100, nullable: true, name: 'lemonsqueezy_customer_id' })
+  lemonSqueezyCustomerId?: string
+
+  @Column({ type: 'varchar', length: 100, nullable: true, name: 'lemonsqueezy_variant_id' })
+  lemonSqueezyVariantId?: string
+
+  @Column({ type: 'varchar', length: 50, nullable: true, name: 'lemonsqueezy_status' })
+  lemonSqueezyStatus?: string
+
   // Tax Configuration
   @Column({ type: 'boolean', default: false, name: 'tax_enabled' })
   taxEnabled!: boolean

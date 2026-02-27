@@ -1,15 +1,30 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertTriangle, ArrowLeft, Mail } from 'lucide-react'
-import Link from 'next/link'
+import { AlertTriangle, ArrowLeft, ExternalLink, RefreshCw, Loader2 } from 'lucide-react'
 
-export default function SubscriptionExpiredPage() {
+function SubscriptionExpiredContent() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const storeSlug = params.storeSlug as string
+  const storeId = searchParams.get('storeId')
+
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null)
+  const [isLoadingUrl, setIsLoadingUrl] = useState(false)
+
+  useEffect(() => {
+    if (!storeId) return
+    setIsLoadingUrl(true)
+    fetch(`/api/stores/${storeId}/subscription-status`)
+      .then((r) => r.json())
+      .then((data) => setCheckoutUrl(data.checkoutUrl ?? null))
+      .catch(() => {})
+      .finally(() => setIsLoadingUrl(false))
+  }, [storeId])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-orange-50 p-4">
@@ -38,9 +53,7 @@ export default function SubscriptionExpiredPage() {
             <ul className="space-y-2 text-gray-700">
               <li className="flex items-start gap-2">
                 <span className="text-orange-500 mt-1">•</span>
-                <span>
-                  El período de suscripción de esta tienda ha finalizado
-                </span>
+                <span>El período de suscripción de esta tienda ha finalizado</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-orange-500 mt-1">•</span>
@@ -50,54 +63,76 @@ export default function SubscriptionExpiredPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-orange-500 mt-1">•</span>
-                <span>
-                  Los datos de la tienda están seguros y no se perderán
-                </span>
+                <span>Los datos de la tienda están seguros y no se perderán</span>
               </li>
             </ul>
           </div>
 
+          {/* Self-service renewal */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
             <h3 className="font-semibold text-lg mb-3 text-blue-900 flex items-center gap-2">
-              <Mail className="h-5 w-5" />
-              ¿Cómo renovar la suscripción?
+              <RefreshCw className="h-5 w-5" />
+              Renovar tu suscripción
             </h3>
             <p className="text-gray-700 mb-4">
-              Para renovar la suscripción y restaurar el acceso a esta tienda, contacta con el
-              administrador del sistema:
+              Podés renovar tu suscripción directamente desde acá. El acceso se restaurará
+              automáticamente después del pago.
             </p>
-            <div className="bg-white rounded-md p-4 border border-blue-200">
-              <p className="font-mono text-sm text-gray-800">
-                Correo: <a href="mailto:admin@tuempresa.com" className="text-blue-600 hover:underline">
-                  admin@tuempresa.com
+
+            {isLoadingUrl ? (
+              <Button disabled className="w-full">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Cargando...
+              </Button>
+            ) : checkoutUrl ? (
+              <Button asChild className="w-full">
+                <a href={checkoutUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4" />
+                  Renovar con LemonSqueezy
                 </a>
-              </p>
-              <p className="font-mono text-sm text-gray-800 mt-2">
-                Teléfono: <a href="tel:+1234567890" className="text-blue-600 hover:underline">
-                  +123 456 7890
+              </Button>
+            ) : (
+              <div className="bg-white rounded-md p-4 border border-blue-200 text-sm text-gray-700">
+                Contactá a soporte por WhatsApp para renovar tu plan:{' '}
+                <a
+                  href="https://wa.me/542954393274"
+                  className="text-blue-600 hover:underline font-medium"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  +54 2954 393274
                 </a>
-              </p>
-            </div>
+              </div>
+            )}
           </div>
 
-          <div className="pt-4 flex flex-col sm:flex-row gap-3">
+          <div className="pt-2 flex flex-col sm:flex-row gap-3">
             <Button
               variant="outline"
               className="flex-1"
               onClick={() => router.push('/dashboard/select-store')}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Volver a Selección de Tiendas
+              Volver a Mis Tiendas
             </Button>
             <Button
+              variant="outline"
               className="flex-1"
               onClick={() => router.push('/dashboard')}
             >
-              Ir al Dashboard Principal
+              Ir al Dashboard
             </Button>
           </div>
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function SubscriptionExpiredPage() {
+  return (
+    <Suspense>
+      <SubscriptionExpiredContent />
+    </Suspense>
   )
 }

@@ -110,10 +110,10 @@ export async function middleware(request: NextRequest) {
           const accessCheck = await SubscriptionService.checkStoreAccess(store.storeId)
 
           if (!accessCheck.hasAccess) {
-            // Redirect to subscription expired page
-            return NextResponse.redirect(
-              new URL(`/dashboard/${storeSlug}/subscription-expired`, request.url)
-            )
+            // Redirect to subscription expired page, passing storeId for self-service renewal
+            const expiredUrl = new URL(`/dashboard/${storeSlug}/subscription-expired`, request.url)
+            expiredUrl.searchParams.set('storeId', store.storeId)
+            return NextResponse.redirect(expiredUrl)
           }
         }
 

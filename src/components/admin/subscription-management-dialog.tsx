@@ -14,7 +14,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { SubscriptionStatusBadge } from './subscription-status-badge'
-import { Loader2, Calendar, Infinity, RefreshCw, History } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Loader2, Calendar, Infinity, RefreshCw, History, Tag } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -31,6 +32,7 @@ interface Store {
   name: string
   subscription: {
     status: 'ACTIVE' | 'EXPIRING_SOON' | 'EXPIRED' | 'PERMANENT'
+    plan?: 'FREE' | 'BASICO' | 'PRO'
     startDate?: Date | null
     endDate?: Date | null
     isPermanent: boolean
@@ -70,6 +72,10 @@ export function SubscriptionManagementDialog({
 }) {
   const [isLoading, setIsLoading] = useState(false)
   const [isTogglingPermanent, setIsTogglingPermanent] = useState(false)
+  const [isSettingPlan, setIsSettingPlan] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState<'FREE' | 'BASICO' | 'PRO'>(
+    store.subscription.plan ?? 'FREE'
+  )
   const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([])
   const [loadingHistory, setLoadingHistory] = useState(false)
 
@@ -126,6 +132,30 @@ export function SubscriptionManagementDialog({
       toast.error('Error al renovar suscripción')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleSetPlan = async () => {
+    setIsSettingPlan(true)
+    try {
+      const res = await fetch(`/api/admin/subscriptions/${store.id}/set-plan`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: selectedPlan }),
+      })
+
+      const result = await res.json()
+      if (!res.ok) {
+        toast.error(result.error || 'Error al actualizar el plan')
+        return
+      }
+
+      toast.success(`Plan actualizado a ${selectedPlan}`)
+      onSuccess()
+    } catch (error) {
+      toast.error('Error al actualizar el plan')
+    } finally {
+      setIsSettingPlan(false)
     }
   }
 
@@ -212,6 +242,44 @@ export function SubscriptionManagementDialog({
                 </p>
               </div>
             )}
+          </div>
+
+          <Separator />
+
+          {/* Plan Selector */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg border">
+            <div>
+              <h3 className="font-medium flex items-center gap-2">
+                <Tag className="h-5 w-5 text-gray-600" />
+                Plan de Suscripción
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Cambiá el plan asignado a esta tienda
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Select
+                value={selectedPlan}
+                onValueChange={(v) => setSelectedPlan(v as 'FREE' | 'BASICO' | 'PRO')}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="FREE">FREE</SelectItem>
+                  <SelectItem value="BASICO">BÁSICO</SelectItem>
+                  <SelectItem value="PRO">PRO</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={handleSetPlan}
+                disabled={isSettingPlan || selectedPlan === store.subscription.plan}
+                size="sm"
+              >
+                {isSettingPlan && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Guardar
+              </Button>
+            </div>
           </div>
 
           <Separator />
