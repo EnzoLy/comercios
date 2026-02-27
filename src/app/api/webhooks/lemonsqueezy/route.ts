@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    await handleSubscriptionEvent(eventName, payload as Parameters<typeof handleSubscriptionEvent>[1])
+    await handleSubscriptionEvent(eventName, payload as unknown as Parameters<typeof handleSubscriptionEvent>[1])
     return NextResponse.json({ received: true }, { status: 200 })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
