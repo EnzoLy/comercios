@@ -112,11 +112,12 @@ export function verifyWebhookSignature(
 async function fetchLSSubscription(subscriptionId: number): Promise<LemonSqueezySubscriptionAttributes | null> {
   const apiKey = process.env.LEMONSQUEEZY_API_KEY
   if (!apiKey) {
-    console.warn('[LemonSqueezy] LEMONSQUEEZY_API_KEY not set — cannot fetch subscription')
+    console.error('[LemonSqueezy] fetchLSSubscription: LEMONSQUEEZY_API_KEY not set in environment')
     return null
   }
 
   try {
+    console.log(`[LemonSqueezy] Fetching subscription ${subscriptionId} from LS API`)
     const res = await fetch(
       `https://api.lemonsqueezy.com/v1/subscriptions/${subscriptionId}`,
       {
@@ -127,13 +128,15 @@ async function fetchLSSubscription(subscriptionId: number): Promise<LemonSqueezy
       }
     )
     if (!res.ok) {
-      console.error(`[LemonSqueezy] fetchLSSubscription ${subscriptionId} → ${res.status}`)
+      console.error(`[LemonSqueezy] fetchLSSubscription ${subscriptionId} → HTTP ${res.status}`)
       return null
     }
     const json = await res.json()
-    return (json?.data?.attributes as LemonSqueezySubscriptionAttributes) ?? null
+    const attrs = json?.data?.attributes as LemonSqueezySubscriptionAttributes | undefined
+    console.log(`[LemonSqueezy] Subscription ${subscriptionId} fetched: variant_id=${attrs?.variant_id}, status=${attrs?.status}`)
+    return attrs ?? null
   } catch (err) {
-    console.error('[LemonSqueezy] fetchLSSubscription error:', err)
+    console.error('[LemonSqueezy] fetchLSSubscription error:', err instanceof Error ? err.message : err)
     return null
   }
 }
@@ -237,8 +240,14 @@ export async function handleSubscriptionEvent(
 
         if (lsVariantId === process.env.LEMONSQUEEZY_BASICO_VARIANT_ID) {
           store.subscriptionPlan = 'BASICO'
+          console.log(`[LemonSqueezy] Plan updated to BASICO (variant ${lsVariantId})`)
         } else if (lsVariantId === process.env.LEMONSQUEEZY_PRO_VARIANT_ID) {
           store.subscriptionPlan = 'PRO'
+          console.log(`[LemonSqueezy] Plan updated to PRO (variant ${lsVariantId})`)
+        } else {
+          console.warn(
+            `[LemonSqueezy] Variant ${lsVariantId} doesn't match env vars — BASICO=${process.env.LEMONSQUEEZY_BASICO_VARIANT_ID} PRO=${process.env.LEMONSQUEEZY_PRO_VARIANT_ID}`
+          )
         }
 
         const renewsAt = sub.renews_at ? new Date(sub.renews_at) : null
@@ -246,6 +255,9 @@ export async function handleSubscriptionEvent(
         store.subscriptionEndDate = (endsAt ?? renewsAt) ?? undefined
       } else {
         // API unavailable — at minimum confirm access is active
+        console.warn(
+          `[LemonSqueezy] Could not fetch subscription ${invoiceAttrs.subscription_id} from LS API — plan will not be updated`
+        )
         store.lemonSqueezySubscriptionId = String(invoiceAttrs.subscription_id)
         store.lemonSqueezyCustomerId = String(invoiceAttrs.customer_id)
       }
@@ -255,7 +267,7 @@ export async function handleSubscriptionEvent(
       store.subscriptionStatus = 'ACTIVE'
 
       console.log(
-        `[LemonSqueezy] subscription_payment_success — store ${storeId}, reason: ${invoiceAttrs.billing_reason}`
+        `[LemonSqueezy] subscription_payment_success — store ${storeId}, plan=${store.subscriptionPlan}, status=${store.subscriptionStatus}, reason: ${invoiceAttrs.billing_reason}`
       )
       break
     }
@@ -272,5 +284,9 @@ export async function handleSubscriptionEvent(
       console.log(`[LemonSqueezy] Unhandled event: ${eventName}`)
   }
 
+  console.log(
+    `[LemonSqueezy] Saving store ${storeId}: plan=${store.subscriptionPlan}, status=${store.subscriptionStatus}, isPermanent=${store.isPermanent}, lsSubId=${store.lemonSqueezySubscriptionId}`
+  )
   await storeRepo.save(store)
+  console.log(`[LemonSqueezy] Store ${storeId} saved successfully to database`)
 }
