@@ -217,7 +217,7 @@ export default function NewQuotePage() {
   }
 
   return (
-    <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8 flex flex-col items-center justify-center">
       <div className="max-w-4xl">
         <Link
           href={`/dashboard/${storeSlug}/quotes`}

@@ -72,7 +72,7 @@ export default function AppointmentsPage() {
     clientName: '',
     clientPhone: '',
     scheduledAt: new Date().toISOString().slice(0, 16),
-    status: 'PENDING' as const,
+    status: 'PENDING' as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED',
     notes: '',
   })
 
@@ -130,7 +130,7 @@ export default function AppointmentsPage() {
         await fetch(`/api/stores/${storeId}/appointments/${editingId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: formData.status, ...body }),
+          body: JSON.stringify(body),
         })
       } else {
         await fetch(`/api/stores/${storeId}/appointments`, {

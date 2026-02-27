@@ -262,7 +262,7 @@ export async function POST(
 
       for (const item of validated.items) {
         // Skip stock management for services
-        if (item.serviceId) continue
+        if (item.serviceId || !item.productId) continue
 
         const product = await manager.findOne(Product, {
           where: { id: item.productId },

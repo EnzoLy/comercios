@@ -358,6 +358,7 @@ export default function POSPage() {
         ...prev,
         {
           productId: product.id,
+          itemType: 'product' as const,
           name: product.name,
           sku: product.sku,
           price: Number(product.sellingPrice) || 0,
@@ -390,7 +391,7 @@ export default function POSPage() {
 
         const existing = newCart.find((i) => i.productId === item.productId)
         if (existing) {
-          if (existing.quantity + item.quantity > existing.stock) {
+          if (existing.stock && existing.quantity + item.quantity > existing.stock) {
             toast.warning(`${existing.name}: Stock insuficiente`)
             allAdded = false
             continue
@@ -399,6 +400,7 @@ export default function POSPage() {
         } else {
           newCart.push({
             productId: item.productId,
+            itemType: 'product' as const,
             name: item.name,
             sku: item.sku,
             price: item.price,
@@ -420,13 +422,14 @@ export default function POSPage() {
     setCartDiscount(0)
   }
 
-  const updateQuantity = (productId: string, delta: number) => {
+  const updateQuantity = (productId: string | undefined, delta: number, serviceId?: string) => {
     setCart((prev) =>
       prev.map((item) => {
-        if (item.productId === productId) {
+        const matches = productId ? item.productId === productId : item.serviceId === serviceId
+        if (matches) {
           const newQuantity = item.quantity + delta
           if (newQuantity <= 0) return item
-          if (newQuantity > item.stock) {
+          if (item.stock && newQuantity > item.stock) {
             toast.error('Stock insuficiente')
             return item
           }
@@ -437,8 +440,12 @@ export default function POSPage() {
     )
   }
 
-  const removeFromCart = (productId: string) => {
-    setCart((prev) => prev.filter((item) => item.productId !== productId))
+  const removeFromCart = (productId?: string, serviceId?: string) => {
+    setCart((prev) =>
+      prev.filter((item) =>
+        productId ? item.productId !== productId : item.serviceId !== serviceId
+      )
+    )
   }
 
   const clearCart = () => setCart([])
@@ -602,7 +609,7 @@ export default function POSPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => removeFromCart(item.productId)}
+                    onClick={() => removeFromCart(item.productId, item.serviceId)}
                     className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -614,7 +621,7 @@ export default function POSPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => updateQuantity(item.productId, -1)}
+                      onClick={() => updateQuantity(item.productId, -1, item.serviceId)}
                       disabled={item.quantity <= 1}
                       className="h-7 w-7 rounded-lg"
                     >
@@ -624,8 +631,8 @@ export default function POSPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => updateQuantity(item.productId, 1)}
-                      disabled={item.quantity >= item.stock}
+                      onClick={() => updateQuantity(item.productId, 1, item.serviceId)}
+                      disabled={item.quantity >= (item.stock || Infinity)}
                       className="h-7 w-7 rounded-lg"
                     >
                       <Plus className="h-3 w-3" />

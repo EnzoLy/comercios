@@ -22,7 +22,7 @@ interface Service {
   description: string
   price: number
   duration: number
-  categoryId: string
+  categoryId: string | null
   isActive: boolean
 }
 

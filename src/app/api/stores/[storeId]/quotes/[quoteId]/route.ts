@@ -6,7 +6,7 @@ import {
 } from '@/lib/auth/permissions'
 import { getDataSource } from '@/lib/db'
 import { Quote, QuoteStatus } from '@/lib/db/entities/quote.entity'
-import { QuoteItem } from '@/lib/db/entities/quote-item.entity'
+import { QuoteItem, QuoteItemType } from '@/lib/db/entities/quote-item.entity'
 import { Product } from '@/lib/db/entities/product.entity'
 import { Service } from '@/lib/db/entities/service.entity'
 import { EmploymentRole } from '@/lib/db/entities/employment.entity'
@@ -137,9 +137,10 @@ export async function PATCH(
 
         // Create new items
         for (const item of calculatedItems) {
+          const itemTypeEnum = item.itemType as QuoteItemType
           await manager.insert(QuoteItem, {
             quoteId,
-            itemType: item.itemType,
+            itemType: itemTypeEnum,
             productId: item.productId || null,
             serviceId: item.serviceId || null,
             name: item.name,
@@ -162,9 +163,7 @@ export async function PATCH(
       // Update other fields
       if (validated.clientName) quote.clientName = validated.clientName
       if (validated.clientPhone !== undefined) quote.clientPhone = validated.clientPhone
-      if (validated.clientEmail !== undefined) quote.clientEmail = validated.clientEmail
       if (validated.notes !== undefined) quote.notes = validated.notes
-      if (validated.expiresAt !== undefined) quote.expiresAt = validated.expiresAt
       if (validated.status) quote.status = validated.status as QuoteStatus
 
       await quoteRepo.save(quote)

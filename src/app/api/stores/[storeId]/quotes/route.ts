@@ -177,9 +177,10 @@ export async function POST(
 
       // Create quote items
       for (const item of calculatedItems) {
+        const itemTypeEnum = item.itemType as QuoteItemType
         await manager.insert(QuoteItem, {
           quoteId,
-          itemType: item.itemType,
+          itemType: itemTypeEnum,
           productId: item.productId || null,
           serviceId: item.serviceId || null,
           name: item.name,
