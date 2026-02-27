@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Orbitus | Gestión para Comercios</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
@@ -18,103 +21,320 @@
       --border-color: #e2e8f0;
       --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
       font-family: 'Inter', sans-serif;
       background-color: #e2e8f0;
       color: var(--text-main);
       -webkit-font-smoothing: antialiased;
     }
-    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; font-weight: 500; line-height: 1.1; }
-    .container {
-      width: 210mm; height: 297mm; margin: 0 auto; background: white;
-      position: relative; overflow: hidden; display: flex; flex-direction: column;
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 500;
+      line-height: 1.1;
     }
+
+    .container {
+      width: 210mm;
+      height: 297mm;
+      margin: 0 auto;
+      background: white;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
     .bg-grid {
-      position: absolute; top: 0; left: 0; right: 0; height: 350px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 350px;
       background-image:
         linear-gradient(to right, #f1f5f9 1px, transparent 1px),
         linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
-      background-size: 30px 30px; z-index: 0;
+      background-size: 30px 30px;
+      z-index: 0;
       mask-image: linear-gradient(to bottom, black, transparent);
     }
-    header { position: relative; z-index: 1; padding: 60px 60px 30px; }
+
+    header {
+      position: relative;
+      z-index: 1;
+      padding: 60px 60px 30px;
+    }
+
     .badge {
-      display: inline-block; background: var(--brand-accent); color: white;
-      padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 20px;
+      display: inline-block;
+      background: var(--brand-accent);
+      color: white;
+      padding: 5px 14px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 20px;
     }
+
     header h1 {
-      font-size: 42px; font-weight: 900; letter-spacing: -2px; margin-bottom: 12px;
-      color: var(--brand-primary); max-width: 500px;
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      margin-bottom: 12px;
+      color: var(--brand-primary);
+      max-width: 500px;
     }
-    header .description { font-size: 18px; color: var(--text-muted); max-width: 520px; line-height: 1.4; }
+
+    header .description {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.4;
+    }
+
     .logo-stat {
-      position: absolute; top: 50px; right: 60px; width: 100px; height: 100px;
-      background: var(--brand-primary); color: white; display: flex; align-items: center; justify-content: center;
-      border-radius: 20px; font-size: 56px; font-family: 'Outfit'; font-weight: 900;
-      transform: rotate(-10deg); box-shadow: 10px 10px 0 var(--brand-accent);
+      position: absolute;
+      top: 50px;
+      right: 60px;
+      width: 100px;
+      height: 100px;
+      background: var(--brand-primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 20px;
+      font-size: 56px;
+      font-family: 'Outfit';
+      font-weight: 900;
+      transform: rotate(-10deg);
+      box-shadow: 10px 10px 0 var(--brand-accent);
       overflow: hidden;
     }
-    .logo-stat img { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; }
+
+    .logo-stat img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+
     main {
-      position: relative; z-index: 1; padding: 0 60px; flex: 1;
-      display: flex; flex-direction: column; justify-content: space-evenly;
+      position: relative;
+      z-index: 1;
+      padding: 0 60px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
     }
-    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
     .feature-card {
-      background: white; padding: 24px; border-radius: 20px; border: 1px solid var(--border-color); height: 100%;
+      background: white;
+      padding: 24px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      height: 100%;
     }
+
     .feature-card .icon {
-      width: 40px; height: 40px; background: #f8fafc; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px;
+      width: 40px;
+      height: 40px;
+      background: #f8fafc;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 16px;
     }
-    .feature-card h3 { font-size: 16px; margin-bottom: 8px; }
-    .feature-card p { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px; }
-    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .feature-card h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
     .tag {
-      font-size: 11px; font-weight: 600; color: var(--text-main);
-      background: #f1f5f9; border-radius: 6px; padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-main);
+      background: #f1f5f9;
+      border-radius: 6px;
+      padding: 3px 8px;
     }
+
     .transformation {
-      background: #0f172a; border-radius: 24px; padding: 35px 40px; color: white;
-      display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px;
+      background: #0f172a;
+      border-radius: 24px;
+      padding: 35px 40px;
+      color: white;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 30px;
+      margin-bottom: 20px;
     }
-    .transformation h2 { font-size: 24px; margin-bottom: 12px; color: var(--brand-accent); }
-    .transformation p { font-size: 14px; opacity: 0.9; line-height: 1.5; }
-    .checklist { list-style: none; display: grid; grid-template-columns: 1fr; gap: 8px; }
-    .checklist li { font-size: 13px; display: flex; align-items: center; gap: 10px; }
+
+    .transformation h2 {
+      font-size: 24px;
+      margin-bottom: 12px;
+      color: var(--brand-accent);
+    }
+
+    .transformation p {
+      font-size: 14px;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
+
+    .checklist {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .checklist li {
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .checklist li::before {
-      content: ""; width: 14px; height: 14px; background: var(--brand-accent);
-      border-radius: 4px; display: block; flex-shrink: 0;
+      content: "";
+      width: 14px;
+      height: 14px;
+      background: var(--brand-accent);
+      border-radius: 4px;
+      display: block;
+      flex-shrink: 0;
     }
+
     footer {
-      background: #f8fafc; padding: 40px 60px; display: flex; align-items: center;
-      justify-content: space-between; border-top: 1px solid var(--border-color);
+      background: #f8fafc;
+      padding: 40px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-color);
     }
-    .cta-info h4 { font-size: 22px; margin-bottom: 8px; }
-    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
-    .contact-item { font-size: 13px; font-weight: 600; color: var(--text-main); }
-    .qr-section { text-align: center; }
+
+    .cta-info h4 {
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .contact-item {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .qr-section {
+      text-align: center;
+    }
+
     .qr-holder {
-      background: white; padding: 12px; border-radius: 16px; box-shadow: var(--card-shadow);
-      margin-bottom: 8px; display: inline-block;
+      background: white;
+      padding: 12px;
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 8px;
+      display: inline-block;
     }
-    #qrcode { width: 110px; height: 110px; }
+
+    #qrcode {
+      width: 110px;
+      height: 110px;
+    }
+
     .qr-caption {
-      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
     }
+
     @media print {
-      body { background: white; margin: 0; padding: 0; }
-      .container { box-shadow: none; width: 100%; height: 100vh; margin: 0; }
-      .bg-grid { display: none; }
-      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .feature-card { border: 1.5px solid #000; }
-      .transformation { border: 1.5px solid #000; background: #000 !important; }
+      body {
+        background: white;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        box-shadow: none;
+        width: 100%;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .bg-grid {
+        display: none;
+      }
+
+      * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .feature-card {
+        border: 1.5px solid #000;
+      }
+
+      .transformation {
+        border: 1.5px solid #000;
+        background: #000 !important;
+      }
     }
-    @page { size: A4; margin: 0; }
+
+    @page {
+      size: A4;
+      margin: 0;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="bg-grid"></div>
@@ -222,4 +442,5 @@
     });
   </script>
 </body>
+
 </html>
