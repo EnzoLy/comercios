@@ -225,9 +225,11 @@ export async function handleSubscriptionEvent(
     // ── Invoice / payment events ────────────────────────────────────────────
     case 'subscription_payment_success': {
       const invoiceAttrs = attrs as LemonSqueezyInvoiceAttributes
+      console.log(`[LemonSqueezy] Processing subscription_payment_success: subscription_id=${invoiceAttrs.subscription_id}, customer_id=${invoiceAttrs.customer_id}`)
 
       // Fetch the full subscription from the LS API to get renews_at and variant_id
       const sub = await fetchLSSubscription(invoiceAttrs.subscription_id)
+      console.log(`[LemonSqueezy] API fetch result: sub=${sub ? 'found' : 'null'}`)
 
       if (sub) {
         const lsSubscriptionId = String(invoiceAttrs.subscription_id)
@@ -238,15 +240,28 @@ export async function handleSubscriptionEvent(
         store.lemonSqueezyVariantId = lsVariantId
         store.lemonSqueezyStatus = sub.status
 
-        if (lsVariantId === process.env.LEMONSQUEEZY_BASICO_VARIANT_ID) {
+        // Check against both UUID (checkout) and numeric (webhook) variant IDs
+        const isBasico =
+          lsVariantId === process.env.LEMONSQUEEZY_BASICO_VARIANT_ID ||
+          lsVariantId === process.env.LEMONSQUEEZY_BASICO_VARIANT_ID_NUMERIC
+
+        const isPro =
+          lsVariantId === process.env.LEMONSQUEEZY_PRO_VARIANT_ID ||
+          lsVariantId === process.env.LEMONSQUEEZY_PRO_VARIANT_ID_NUMERIC
+
+        console.log(
+          `[LemonSqueezy] Matching variant ${lsVariantId}: isBasico=${isBasico}, isPro=${isPro}`
+        )
+
+        if (isBasico) {
           store.subscriptionPlan = 'BASICO'
-          console.log(`[LemonSqueezy] Plan updated to BASICO (variant ${lsVariantId})`)
-        } else if (lsVariantId === process.env.LEMONSQUEEZY_PRO_VARIANT_ID) {
+          console.log(`[LemonSqueezy] ✅ Plan set to BASICO`)
+        } else if (isPro) {
           store.subscriptionPlan = 'PRO'
-          console.log(`[LemonSqueezy] Plan updated to PRO (variant ${lsVariantId})`)
+          console.log(`[LemonSqueezy] ✅ Plan set to PRO`)
         } else {
           console.warn(
-            `[LemonSqueezy] Variant ${lsVariantId} doesn't match env vars — BASICO=${process.env.LEMONSQUEEZY_BASICO_VARIANT_ID} PRO=${process.env.LEMONSQUEEZY_PRO_VARIANT_ID}`
+            `[LemonSqueezy] ❌ Variant ${lsVariantId} not recognized. Check env vars BASICO/PRO variant IDs.`
           )
         }
 
