@@ -9,8 +9,6 @@ export async function middleware(request: NextRequest) {
   try {
     const { pathname } = request.nextUrl
 
-    console.log(pathname)
-
     let session = null
     try {
       session = await auth()
@@ -89,7 +87,6 @@ export async function middleware(request: NextRequest) {
         }
 
         const store = session.user.stores.find((s) => s.slug === storeSlug)
-        console.log(store)
         if (store) {
           if (
             session.user.role !== 'SUPER_ADMIN' &&
@@ -114,9 +111,6 @@ export async function middleware(request: NextRequest) {
           const page = pageMatch ? pageMatch[1] : ''
 
           const plan = store.subscriptionPlan || 'FREE'
-          console.log(`[Middleware] Pathname: ${pathname}`)
-          console.log(`[Middleware] Store: ${storeSlug}, Plan: ${plan}, Page: ${page}`)
-          console.log(`[Middleware] Store object subscriptionPlan field:`, store.subscriptionPlan)
 
           const restrictedByPlan: Record<string, string[]> = {
             'FREE': ['products', 'categories', 'inventory', 'employees', 'shifts', 'suppliers', 'purchase-orders', 'analytics', 'sales', 'reports'],
@@ -124,11 +118,7 @@ export async function middleware(request: NextRequest) {
           }
 
           const restrictedPages = restrictedByPlan[plan] || []
-          console.log(`[Middleware] restrictedPages for ${plan}:`, restrictedPages)
-          console.log(`[Middleware] Page "${page}" in restricted list?`, page ? restrictedPages.includes(page) : 'N/A')
-
           if (page && restrictedPages.includes(page)) {
-            console.log(`[Middleware] BLOCKING access to ${page} for plan ${plan}`)
             return NextResponse.redirect(new URL(`/dashboard/${storeSlug}`, request.url))
           }
 
