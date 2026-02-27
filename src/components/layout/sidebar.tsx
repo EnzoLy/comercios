@@ -25,6 +25,9 @@ import {
   ChevronRight,
   BookOpen,
   Zap,
+  Sparkles,
+  ChevronDown,
+  FileText,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 
@@ -45,10 +48,45 @@ interface NavItem {
   ownerOnly?: boolean
 }
 
+interface NavGroup {
+  label: string
+  href?: string
+  icon: React.ComponentType<{ className?: string }>
+  children: NavItem[]
+  permission?: 'manage_products'
+}
+
 export function Sidebar({ storeSlug, isOwner, role, plan, checkoutUrl }: SidebarProps) {
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
 
-  const navItems: NavItem[] = [
+  useEffect(() => {
+    setMounted(true)
+    // Load expanded groups from localStorage
+    const saved = localStorage.getItem(`sidebar-groups-${storeSlug}`)
+    if (saved) {
+      try {
+        setExpandedGroups(JSON.parse(saved))
+      } catch (e) {
+        console.error('Failed to parse sidebar groups:', e)
+      }
+    } else {
+      // Default: expand Products and Services groups
+      setExpandedGroups({ 'Productos': true, 'Servicios': true })
+    }
+  }, [storeSlug])
+
+  const toggleGroup = (groupLabel: string) => {
+    const newState = {
+      ...expandedGroups,
+      [groupLabel]: !expandedGroups[groupLabel],
+    }
+    setExpandedGroups(newState)
+    localStorage.setItem(`sidebar-groups-${storeSlug}`, JSON.stringify(newState))
+  }
+
+  const regularItems: NavItem[] = [
     {
       label: 'Panel de Control',
       href: `/dashboard/${storeSlug}`,
@@ -64,36 +102,74 @@ export function Sidebar({ storeSlug, isOwner, role, plan, checkoutUrl }: Sidebar
       href: `/dashboard/${storeSlug}/tutoriales`,
       icon: BookOpen,
     },
-    {
-      label: 'Productos',
-      href: `/dashboard/${storeSlug}/products`,
-      icon: Package,
-      permission: 'manage_products',
-    },
-    {
-      label: 'Categorías',
-      href: `/dashboard/${storeSlug}/categories`,
-      icon: FolderTree,
-      permission: 'manage_products',
-    },
-    {
-      label: 'Inventario',
-      href: `/dashboard/${storeSlug}/inventory`,
-      icon: Warehouse,
-      permission: 'manage_inventory',
-    },
-    {
-      label: 'Proveedores',
-      href: `/dashboard/${storeSlug}/suppliers`,
-      icon: Truck,
-      permission: 'manage_products',
-    },
-    {
-      label: 'Órdenes de Compra',
-      href: `/dashboard/${storeSlug}/purchase-orders`,
-      icon: ClipboardList,
-      permission: 'manage_products',
-    },
+  ]
+
+  const productGroup: NavGroup = {
+    label: 'Productos',
+    href: `/dashboard/${storeSlug}/products`,
+    icon: Package,
+    permission: 'manage_products',
+    children: [
+      {
+        label: 'Productos',
+        href: `/dashboard/${storeSlug}/products`,
+        icon: Package,
+        permission: 'manage_products',
+      },
+      {
+        label: 'Categorías',
+        href: `/dashboard/${storeSlug}/categories`,
+        icon: FolderTree,
+        permission: 'manage_products',
+      },
+      {
+        label: 'Inventario',
+        href: `/dashboard/${storeSlug}/inventory`,
+        icon: Warehouse,
+        permission: 'manage_inventory',
+      },
+      {
+        label: 'Proveedores',
+        href: `/dashboard/${storeSlug}/suppliers`,
+        icon: Truck,
+        permission: 'manage_products',
+      },
+      {
+        label: 'Órdenes de Compra',
+        href: `/dashboard/${storeSlug}/purchase-orders`,
+        icon: ClipboardList,
+        permission: 'manage_products',
+      },
+    ],
+  }
+
+  const serviceGroup: NavGroup = {
+    label: 'Servicios',
+    href: `/dashboard/${storeSlug}/services`,
+    icon: Sparkles,
+    children: [
+      {
+        label: 'Servicios',
+        href: `/dashboard/${storeSlug}/services`,
+        icon: Sparkles,
+        permission: 'manage_products',
+      },
+      {
+        label: 'Citas',
+        href: `/dashboard/${storeSlug}/appointments`,
+        icon: Clock,
+        permission: 'manage_products',
+      },
+      {
+        label: 'Presupuestos',
+        href: `/dashboard/${storeSlug}/quotes`,
+        icon: FileText,
+        permission: 'manage_products',
+      },
+    ],
+  }
+
+  const moreItems: NavItem[] = [
     {
       label: 'Caja',
       href: `/dashboard/${storeSlug}/pos`,
@@ -134,12 +210,6 @@ export function Sidebar({ storeSlug, isOwner, role, plan, checkoutUrl }: Sidebar
       ownerOnly: true,
     },
   ]
-
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   if (!mounted) {
     return (
@@ -182,51 +252,57 @@ export function Sidebar({ storeSlug, isOwner, role, plan, checkoutUrl }: Sidebar
 
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto overflow-x-visible scrollbar-hide">
         <AnimatePresence mode="popLayout">
-          {navItems.map((item, index) => {
-            // Determine if item should be disabled based on plan
-            let isDisabled = false
-            let disabledReason = ''
+          {/* Regular items (top) */}
+          {regularItems.map((item, index) => (
+            <SidebarItem
+              key={item.href}
+              item={item}
+              storeSlug={storeSlug}
+              isOwner={isOwner}
+              pathname={pathname}
+              index={index}
+              plan={plan}
+            />
+          ))}
 
-            // Define plan requirements for each page
-            const planRequirements: Record<string, string> = {
-              'Productos': 'BÁSICO',
-              'Categorías': 'BÁSICO',
-              'Inventario': 'BÁSICO',
-              'Empleados': 'BÁSICO',
-              'Turnos': 'BÁSICO',
-              'Proveedores': 'PRO',
-              'Órdenes de Compra': 'PRO',
-              'Analíticas': 'PRO',
-              'Reportes': 'PRO',
-              'Ventas': 'BÁSICO',
-            }
+          {/* Products Group */}
+          <SidebarGroup
+            key="productos-group"
+            group={productGroup}
+            storeSlug={storeSlug}
+            isOwner={isOwner}
+            pathname={pathname}
+            plan={plan}
+            isExpanded={expandedGroups['Productos'] ?? true}
+            onToggle={() => toggleGroup('Productos')}
+            startIndex={regularItems.length}
+          />
 
-            const requiredPlan = planRequirements[item.label]
-            if (requiredPlan) {
-              const planHierarchy = { 'FREE': 0, 'BASICO': 1, 'PRO': 2 }
-              const currentLevel = planHierarchy[plan as keyof typeof planHierarchy] || 0
-              const requiredLevel = planHierarchy[requiredPlan as keyof typeof planHierarchy] || 0
+          {/* Services Group */}
+          <SidebarGroup
+            key="servicios-group"
+            group={serviceGroup}
+            storeSlug={storeSlug}
+            isOwner={isOwner}
+            pathname={pathname}
+            plan={plan}
+            isExpanded={expandedGroups['Servicios'] ?? true}
+            onToggle={() => toggleGroup('Servicios')}
+            startIndex={regularItems.length + productGroup.children.length + 1}
+          />
 
-              if (currentLevel < requiredLevel) {
-                isDisabled = true
-                disabledReason = `Necesitas plan ${requiredPlan} para usarlo`
-              }
-            }
-
-            return (
-              <SidebarItem
-                key={item.href}
-                item={item}
-                storeSlug={storeSlug}
-                isOwner={isOwner}
-                pathname={pathname}
-                index={index}
-                plan={plan}
-                isDisabled={isDisabled}
-                disabledReason={disabledReason}
-              />
-            )
-          })}
+          {/* More Items (bottom) */}
+          {moreItems.map((item, index) => (
+            <SidebarItem
+              key={item.href}
+              item={item}
+              storeSlug={storeSlug}
+              isOwner={isOwner}
+              pathname={pathname}
+              index={index + regularItems.length + productGroup.children.length + serviceGroup.children.length + 2}
+              plan={plan}
+            />
+          ))}
         </AnimatePresence>
       </nav>
 
@@ -258,8 +334,6 @@ function SidebarItem({
   pathname,
   index,
   plan,
-  isDisabled,
-  disabledReason,
 }: {
   item: NavItem
   storeSlug: string
@@ -267,8 +341,6 @@ function SidebarItem({
   pathname: string
   index: number
   plan?: 'FREE' | 'BASICO' | 'PRO' | null
-  isDisabled?: boolean
-  disabledReason?: string
 }) {
   const hasPermission = usePermission(item.permission as any)
 
@@ -277,6 +349,37 @@ function SidebarItem({
 
   const isActive = pathname === item.href
   const Icon = item.icon
+
+  // Determine if item should be disabled based on plan
+  let isDisabled = false
+  let disabledReason = ''
+
+  const planRequirements: Record<string, string> = {
+    'Productos': 'BÁSICO',
+    'Categorías': 'BÁSICO',
+    'Inventario': 'BÁSICO',
+    'Empleados': 'BÁSICO',
+    'Turnos': 'BÁSICO',
+    'Proveedores': 'PRO',
+    'Órdenes de Compra': 'PRO',
+    'Analíticas': 'PRO',
+    'Reportes': 'PRO',
+    'Ventas': 'BÁSICO',
+    'Servicios': 'BÁSICO',
+    'Citas': 'BÁSICO',
+  }
+
+  const requiredPlan = planRequirements[item.label]
+  if (requiredPlan) {
+    const planHierarchy = { 'FREE': 0, 'BASICO': 1, 'PRO': 2 }
+    const currentLevel = planHierarchy[plan as keyof typeof planHierarchy] || 0
+    const requiredLevel = planHierarchy[requiredPlan as keyof typeof planHierarchy] || 0
+
+    if (currentLevel < requiredLevel) {
+      isDisabled = true
+      disabledReason = `Necesitas plan ${requiredPlan} para usarlo`
+    }
+  }
 
   const content = (
     <div className={cn(
@@ -319,6 +422,145 @@ function SidebarItem({
           {content}
         </Link>
       )}
+    </motion.div>
+  )
+}
+
+function SidebarGroup({
+  group,
+  storeSlug,
+  isOwner,
+  pathname,
+  plan,
+  isExpanded,
+  onToggle,
+  startIndex,
+}: {
+  group: NavGroup
+  storeSlug: string
+  isOwner: boolean
+  pathname: string
+  plan?: 'FREE' | 'BASICO' | 'PRO' | null
+  isExpanded: boolean
+  onToggle: () => void
+  startIndex: number
+}) {
+  const hasGroupPermission = usePermission(group.permission as any)
+
+  if (!hasGroupPermission) return null
+
+  // Check plan requirement for group
+  const planRequirements: Record<string, string> = {
+    'Servicios': 'BÁSICO',
+  }
+
+  const requiredPlan = planRequirements[group.label]
+  let isDisabled = false
+  let disabledReason = ''
+
+  if (requiredPlan) {
+    const planHierarchy = { 'FREE': 0, 'BASICO': 1, 'PRO': 2 }
+    const currentLevel = planHierarchy[plan as keyof typeof planHierarchy] || 0
+    const requiredLevel = planHierarchy[requiredPlan as keyof typeof planHierarchy] || 0
+
+    if (currentLevel < requiredLevel) {
+      isDisabled = true
+      disabledReason = `Necesitas plan ${requiredPlan} para usarlo`
+    }
+  }
+
+  // Check if any child is active to auto-expand
+  const hasActiveChild = group.children.some(child => pathname === child.href)
+  const shouldAutoExpand = hasActiveChild || isExpanded
+
+  const GroupIcon = group.icon
+
+  const isGroupActive = pathname === group.href || hasActiveChild
+
+  const headerContent = (
+    <div className={cn(
+      'w-full group relative flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300',
+      isDisabled
+        ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+        : isGroupActive
+          ? 'text-white'
+          : 'text-gray-500 hover:text-primary hover:bg-primary/5 dark:text-gray-400 dark:hover:text-primary-foreground dark:hover:bg-primary/20'
+    )}>
+      <div className="flex items-center gap-3">
+        <GroupIcon className={cn("h-5 w-5 transition-transform duration-300 group-hover:scale-110", isGroupActive ? "scale-110" : "")} />
+        <span>{group.label}</span>
+      </div>
+      <motion.div
+        animate={{ rotate: shouldAutoExpand ? 180 : 0 }}
+        transition={{ duration: 0.3 }}
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          onToggle()
+        }}
+        className="cursor-pointer"
+      >
+        <ChevronDown className="h-4 w-4" />
+      </motion.div>
+    </div>
+  )
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: startIndex * 0.03 }}
+      className="space-y-1"
+      title={disabledReason}
+    >
+      {/* Group Header */}
+      {isDisabled ? (
+        <div className="cursor-not-allowed">
+          {headerContent}
+        </div>
+      ) : group.href ? (
+        <Link href={group.href}>
+          {headerContent}
+        </Link>
+      ) : (
+        <motion.button
+          onClick={onToggle}
+          disabled={isDisabled}
+          className={cn(
+            'w-full group relative flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300',
+            isDisabled
+              ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+              : 'text-gray-500 hover:text-primary hover:bg-primary/5 dark:text-gray-400 dark:hover:text-primary-foreground dark:hover:bg-primary/20'
+          )}
+        >
+          {headerContent}
+        </motion.button>
+      )}
+
+      {/* Group Children */}
+      <AnimatePresence>
+        {shouldAutoExpand && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-1 pl-2"
+          >
+            {group.children.map((child, index) => (
+              <SidebarItem
+                key={child.href}
+                item={child}
+                storeSlug={storeSlug}
+                isOwner={isOwner}
+                pathname={pathname}
+                index={startIndex + index + 1}
+                plan={plan}
+              />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }

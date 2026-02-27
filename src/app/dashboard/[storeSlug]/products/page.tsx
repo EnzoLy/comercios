@@ -400,7 +400,7 @@ export default function ProductsPage() {
                     <SelectValue placeholder="Todas" />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl border-border shadow-2xl">
-                    <SelectItem value="all">Todas las categorías</SelectItem>
+                    <SelectItem key="all-categories" value="all">Todas las categorías</SelectItem>
                     {categories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.id}>
                         {cat.name}

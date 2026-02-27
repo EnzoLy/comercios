@@ -9,6 +9,7 @@ import { getDataSource, getRepository } from '@/lib/db'
 import { Sale, SaleStatus } from '@/lib/db/entities/sale.entity'
 import { SaleItem } from '@/lib/db/entities/sale-item.entity'
 import { Product } from '@/lib/db/entities/product.entity'
+import { Service } from '@/lib/db/entities/service.entity'
 import { ProductBatch } from '@/lib/db/entities/product-batch.entity'
 import { StockMovement, MovementType } from '@/lib/db/entities/stock-movement.entity'
 import { BatchStockMovement } from '@/lib/db/entities/batch-stock-movement.entity'
@@ -137,22 +138,39 @@ export async function POST(
     const sale = await dataSource.transaction(async (manager) => {
       // Step 1: Validate stock for ALL items first
       for (const item of validated.items) {
-        const product = await manager.findOne(Product, {
-          where: { id: item.productId, storeId },
-        })
+        // For product items, validate stock
+        if (item.productId) {
+          const product = await manager.findOne(Product, {
+            where: { id: item.productId, storeId },
+          })
 
-        if (!product) {
-          throw new Error(`Product ${item.productId} not found`)
+          if (!product) {
+            throw new Error(`Product ${item.productId} not found`)
+          }
+
+          if (!product.isActive) {
+            throw new Error(`Product ${product.name} is inactive`)
+          }
+
+          if (product.trackStock && product.currentStock < item.quantity) {
+            throw new Error(
+              `Insufficient stock for ${product.name}. Available: ${product.currentStock}, Requested: ${item.quantity}`
+            )
+          }
         }
+        // For service items, validate service exists and is active
+        else if (item.serviceId) {
+          const service = await manager.findOne(Service, {
+            where: { id: item.serviceId, storeId },
+          })
 
-        if (!product.isActive) {
-          throw new Error(`Product ${product.name} is inactive`)
-        }
+          if (!service) {
+            throw new Error(`Service ${item.serviceId} not found`)
+          }
 
-        if (product.trackStock && product.currentStock < item.quantity) {
-          throw new Error(
-            `Insufficient stock for ${product.name}. Available: ${product.currentStock}, Requested: ${item.quantity}`
-          )
+          if (!service.isActive) {
+            throw new Error(`Service ${service.name} is inactive`)
+          }
         }
       }
 
@@ -188,37 +206,64 @@ export async function POST(
 
       // Step 4: Insert sale items
       for (const item of validated.items) {
-        const product = await manager.findOne(Product, {
-          where: { id: item.productId },
-        })
-
-        if (!product) continue // Already validated above
-
         const itemSubtotal = item.quantity * item.unitPrice
         const itemDiscount = item.discount || 0
         const itemTaxRate = item.taxRate || 0
         const itemTaxAmount = item.taxAmount || 0
         const itemTotal = itemSubtotal - itemDiscount + itemTaxAmount
 
-        await manager.insert(SaleItem, {
-          saleId,
-          productId: item.productId,
-          productName: product.name,
-          productSku: product.sku,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          discount: itemDiscount,
-          subtotal: itemSubtotal,
-          total: itemTotal,
-          taxRate: itemTaxRate,
-          taxAmount: itemTaxAmount,
-        })
+        if (item.productId) {
+          const product = await manager.findOne(Product, {
+            where: { id: item.productId },
+          })
+
+          if (!product) continue // Already validated above
+
+          await manager.insert(SaleItem, {
+            saleId,
+            productId: item.productId,
+            serviceId: null,
+            productName: product.name,
+            productSku: product.sku,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            discount: itemDiscount,
+            subtotal: itemSubtotal,
+            total: itemTotal,
+            taxRate: itemTaxRate,
+            taxAmount: itemTaxAmount,
+          })
+        } else if (item.serviceId) {
+          const service = await manager.findOne(Service, {
+            where: { id: item.serviceId },
+          })
+
+          if (!service) continue // Already validated above
+
+          await manager.insert(SaleItem, {
+            saleId,
+            productId: null,
+            serviceId: item.serviceId,
+            productName: service.name, // Use service name as productName for compatibility
+            productSku: null,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            discount: itemDiscount,
+            subtotal: itemSubtotal,
+            total: itemTotal,
+            taxRate: itemTaxRate,
+            taxAmount: itemTaxAmount,
+          })
+        }
       }
 
-      // Step 5: Insert stock movements and update product stock
+      // Step 5: Insert stock movements and update product stock (only for products, not services)
       const fefoService = new FEFOService()
 
       for (const item of validated.items) {
+        // Skip stock management for services
+        if (item.serviceId) continue
+
         const product = await manager.findOne(Product, {
           where: { id: item.productId },
         })
@@ -227,7 +272,7 @@ export async function POST(
 
         // Insert stock movement record
         const movementInsertResult = await manager.insert(StockMovement, {
-          productId: item.productId,
+          productId: item.productId!,
           type: MovementType.SALE,
           quantity: -item.quantity, // Negative for sale
           unitPrice: item.unitPrice,
@@ -286,7 +331,7 @@ export async function POST(
         // Decrement product stock (aggregated)
         await manager.decrement(
           Product,
-          { id: item.productId },
+          { id: item.productId! },
           'currentStock',
           item.quantity
         )

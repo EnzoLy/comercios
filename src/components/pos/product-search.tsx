@@ -21,11 +21,24 @@ interface Product {
   barcode?: string
   barcodes?: { barcode: string }[]
   categoryId?: string
+  itemType?: 'product'
 }
+
+interface Service {
+  id: string
+  name: string
+  price: number | string
+  description?: string
+  imageUrl?: string
+  isActive?: boolean
+  itemType: 'service'
+}
+
+type SearchResult = Product | Service
 
 interface ProductSearchProps {
   storeId: string
-  onProductSelect: (product: Product) => void
+  onProductSelect: (product: Product | Service) => void
   categoryId?: string | null
   isOnline?: boolean
   cachedProducts?: Product[]
@@ -33,7 +46,7 @@ interface ProductSearchProps {
 
 export function ProductSearch({ storeId, onProductSelect, categoryId, isOnline = true, cachedProducts = [] }: ProductSearchProps) {
   const [searchTerm, setSearchTerm] = useState('')
-  const [suggestions, setSuggestions] = useState<Product[]>([])
+  const [suggestions, setSuggestions] = useState<SearchResult[]>([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -88,24 +101,41 @@ export function ProductSearch({ storeId, onProductSelect, categoryId, isOnline =
           return
         }
 
+        // Online: search both products and services
         const params = new URLSearchParams({
           search: debouncedSearchTerm,
         })
         if (categoryId) {
           params.append('categoryId', categoryId)
         }
-        const response = await fetch(
+
+        // Search products
+        const productsResponse = await fetch(
           `/api/stores/${storeId}/products?${params.toString()}`
         )
+        const productsData = await productsResponse.json()
+        const products = (productsData.products || productsData || []).map((p: any) => ({
+          ...p,
+          itemType: 'product' as const
+        }))
 
-        if (!response.ok) {
-          setSuggestions([])
-          return
-        }
+        // Search services
+        const servicesParams = new URLSearchParams({
+          search: debouncedSearchTerm,
+        })
+        const servicesResponse = await fetch(
+          `/api/stores/${storeId}/services?${servicesParams.toString()}`
+        )
+        const servicesData = await servicesResponse.json()
+        const services = (servicesData.services || servicesData || []).map((s: any) => ({
+          ...s,
+          price: s.price,
+          itemType: 'service' as const
+        }))
 
-        const data = await response.json()
-        const products = data.products || data // Support both {products: []} and [] response formats
-        setSuggestions(products.slice(0, 8)) // Limit to 8 suggestions
+        // Combine and limit results
+        const allResults = [...products, ...services].slice(0, 8)
+        setSuggestions(allResults)
         setIsOpen(true)
         setSelectedIndex(-1)
       } catch (error) {
@@ -119,8 +149,8 @@ export function ProductSearch({ storeId, onProductSelect, categoryId, isOnline =
     searchProducts()
   }, [debouncedSearchTerm, storeId, categoryId, isOnline, cachedProducts])
 
-  const handleSelectProduct = (product: Product) => {
-    onProductSelect(product)
+  const handleSelectProduct = (result: SearchResult) => {
+    onProductSelect(result)
     setSearchTerm('')
     setSuggestions([])
     setIsOpen(false)
@@ -195,16 +225,18 @@ export function ProductSearch({ storeId, onProductSelect, categoryId, isOnline =
             {suggestions.length} resultado{suggestions.length !== 1 ? 's' : ''}
           </div>
           <div className="max-h-[400px] overflow-auto custom-scrollbar">
-            {suggestions.map((product, index) => {
+            {suggestions.map((item, index) => {
               const isSelected = index === selectedIndex
-              const price = formatCurrency(product.sellingPrice)
-              const stock = product.currentStock
-              const inStock = stock > 0
+              const isService = item.itemType === 'service'
+              const price = formatCurrency(isService ? (item as Service).price : (item as Product).sellingPrice)
+              const stock = isService ? undefined : (item as Product).currentStock
+              const inStock = isService ? true : (stock ?? 0) > 0
+              const Icon = isService ? <span className="text-violet-500 text-lg">✨</span> : <Package className="h-7 w-7 text-muted-foreground/40" />
 
               return (
                 <div
-                  key={product.id}
-                  onClick={() => handleSelectProduct(product)}
+                  key={item.id}
+                  onClick={() => handleSelectProduct(item)}
                   onMouseEnter={() => setSelectedIndex(index)}
                   className={`p-4 cursor-pointer border-b border-border last:border-0 transition-all ${isSelected
                     ? 'bg-primary/5 pl-6'
@@ -212,11 +244,11 @@ export function ProductSearch({ storeId, onProductSelect, categoryId, isOnline =
                     } ${!inStock ? 'opacity-60' : ''}`}
                 >
                   <div className="flex items-center gap-4">
-                    {product.imageUrl ? (
+                    {item.imageUrl ? (
                       <div className="relative h-14 w-14 flex-shrink-0">
                         <img
-                          src={product.imageUrl}
-                          alt={product.name}
+                          src={item.imageUrl}
+                          alt={item.name}
                           className="h-full w-full object-cover rounded-xl shadow-sm"
                         />
                         {!inStock && (
@@ -227,23 +259,26 @@ export function ProductSearch({ storeId, onProductSelect, categoryId, isOnline =
                       </div>
                     ) : (
                       <div className="h-14 w-14 bg-muted rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Package className="h-7 w-7 text-muted-foreground/40" />
+                        {Icon}
                       </div>
                     )}
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
-                          <p className="font-bold text-base leading-tight group-hover:text-primary transition-colors">
-                            {product.name}
-                          </p>
-                          <p className="text-xs font-mono text-muted-foreground mt-1 uppercase tracking-tighter">SKU: {product.sku}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-base leading-tight group-hover:text-primary transition-colors">
+                              {item.name}
+                            </p>
+                            {isService && <span className="text-xs font-bold px-2 py-0.5 bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 rounded-full">Servicio</span>}
+                          </div>
+                          {!isService && <p className="text-xs font-mono text-muted-foreground mt-1 uppercase tracking-tighter">SKU: {(item as Product).sku}</p>}
                         </div>
                         <div className="text-right flex-shrink-0">
                           <p className="font-black text-lg gradient-text leading-none">{price}</p>
-                          <div className={`text-[10px] font-black uppercase tracking-widest mt-1.5 px-2 py-0.5 rounded-full inline-block ${inStock ? 'bg-emerald-500/10 text-emerald-600' : 'bg-destructive/10 text-destructive'}`}>
+                          {!isService && <div className={`text-[10px] font-black uppercase tracking-widest mt-1.5 px-2 py-0.5 rounded-full inline-block ${inStock ? 'bg-emerald-500/10 text-emerald-600' : 'bg-destructive/10 text-destructive'}`}>
                             {inStock ? `Stock: ${stock}` : 'Agotado'}
-                          </div>
+                          </div>}
                         </div>
                       </div>
                     </div>

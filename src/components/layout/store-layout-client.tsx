@@ -58,7 +58,7 @@ function StoreLayoutContent({
   const allowedRoutes: Record<string, string[]> = {
     CASHIER: ['pos', 'my-access', 'tutoriales'],
     STOCK_KEEPER: ['pos', 'inventory', 'my-access', 'products', 'categories', 'tutoriales'],
-    MANAGER: ['pos', 'employees', 'shifts', 'analytics', 'sales', 'reports', 'my-access', 'products', 'categories', 'inventory', 'suppliers', 'purchase-orders', 'tutoriales'],
+    MANAGER: ['pos', 'employees', 'shifts', 'analytics', 'sales', 'reports', 'my-access', 'products', 'categories', 'inventory', 'suppliers', 'purchase-orders', 'services', 'service-categories', 'appointments', 'quotes', 'tutoriales'],
     ADMIN: [
       'pos',
       'employees',
@@ -72,6 +72,10 @@ function StoreLayoutContent({
       'my-access',
       'suppliers',
       'purchase-orders',
+      'services',
+      'service-categories',
+      'appointments',
+      'quotes',
       'tutoriales',
     ],
   }

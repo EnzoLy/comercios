@@ -12,6 +12,7 @@ interface InvoiceItem {
   id: string
   productName: string
   productSku?: string
+  itemType?: 'product' | 'service'
   quantity: number
   unitPrice: number
   discount: number
@@ -173,8 +174,13 @@ export function InvoiceDisplay({ invoice, invoiceUrl }: InvoiceDisplayProps) {
                 {invoice.sale.items.map((item) => (
                   <tr key={item.id} className="group border-b border-border/5 hover:bg-muted/20 transition-colors">
                     <td className="py-6 px-4">
-                      <div className="font-bold text-foreground tracking-tight">{item.productName}</div>
-                      {item.productSku && (
+                      <div className="flex items-center gap-2">
+                        <div className="font-bold text-foreground tracking-tight">{item.productName}</div>
+                        {item.itemType === 'service' && (
+                          <span className="text-[9px] font-bold px-2 py-0.5 bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 rounded-full">Servicio</span>
+                        )}
+                      </div>
+                      {item.productSku && item.itemType !== 'service' && (
                         <div className="text-[10px] font-black text-muted-foreground uppercase tracking-tighter mt-1">SKU: {item.productSku}</div>
                       )}
                     </td>

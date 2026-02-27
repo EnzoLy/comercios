@@ -66,6 +66,7 @@ export async function middleware(request: NextRequest) {
     }
 
     if (pathname.startsWith('/dashboard')) {
+
       if (!session?.user) {
         const signInUrl = new URL('/auth/signin', request.url)
         signInUrl.searchParams.set('callbackUrl', pathname)
@@ -112,8 +113,10 @@ export async function middleware(request: NextRequest) {
 
           const plan = store.subscriptionPlan || 'FREE'
 
+          console.log(plan)
+
           const restrictedByPlan: Record<string, string[]> = {
-            'FREE': ['products', 'categories', 'inventory', 'employees', 'shifts', 'suppliers', 'purchase-orders', 'analytics', 'sales', 'reports'],
+            'FREE': ['products', 'categories', 'inventory', 'employees', 'shifts', 'suppliers', 'purchase-orders', 'analytics', 'sales', 'reports', 'services', 'service-categories', 'appointments', 'quotes'],
             'BASICO': ['suppliers', 'purchase-orders', 'analytics', 'reports'],
           }
 
@@ -138,6 +141,10 @@ export async function middleware(request: NextRequest) {
               'inventory',
               'suppliers',
               'purchase-orders',
+              'services',
+              'service-categories',
+              'appointments',
+              'quotes',
               'tutoriales',
             ],
             ADMIN: [
@@ -153,6 +160,10 @@ export async function middleware(request: NextRequest) {
               'my-access',
               'suppliers',
               'purchase-orders',
+              'services',
+              'service-categories',
+              'appointments',
+              'quotes',
               'tutoriales',
             ],
           }

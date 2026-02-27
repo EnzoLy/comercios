@@ -25,6 +25,8 @@ import {
   BookOpen,
   Sun,
   Moon,
+  Sparkles,
+  ChevronDown,
 } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
@@ -43,12 +45,20 @@ interface NavItem {
   ownerOnly?: boolean
 }
 
+interface NavGroup {
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  children: NavItem[]
+  permission?: 'manage_products'
+}
+
 export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [isDark, setIsDark] = useState(false)
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
 
-  const navItems: NavItem[] = [
+  const regularItems: NavItem[] = [
     {
       label: 'Panel de Control',
       href: `/dashboard/${storeSlug}`,
@@ -64,36 +74,66 @@ export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) 
       href: `/dashboard/${storeSlug}/tutoriales`,
       icon: BookOpen,
     },
-    {
-      label: 'Productos',
-      href: `/dashboard/${storeSlug}/products`,
-      icon: Package,
-      permission: 'manage_products',
-    },
-    {
-      label: 'Categorías',
-      href: `/dashboard/${storeSlug}/categories`,
-      icon: FolderTree,
-      permission: 'manage_products',
-    },
-    {
-      label: 'Inventario',
-      href: `/dashboard/${storeSlug}/inventory`,
-      icon: Warehouse,
-      permission: 'manage_inventory',
-    },
-    {
-      label: 'Proveedores',
-      href: `/dashboard/${storeSlug}/suppliers`,
-      icon: Truck,
-      permission: 'manage_products',
-    },
-    {
-      label: 'Órdenes de Compra',
-      href: `/dashboard/${storeSlug}/purchase-orders`,
-      icon: ClipboardList,
-      permission: 'manage_products',
-    },
+  ]
+
+  const productGroup: NavGroup = {
+    label: 'Productos',
+    icon: Package,
+    permission: 'manage_products',
+    children: [
+      {
+        label: 'Productos',
+        href: `/dashboard/${storeSlug}/products`,
+        icon: Package,
+        permission: 'manage_products',
+      },
+      {
+        label: 'Categorías',
+        href: `/dashboard/${storeSlug}/categories`,
+        icon: FolderTree,
+        permission: 'manage_products',
+      },
+      {
+        label: 'Inventario',
+        href: `/dashboard/${storeSlug}/inventory`,
+        icon: Warehouse,
+        permission: 'manage_inventory',
+      },
+      {
+        label: 'Proveedores',
+        href: `/dashboard/${storeSlug}/suppliers`,
+        icon: Truck,
+        permission: 'manage_products',
+      },
+      {
+        label: 'Órdenes de Compra',
+        href: `/dashboard/${storeSlug}/purchase-orders`,
+        icon: ClipboardList,
+        permission: 'manage_products',
+      },
+    ],
+  }
+
+  const serviceGroup: NavGroup = {
+    label: 'Servicios',
+    icon: Sparkles,
+    children: [
+      {
+        label: 'Servicios',
+        href: `/dashboard/${storeSlug}/services`,
+        icon: Sparkles,
+        permission: 'manage_products',
+      },
+      {
+        label: 'Citas',
+        href: `/dashboard/${storeSlug}/appointments`,
+        icon: Clock,
+        permission: 'manage_products',
+      },
+    ],
+  }
+
+  const moreItems: NavItem[] = [
     {
       label: 'Caja',
       href: `/dashboard/${storeSlug}/pos`,
@@ -132,6 +172,13 @@ export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) 
       ownerOnly: true,
     },
   ]
+
+  const toggleGroup = (groupLabel: string) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupLabel]: !prev[groupLabel],
+    }))
+  }
 
   const [mounted, setMounted] = useState(false)
 
@@ -196,7 +243,42 @@ export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) 
           </div>
 
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {navItems.map((item) => (
+            {/* Regular items */}
+            {regularItems.map((item) => (
+              <SidebarItem
+                key={item.href}
+                item={item}
+                storeSlug={storeSlug}
+                isOwner={isOwner}
+                pathname={pathname}
+                onClose={() => setOpen(false)}
+              />
+            ))}
+
+            {/* Products Group */}
+            <MobileSidebarGroup
+              group={productGroup}
+              storeSlug={storeSlug}
+              isOwner={isOwner}
+              pathname={pathname}
+              isExpanded={expandedGroups['Productos'] ?? false}
+              onToggle={() => toggleGroup('Productos')}
+              onClose={() => setOpen(false)}
+            />
+
+            {/* Services Group */}
+            <MobileSidebarGroup
+              group={serviceGroup}
+              storeSlug={storeSlug}
+              isOwner={isOwner}
+              pathname={pathname}
+              isExpanded={expandedGroups['Servicios'] ?? false}
+              onToggle={() => toggleGroup('Servicios')}
+              onClose={() => setOpen(false)}
+            />
+
+            {/* More Items */}
+            {moreItems.map((item) => (
               <SidebarItem
                 key={item.href}
                 item={item}
@@ -276,5 +358,66 @@ function SidebarItem({
       <Icon className="h-5 w-5" />
       {item.label}
     </Link>
+  )
+}
+
+function MobileSidebarGroup({
+  group,
+  storeSlug,
+  isOwner,
+  pathname,
+  isExpanded,
+  onToggle,
+  onClose,
+}: {
+  group: NavGroup
+  storeSlug: string
+  isOwner: boolean
+  pathname: string
+  isExpanded: boolean
+  onToggle: () => void
+  onClose: () => void
+}) {
+  const hasGroupPermission = usePermission(group.permission as any)
+
+  if (!hasGroupPermission) return null
+
+  const hasActiveChild = group.children.some(child => pathname === child.href)
+  const shouldExpand = hasActiveChild || isExpanded
+  const GroupIcon = group.icon
+
+  return (
+    <div className="space-y-1">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+      >
+        <div className="flex items-center gap-3">
+          <GroupIcon className="h-5 w-5" />
+          <span>{group.label}</span>
+        </div>
+        <ChevronDown
+          className={cn(
+            'h-4 w-4 transition-transform',
+            shouldExpand ? 'rotate-180' : ''
+          )}
+        />
+      </button>
+
+      {shouldExpand && (
+        <div className="space-y-1 pl-4">
+          {group.children.map((child) => (
+            <SidebarItem
+              key={child.href}
+              item={child}
+              storeSlug={storeSlug}
+              isOwner={isOwner}
+              pathname={pathname}
+              onClose={onClose}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }

@@ -9,6 +9,7 @@ import {
 } from 'typeorm'
 import { Sale } from './sale.entity'
 import { Product } from './product.entity'
+import { Service } from './service.entity'
 
 @Entity('sale_item')
 export class SaleItem {
@@ -19,14 +20,17 @@ export class SaleItem {
   @Index()
   saleId!: string
 
-  @Column({ type: 'uuid' })
-  productId!: string
+  @Column({ type: 'uuid', nullable: true })
+  productId?: string | null
+
+  @Column({ type: 'uuid', nullable: true })
+  serviceId?: string | null
 
   @Column({ type: 'varchar', length: 255 })
   productName!: string
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  productSku?: string
+  @Column({ type: 'varchar', length: 100, nullable: true, default: null })
+  productSku?: string | null
 
   @Column({ type: 'int' })
   quantity!: number
@@ -58,7 +62,11 @@ export class SaleItem {
   @JoinColumn({ name: 'saleId' })
   sale!: any
 
-  @ManyToOne(() => Product, (product: any) => product.saleItems, { onDelete: 'RESTRICT' })
+  @ManyToOne(() => Product, (product: any) => product.saleItems, { onDelete: 'RESTRICT', nullable: true })
   @JoinColumn({ name: 'productId' })
-  product!: any
+  product?: any
+
+  @ManyToOne(() => Service, (service: any) => service.saleItems, { onDelete: 'RESTRICT', nullable: true })
+  @JoinColumn({ name: 'serviceId' })
+  service?: any
 }

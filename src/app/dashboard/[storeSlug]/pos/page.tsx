@@ -60,12 +60,14 @@ import {
 import { MoreVertical, Menu, LayoutGrid, ChevronUp } from 'lucide-react'
 
 interface CartItem {
-  productId: string
+  productId?: string
+  serviceId?: string
+  itemType: 'product' | 'service'
   name: string
-  sku: string
+  sku?: string
   price: number
   quantity: number
-  stock: number
+  stock?: number
   taxRate: number
   discount?: number
   trackExpirationDates?: boolean
@@ -245,16 +247,19 @@ export default function POSPage() {
   }
 
   const addToCart = async (product: any) => {
-    // Prevent adding inactive products
+    const isService = product.itemType === 'service'
+
+    // Prevent adding inactive products/services
     if (product.isActive === false) {
-      toast.error(`El producto ${product.name} está inactivo y no se puede vender`)
+      toast.error(`El ${isService ? 'servicio' : 'producto'} ${product.name} está inactivo y no se puede vender`)
       return
     }
 
     let nearestExpirationDate: string | undefined
     let hasExpiredBatches = false
 
-    if (product.trackExpirationDates && store) {
+    // Only check expiration for products, not services
+    if (!isService && product.trackExpirationDates && store) {
       try {
         const response = await fetch(
           `/api/stores/${store.storeId}/products/${product.id}/batches?sortBy=expirationDate&sortOrder=asc&limit=1`
@@ -282,40 +287,50 @@ export default function POSPage() {
     }
 
     setCart((prev) => {
-      const existing = prev.find((item) => item.productId === product.id)
+      const itemKey = isService ? 'serviceId' : 'productId'
+      const existing = prev.find((item) => item[itemKey] === product.id)
       let taxRate = Number(defaultTaxRate) || 0
       if (product.overrideTaxRate && product.taxRate !== null && product.taxRate !== undefined) {
         taxRate = Number(product.taxRate) || 0
       }
 
+      const price = Number(isService ? product.price : (product.sellingPrice || 0)) || 0
+      const stock = isService ? undefined : product.currentStock
+
       if (existing) {
-        if (existing.quantity >= product.currentStock) {
+        // Check stock only for products
+        if (!isService && existing.quantity >= stock) {
           toast.error('Stock insuficiente')
           return prev
         }
         return prev.map((item) =>
-          item.productId === product.id
+          item[itemKey] === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )
       }
 
-      return [
-        ...prev,
-        {
-          productId: product.id,
-          name: product.name,
-          sku: product.sku,
-          price: Number(product.sellingPrice) || 0,
-          quantity: 1,
-          stock: product.currentStock,
-          taxRate,
-          discount: 0,
-          trackExpirationDates: product.trackExpirationDates,
-          nearestExpirationDate,
-          hasExpiredBatches,
-        },
-      ]
+      const newItem: any = {
+        name: product.name,
+        price,
+        quantity: 1,
+        taxRate,
+        discount: 0,
+        itemType: isService ? 'service' : 'product',
+      }
+
+      if (isService) {
+        newItem.serviceId = product.id
+      } else {
+        newItem.productId = product.id
+        newItem.sku = product.sku
+        newItem.stock = stock
+        newItem.trackExpirationDates = product.trackExpirationDates
+        newItem.nearestExpirationDate = nearestExpirationDate
+        newItem.hasExpiredBatches = hasExpiredBatches
+      }
+
+      return [...prev, newItem]
     })
   }
 
@@ -459,7 +474,9 @@ export default function POSPage() {
           const discountedSubtotal = itemSubtotal - itemDiscount
           const itemTax = taxEnabled ? (discountedSubtotal * item.taxRate) / 100 : 0
           return {
-            productId: item.productId,
+            // Support both products and services
+            productId: item.itemType === 'product' ? item.productId : undefined,
+            serviceId: item.itemType === 'service' ? item.serviceId : undefined,
             quantity: Number(item.quantity),
             unitPrice: Number(item.price),
             discount: Number(itemDiscount),
@@ -701,7 +718,7 @@ export default function POSPage() {
                 <Zap className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-lg md:text-2xl font-black tracking-tight leading-none">POS</h1>
+                <h1 className="text-lg md:text-2xl font-black tracking-tight leading-none">Caja</h1>
                 <p className="text-[10px] text-muted-foreground uppercase font-black mt-1 hidden md:block tracking-widest">Terminal #01</p>
               </div>
             </div>
