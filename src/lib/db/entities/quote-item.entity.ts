@@ -7,9 +7,6 @@ import {
   CreateDateColumn,
   Index,
 } from 'typeorm'
-import { Quote } from './quote.entity'
-import { Product } from './product.entity'
-import { Service } from './service.entity'
 
 export enum QuoteItemType {
   PRODUCT = 'product',
@@ -21,61 +18,61 @@ export enum QuoteItemType {
 @Index(['quoteId'])
 export class QuoteItem {
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  id!: string
 
   @Column('uuid', { name: 'quote_id' })
-  quoteId: string
+  quoteId!: string
 
   @Column('enum', {
     enum: QuoteItemType,
     default: QuoteItemType.CUSTOM,
     name: 'item_type',
   })
-  itemType: QuoteItemType
+  itemType!: QuoteItemType
 
   @Column('uuid', { name: 'product_id', nullable: true })
-  productId: string | null
+  productId!: string | null
 
   @Column('uuid', { name: 'service_id', nullable: true })
-  serviceId: string | null
+  serviceId!: string | null
 
   @Column('varchar', { length: 255 })
-  name: string
+  name!: string
 
   @Column('int', { default: 1 })
-  quantity: number
+  quantity!: number
 
   @Column('decimal', { precision: 10, scale: 2, name: 'unit_price' })
-  unitPrice: number
+  unitPrice!: number
 
   @Column('decimal', { precision: 10, scale: 2 })
-  subtotal: number
+  subtotal!: number
 
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
-  discount: number
+  discount!: number
 
   @Column('decimal', { precision: 10, scale: 2 })
-  total: number
+  total!: number
 
   @Column('decimal', { precision: 5, scale: 2, default: 0, name: 'tax_rate' })
-  taxRate: number
+  taxRate!: number
 
   @Column('decimal', { precision: 10, scale: 2, default: 0, name: 'tax_amount' })
-  taxAmount: number
+  taxAmount!: number
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date
+  createdAt!: Date
 
   // Relationships
-  @ManyToOne(() => Quote, (quote) => quote.items, { onDelete: 'CASCADE' })
+  @ManyToOne('quote', 'items', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'quote_id' })
-  quote: Quote
+  quote!: any
 
-  @ManyToOne(() => Product, { onDelete: 'RESTRICT', nullable: true })
+  @ManyToOne('product', { onDelete: 'RESTRICT', nullable: true })
   @JoinColumn({ name: 'product_id' })
-  product?: Product | null
+  product?: any
 
-  @ManyToOne(() => Service, { onDelete: 'RESTRICT', nullable: true })
+  @ManyToOne('service', { onDelete: 'RESTRICT', nullable: true })
   @JoinColumn({ name: 'service_id' })
-  service?: Service | null
+  service?: any
 }

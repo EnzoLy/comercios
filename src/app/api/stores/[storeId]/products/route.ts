@@ -67,9 +67,8 @@ export async function GET(
       query = query.andWhere('product.currentStock = 0')
     }
 
-    // Get total count before pagination
-    const totalQuery = query.clone()
-    const [_, totalCount] = await totalQuery.getManyAndCount()
+    // Get total count efficiently without fetching data
+    const totalCount = await query.clone().getCount()
 
     // Apply pagination and sorting
     query = query

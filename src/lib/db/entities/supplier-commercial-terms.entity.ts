@@ -9,7 +9,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Supplier } from './supplier.entity'
 
 @Entity('supplier_commercial_terms')
 export class SupplierCommercialTerms {
@@ -68,10 +67,10 @@ export class SupplierCommercialTerms {
   updatedAt!: Date
 
   // Relationships
-  @OneToOne(() => Supplier, { onDelete: 'CASCADE' })
+  @OneToOne('supplier', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'supplierId' })
-  supplier!: Supplier
+  supplier!: any
 
-  @OneToMany('supplier_volume_discount', (discount: any) => discount.commercialTerms)
+  @OneToMany('supplier_volume_discount', 'commercialTerms')
   volumeDiscounts?: any[]
 }

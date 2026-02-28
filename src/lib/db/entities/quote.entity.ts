@@ -9,7 +9,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Store } from './store.entity'
 
 export enum QuoteStatus {
   DRAFT = 'DRAFT',
@@ -24,67 +23,67 @@ export enum QuoteStatus {
 @Index(['storeId', 'createdAt'])
 export class Quote {
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  id!: string
 
   @Column('uuid', { name: 'store_id' })
-  storeId: string
+  storeId!: string
 
   @Column('varchar', { length: 50, name: 'quote_number' })
-  quoteNumber: string
+  quoteNumber!: string
 
   @Column('varchar', { length: 255, name: 'client_name' })
-  clientName: string
+  clientName!: string
 
   @Column('varchar', { length: 50, name: 'client_phone', nullable: true })
-  clientPhone: string | null
+  clientPhone!: string | null
 
   @Column('varchar', { length: 255, name: 'client_email', nullable: true })
-  clientEmail: string | null
+  clientEmail!: string | null
 
   @Column('enum', {
     enum: QuoteStatus,
     default: QuoteStatus.DRAFT,
   })
-  status: QuoteStatus
+  status!: QuoteStatus
 
   @Column('text', { nullable: true })
-  notes: string | null
+  notes!: string | null
 
   @Column('timestamp', { name: 'expires_at', nullable: true })
-  expiresAt: Date | null
+  expiresAt!: Date | null
 
   @Column('decimal', { precision: 10, scale: 2 })
-  subtotal: number
+  subtotal!: number
 
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
-  tax: number
+  tax!: number
 
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
-  discount: number
+  discount!: number
 
   @Column('decimal', { precision: 10, scale: 2 })
-  total: number
+  total!: number
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date
+  createdAt!: Date
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date
+  updatedAt!: Date
 
   @Column('varchar', { length: 255, name: 'access_token', unique: true })
-  accessToken: string
+  accessToken!: string
 
   @Column('int', { name: 'view_count', default: 0 })
-  viewCount: number
+  viewCount!: number
 
   @Column('timestamp', { name: 'last_viewed_at', nullable: true })
-  lastViewedAt: Date | null
+  lastViewedAt!: Date | null
 
   // Relationships
-  @ManyToOne(() => Store, { onDelete: 'CASCADE' })
+  @ManyToOne('store', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'store_id' })
-  store: Store
+  store!: any
 
-  @OneToMany('quote_item', (item: any) => item.quote, { cascade: true })
-  items: any[]
+  @OneToMany('quote_item', 'quote', { cascade: true })
+  items!: any[]
 }

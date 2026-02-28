@@ -9,10 +9,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Store } from './store.entity'
-import { User } from './user.entity'
-import type { SaleItem } from './sale-item.entity'
-import type { StockMovement } from './stock-movement.entity'
 
 export enum PaymentMethod {
   CASH = 'CASH',
@@ -32,6 +28,7 @@ export enum SaleStatus {
 @Entity('sale')
 @Index(['storeId', 'createdAt'])
 @Index(['storeId', 'status'])
+@Index(['storeId', 'cashierId'])
 export class Sale {
   @PrimaryGeneratedColumn('uuid')
   id!: string
@@ -99,20 +96,20 @@ export class Sale {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne(() => Store, (store: any) => store.sales, { onDelete: 'CASCADE' })
+  @ManyToOne('store', 'sales', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: any
 
-  @ManyToOne(() => User, { onDelete: 'RESTRICT' })
+  @ManyToOne('user', { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'cashierId' })
   cashier!: any
 
-  @OneToMany('sale_item', (saleItem: any) => saleItem.sale, { cascade: true })
+  @OneToMany('sale_item', 'sale', { cascade: true })
   items!: any[]
 
-  @OneToMany('stock_movement', (movement: any) => movement.sale)
+  @OneToMany('stock_movement', 'sale')
   stockMovements!: any[]
 
-  @OneToMany('sale_return', (saleReturn: any) => saleReturn.sale)
+  @OneToMany('sale_return', 'sale')
   returns!: any[]
 }

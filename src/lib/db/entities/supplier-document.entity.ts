@@ -8,7 +8,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Supplier } from './supplier.entity'
 
 export enum DocumentType {
   PRICE_LIST = 'PRICE_LIST',
@@ -78,9 +77,9 @@ export class SupplierDocument {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne(() => Supplier, (supplier: any) => supplier.documents, {
+  @ManyToOne('supplier', 'documents', {
     onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'supplierId' })
-  supplier!: Supplier
+  supplier!: any
 }

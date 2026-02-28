@@ -7,9 +7,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Sale } from './sale.entity'
-import { Product } from './product.entity'
-import { Service } from './service.entity'
 
 @Entity('sale_item')
 export class SaleItem {
@@ -58,15 +55,15 @@ export class SaleItem {
   createdAt!: Date
 
   // Relationships
-  @ManyToOne(() => Sale, (sale: any) => sale.items, { onDelete: 'CASCADE' })
+  @ManyToOne('sale', 'items', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'saleId' })
   sale!: any
 
-  @ManyToOne(() => Product, (product: any) => product.saleItems, { onDelete: 'RESTRICT', nullable: true })
+  @ManyToOne('product', 'saleItems', { onDelete: 'RESTRICT', nullable: true })
   @JoinColumn({ name: 'productId' })
   product?: any
 
-  @ManyToOne(() => Service, (service: any) => service.saleItems, { onDelete: 'RESTRICT', nullable: true })
+  @ManyToOne('service', 'saleItems', { onDelete: 'RESTRICT', nullable: true })
   @JoinColumn({ name: 'serviceId' })
   service?: any
 }

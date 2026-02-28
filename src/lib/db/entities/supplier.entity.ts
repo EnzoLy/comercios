@@ -9,10 +9,10 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import type { Store } from './store.entity'
-import type { Product } from './product.entity'
 
 @Entity('supplier')
+@Index(['storeId', 'isActive'])
+@Index(['storeId', 'isPreferred'])
 export class Supplier {
   @PrimaryGeneratedColumn('uuid')
   id!: string
@@ -76,25 +76,25 @@ export class Supplier {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('store', (store: any) => store.suppliers, { onDelete: 'CASCADE' })
+  @ManyToOne('store', 'suppliers', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
-  store!: Store
+  store!: any
 
-  @OneToMany('product', (product: any) => product.supplier)
-  products!: Product[]
+  @OneToMany('product', 'supplier')
+  products!: any[]
 
-  @OneToMany('supplier_contact', (contact: any) => contact.supplier)
+  @OneToMany('supplier_contact', 'supplier')
   contacts?: any[]
 
-  @OneToMany('supplier_product', (sp: any) => sp.supplier)
+  @OneToMany('supplier_product', 'supplier')
   supplierProducts?: any[]
 
-  @OneToMany('supplier_document', (doc: any) => doc.supplier)
+  @OneToMany('supplier_document', 'supplier')
   documents?: any[]
 
-  @OneToMany('supplier_delivery_schedule', (schedule: any) => schedule.supplier)
+  @OneToMany('supplier_delivery_schedule', 'supplier')
   deliverySchedules?: any[]
 
-  @OneToMany('purchase_order', (po: any) => po.supplier)
+  @OneToMany('purchase_order', 'supplier')
   purchaseOrders?: any[]
 }

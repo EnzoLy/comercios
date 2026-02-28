@@ -7,11 +7,7 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { ProductBatch } from './product-batch.entity'
-import { Product } from './product.entity'
-import { StockMovement, MovementType } from './stock-movement.entity'
-import { User } from './user.entity'
-import { Sale } from './sale.entity'
+import { MovementType } from './stock-movement.entity'
 
 @Entity('batch_stock_movement')
 @Index(['batchId', 'createdAt'])
@@ -59,23 +55,23 @@ export class BatchStockMovement {
   createdAt!: Date
 
   // Relationships
-  @ManyToOne(() => ProductBatch, (batch: any) => batch.movements, { onDelete: 'CASCADE' })
+  @ManyToOne('product_batch', 'movements', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'batchId' })
   batch!: any
 
-  @ManyToOne(() => Product, { onDelete: 'CASCADE' })
+  @ManyToOne('product', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'productId' })
   product!: any
 
-  @ManyToOne(() => StockMovement, { onDelete: 'SET NULL' })
+  @ManyToOne('stock_movement', { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'stockMovementId' })
   stockMovement?: any
 
-  @ManyToOne(() => User, { onDelete: 'SET NULL' })
+  @ManyToOne('user', { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'userId' })
   user?: any
 
-  @ManyToOne(() => Sale, { onDelete: 'CASCADE' })
+  @ManyToOne('sale', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'saleId' })
   sale?: any
 }

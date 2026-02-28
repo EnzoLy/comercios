@@ -8,8 +8,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { PurchaseOrder } from './purchase-order.entity'
-import { Product } from './product.entity'
 
 @Entity('purchase_order_item')
 @Index(['purchaseOrderId', 'productId'])
@@ -53,11 +51,11 @@ export class PurchaseOrderItem {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne(() => PurchaseOrder, (po: any) => po.items, { onDelete: 'CASCADE' })
+  @ManyToOne('purchase_order', 'items', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'purchaseOrderId' })
-  purchaseOrder!: PurchaseOrder
+  purchaseOrder!: any
 
-  @ManyToOne(() => Product, { onDelete: 'RESTRICT' })
+  @ManyToOne('product', { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'productId' })
-  product!: Product
+  product!: any
 }

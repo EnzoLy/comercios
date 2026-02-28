@@ -8,7 +8,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Supplier } from './supplier.entity'
 
 @Entity('supplier_contact')
 @Index(['supplierId', 'isPrimary'])
@@ -55,7 +54,7 @@ export class SupplierContact {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne(() => Supplier, (supplier: any) => supplier.contacts, { onDelete: 'CASCADE' })
+  @ManyToOne('supplier', 'contacts', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'supplierId' })
-  supplier!: Supplier
+  supplier!: any
 }

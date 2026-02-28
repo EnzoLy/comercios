@@ -132,61 +132,32 @@ export async function getEmployeePerformance(
   storeId: string,
   { startDate, endDate }: AnalyticsParams
 ): Promise<EmployeePerformanceResult[]> {
-  // Get all completed sales with cashier relations in date range
-  const sales = await dataSource
+  // Use SQL GROUP BY for aggregation instead of loading all data into memory
+  const results = await dataSource
     .getRepository(Sale)
     .createQueryBuilder('sale')
-    .leftJoinAndSelect('sale.cashier', 'cashier')
+    .select('sale.cashierId as employeeId')
+    .addSelect('cashier.name as employeeName')
+    .addSelect('COUNT(sale.id)::int as transactions')
+    .addSelect('SUM(CAST(sale.total AS DECIMAL(10,2))) as totalRevenue')
+    .addSelect('AVG(CAST(sale.total AS DECIMAL(10,2))) as avgTransaction')
+    .addSelect('MAX(sale.createdAt) as lastSaleDate')
+    .leftJoin(User, 'cashier', 'cashier.id = sale.cashierId')
     .where('sale.storeId = :storeId', { storeId })
     .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
     .andWhere('sale.createdAt >= :startDate', { startDate })
     .andWhere('sale.createdAt <= :endDate', { endDate })
-    .getMany()
+    .groupBy('sale.cashierId')
+    .addGroupBy('cashier.name')
+    .orderBy('transactions', 'DESC')
+    .getRawMany()
 
-  // Group by employee
-  const employeeMap = new Map<string, {
-    employee: any
-    transactions: number
-    totalRevenue: number
-    lastSaleDate: Date | null
-  }>()
-
-  for (const sale of sales) {
-    const employeeId = sale.cashierId
-    if (!employeeMap.has(employeeId)) {
-      employeeMap.set(employeeId, {
-        employee: sale.cashier,
-        transactions: 0,
-        totalRevenue: 0,
-        lastSaleDate: null,
-      })
-    }
-
-    const data = employeeMap.get(employeeId)!
-    data.transactions += 1
-    data.totalRevenue += Number(sale.total)
-    if (!data.lastSaleDate || sale.createdAt > data.lastSaleDate) {
-      data.lastSaleDate = sale.createdAt
-    }
-  }
-
-  // Convert to results array and sort by revenue descending
-  const results = Array.from(employeeMap.values())
-    .map((data) => ({
-      employeeId: data.employee?.id || 'unknown',
-      employeeName: data.employee?.name || 'Unknown',
-      transactions: data.transactions,
-      totalRevenue: data.totalRevenue,
-      lastSaleDate: data.lastSaleDate,
-    }))
-    .sort((a, b) => b.transactions - a.transactions)
-
-  return results.map((r) => ({
-    employeeId: r.employeeId,
-    employeeName: r.employeeName,
-    transactions: r.transactions,
-    revenue: String(r.totalRevenue.toFixed(2)),
-    avgTransaction: String(r.transactions > 0 ? (r.totalRevenue / r.transactions).toFixed(2) : 0),
+  return results.map((r: any) => ({
+    employeeId: r.employeeId || 'unknown',
+    employeeName: r.employeeName || 'Unknown',
+    transactions: parseInt(r.transactions) || 0,
+    revenue: String(parseFloat(r.totalRevenue || 0).toFixed(2)),
+    avgTransaction: String(parseFloat(r.avgTransaction || 0).toFixed(2)),
     lastSaleDate: r.lastSaleDate || null,
   }))
 }
@@ -199,92 +170,62 @@ export async function getProductAnalytics(
   storeId: string,
   { startDate, endDate }: AnalyticsParams
 ): Promise<ProductAnalyticsResult[]> {
-  // Get all sale items in date range with relations
-  const saleItems = await dataSource
+  // Use SQL GROUP BY for aggregation instead of loading all data into memory
+  const results = await dataSource
     .getRepository(SaleItem)
     .createQueryBuilder('saleItem')
-    .leftJoinAndSelect('saleItem.sale', 'sale')
-    .leftJoinAndSelect('saleItem.product', 'product')
-    .leftJoinAndSelect('product.category', 'category')
+    .select('saleItem.productId as productId')
+    .addSelect('saleItem.productName as productName')
+    .addSelect('saleItem.productSku as sku')
+    .addSelect('product.categoryId as categoryId')
+    .addSelect('category.name as categoryName')
+    .addSelect('product.costPrice as costPrice')
+    .addSelect('SUM(saleItem.quantity)::int as quantitySold')
+    .addSelect('SUM(CAST(saleItem.total AS DECIMAL(10,2))) as revenue')
+    .addSelect('COUNT(saleItem.id)::int as transactions')
+    .addSelect('SUM(CAST(saleItem.taxAmount AS DECIMAL(10,2))) as totalTaxAmount')
+    .innerJoin(Sale, 'sale', 'sale.id = saleItem.saleId')
+    .leftJoin(Product, 'product', 'product.id = saleItem.productId')
+    .leftJoin(Category, 'category', 'category.id = product.categoryId')
     .where('sale.storeId = :storeId', { storeId })
     .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
     .andWhere('sale.createdAt >= :startDate', { startDate })
     .andWhere('sale.createdAt <= :endDate', { endDate })
-    .getMany()
+    .andWhere('saleItem.productId IS NOT NULL')
+    .groupBy('saleItem.productId')
+    .addGroupBy('saleItem.productName')
+    .addGroupBy('saleItem.productSku')
+    .addGroupBy('product.categoryId')
+    .addGroupBy('category.name')
+    .addGroupBy('product.costPrice')
+    .orderBy('quantitySold', 'DESC')
+    .getRawMany()
 
-  // Group by product ID
-  const productMap = new Map<string, {
-    productId: string
-    productName: string
-    sku: string
-    categoryId: string | null
-    categoryName: string | null
-    totalQuantity: number
-    totalRevenue: number
-    totalPrice: number
-    costPrice: number
-    transactionCount: number
-    totalTaxAmount: number
-  }>()
+  return results.map((r: any) => {
+    const quantitySold = parseInt(r.quantitySold) || 0
+    const revenue = parseFloat(r.revenue || 0)
+    const costPrice = parseFloat(r.costPrice || 0)
+    const totalCost = costPrice * quantitySold
+    const profit = revenue - totalCost
+    const marginPercentage = revenue > 0 ? ((profit / revenue) * 100).toFixed(2) : '0.00'
+    const avgPrice = quantitySold > 0 ? revenue / quantitySold : 0
 
-  for (const item of saleItems) {
-    const productId = item.productId
-    if (!productId) continue
-
-    if (!productMap.has(productId)) {
-      productMap.set(productId, {
-        productId,
-        productName: item.productName || item.product?.name || 'Unknown',
-        sku: item.productSku || item.product?.sku || '',
-        categoryId: item.product?.categoryId || null,
-        categoryName: item.product?.category?.name || null,
-        totalQuantity: 0,
-        totalRevenue: 0,
-        totalPrice: 0,
-        costPrice: item.product?.costPrice ? Number(item.product.costPrice) : 0,
-        transactionCount: 0,
-        totalTaxAmount: 0,
-      })
+    return {
+      productId: r.productId || 'unknown',
+      productName: r.productName || 'Unknown',
+      sku: r.sku || '',
+      categoryId: r.categoryId || null,
+      categoryName: r.categoryName || null,
+      quantitySold,
+      revenue: String(revenue.toFixed(2)),
+      avgPrice: String(avgPrice.toFixed(2)),
+      costPrice: String(costPrice.toFixed(2)),
+      profit: String(profit.toFixed(2)),
+      marginPercentage,
+      transactions: parseInt(r.transactions) || 0,
+      totalTaxAmount: String(parseFloat(r.totalTaxAmount || 0).toFixed(2)),
     }
-
-    const data = productMap.get(productId)!
-    data.totalQuantity += item.quantity || 0
-    data.totalRevenue += Number(item.total) || 0
-    data.totalPrice += (Number(item.unitPrice) || 0) * (item.quantity || 0)
-    data.totalTaxAmount += Number(item.taxAmount) || 0
-    data.transactionCount += 1
-  }
-
-  // Convert to results array
-  const results = Array.from(productMap.values())
-    .sort((a, b) => b.totalQuantity - a.totalQuantity)
-    .map((data) => {
-      const revenue = data.totalRevenue
-      const quantitySold = data.totalQuantity
-      const costPrice = data.costPrice
-      const totalCost = costPrice * quantitySold
-      const profit = revenue - totalCost
-      const marginPercentage = revenue > 0 ? ((profit / revenue) * 100).toFixed(2) : '0.00'
-      const avgPrice = quantitySold > 0 ? data.totalPrice / quantitySold : 0
-
-      return {
-        productId: data.productId,
-        productName: data.productName,
-        sku: data.sku,
-        categoryId: data.categoryId,
-        categoryName: data.categoryName,
-        quantitySold,
-        revenue: String(revenue.toFixed(2)),
-        avgPrice: String(avgPrice.toFixed(2)),
-        costPrice: String(costPrice.toFixed(2)),
-        profit: String(profit.toFixed(2)),
-        marginPercentage,
-        transactions: data.transactionCount,
-        totalTaxAmount: String(data.totalTaxAmount.toFixed(2)),
-      }
-    })
-
-  return results
+  })
 }
 
 /**

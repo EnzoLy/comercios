@@ -37,60 +37,76 @@ function parseString(value: unknown): string | undefined {
   return String(value).trim() || undefined
 }
 
+// Cache maps to avoid N+1 queries
+interface CacheContext {
+  categoryCache: Map<string, Category>
+  supplierCache: Map<string, Supplier>
+  newCategories: Map<string, Category>
+  newSuppliers: Map<string, Supplier>
+}
+
 async function findOrCreateCategory(
   storeId: string,
   categoryName: string,
-  createIfMissing: boolean
+  createIfMissing: boolean,
+  cache: CacheContext
 ): Promise<string | undefined> {
-  const dataSource = await getDataSource()
-  const categoryRepo = dataSource.getRepository(Category)
-
   const normalizedName = categoryName.trim().toLowerCase()
 
-  let category = await categoryRepo
-    .createQueryBuilder('category')
-    .where('category.storeId = :storeId', { storeId })
-    .andWhere('LOWER(category.name) = :name', { name: normalizedName })
-    .getOne()
+  // Check cache first
+  if (cache.categoryCache.has(normalizedName)) {
+    return cache.categoryCache.get(normalizedName)?.id
+  }
 
-  if (!category && createIfMissing) {
-    category = categoryRepo.create({
+  if (cache.newCategories.has(normalizedName)) {
+    return cache.newCategories.get(normalizedName)?.id
+  }
+
+  if (createIfMissing) {
+    const dataSource = await getDataSource()
+    const categoryRepo = dataSource.getRepository(Category)
+    const category = categoryRepo.create({
       storeId,
       name: categoryName.trim(),
       isActive: true,
     })
-    await categoryRepo.save(category)
+    cache.newCategories.set(normalizedName, category)
+    return category.id
   }
 
-  return category?.id
+  return undefined
 }
 
 async function findOrCreateSupplier(
   storeId: string,
   supplierName: string,
-  createIfMissing: boolean
+  createIfMissing: boolean,
+  cache: CacheContext
 ): Promise<string | undefined> {
-  const dataSource = await getDataSource()
-  const supplierRepo = dataSource.getRepository(Supplier)
-
   const normalizedName = supplierName.trim().toLowerCase()
 
-  let supplier = await supplierRepo
-    .createQueryBuilder('supplier')
-    .where('supplier.storeId = :storeId', { storeId })
-    .andWhere('LOWER(supplier.name) = :name', { name: normalizedName })
-    .getOne()
+  // Check cache first
+  if (cache.supplierCache.has(normalizedName)) {
+    return cache.supplierCache.get(normalizedName)?.id
+  }
 
-  if (!supplier && createIfMissing) {
-    supplier = supplierRepo.create({
+  if (cache.newSuppliers.has(normalizedName)) {
+    return cache.newSuppliers.get(normalizedName)?.id
+  }
+
+  if (createIfMissing) {
+    const dataSource = await getDataSource()
+    const supplierRepo = dataSource.getRepository(Supplier)
+    const supplier = supplierRepo.create({
       storeId,
       name: supplierName.trim(),
       isActive: true,
     })
-    await supplierRepo.save(supplier)
+    cache.newSuppliers.set(normalizedName, supplier)
+    return supplier.id
   }
 
-  return supplier?.id
+  return undefined
 }
 
 export async function importData(
@@ -120,80 +136,135 @@ export async function importData(
     suppliers: { created: 0, errors: [] },
   }
 
-  for (const [idx, rowData] of data.categories.entries()) {
-    const rowNum = idx + 2
-    try {
-      const name = parseString(rowData.name)
-      if (!name) {
-        result.categories.errors.push({ row: rowNum, message: 'Nombre de categoría requerido' })
-        continue
-      }
+  // Pre-load all existing categories and suppliers to avoid N+1 queries
+  const existingCategories = await categoryRepo.find({
+    where: { storeId },
+  })
+  const existingSuppliers = await supplierRepo.find({
+    where: { storeId },
+  })
+  const existingProducts = await productRepo.find({
+    where: { storeId },
+    select: ['id', 'storeId', 'sku', 'name'],
+  })
 
-      const existing = await categoryRepo
-        .createQueryBuilder('category')
-        .where('category.storeId = :storeId', { storeId })
-        .andWhere('LOWER(category.name) = :name', { name: name.toLowerCase() })
-        .getOne()
-
-      if (existing) continue
-
-      const category = categoryRepo.create({
-        storeId,
-        name,
-        description: parseString(rowData.description),
-        isActive: true,
-      })
-      await categoryRepo.save(category)
-      result.categories.created++
-    } catch (error) {
-      result.categories.errors.push({
-        row: rowNum,
-        message: error instanceof Error ? error.message : 'Error desconocido',
-      })
-    }
+  // Create cache maps indexed by normalized names
+  const cache: CacheContext = {
+    categoryCache: new Map(
+      existingCategories.map((cat) => [cat.name.toLowerCase(), cat])
+    ),
+    supplierCache: new Map(
+      existingSuppliers.map((sup) => [sup.name.toLowerCase(), sup])
+    ),
+    newCategories: new Map(),
+    newSuppliers: new Map(),
   }
 
-  for (const [idx, rowData] of data.suppliers.entries()) {
-    const rowNum = idx + 2
-    try {
-      const name = parseString(rowData.name)
-      if (!name) {
-        result.suppliers.errors.push({ row: rowNum, message: 'Nombre de proveedor requerido' })
-        continue
+  // Create a map for quick product lookups by SKU and name
+  const productsBySku = new Map(
+    existingProducts
+      .filter((p) => p.sku)
+      .map((p) => [p.sku.toLowerCase(), p])
+  )
+  const productsByName = new Map(
+    existingProducts
+      .filter((p) => p.name)
+      .map((p) => [p.name.toLowerCase(), p])
+  )
+
+  // Bulk insert categories
+  const categoriesToSave = data.categories
+    .map((rowData, idx) => {
+      const rowNum = idx + 2
+      try {
+        const name = parseString(rowData.name)
+        if (!name) {
+          result.categories.errors.push({ row: rowNum, message: 'Nombre de categoría requerido' })
+          return null
+        }
+
+        const normalizedName = name.toLowerCase()
+        if (cache.categoryCache.has(normalizedName)) {
+          return null // Already exists
+        }
+
+        return categoryRepo.create({
+          storeId,
+          name,
+          description: parseString(rowData.description),
+          isActive: true,
+        })
+      } catch (error) {
+        result.categories.errors.push({
+          row: rowNum,
+          message: error instanceof Error ? error.message : 'Error desconocido',
+        })
+        return null
       }
+    })
+    .filter((cat) => cat !== null) as Category[]
 
-      const existing = await supplierRepo
-        .createQueryBuilder('supplier')
-        .where('supplier.storeId = :storeId', { storeId })
-        .andWhere('LOWER(supplier.name) = :name', { name: name.toLowerCase() })
-        .getOne()
-
-      if (existing) continue
-
-      const supplier = supplierRepo.create({
-        storeId,
-        name,
-        contactPerson: parseString(rowData.contactPerson),
-        email: parseString(rowData.email),
-        phone: parseString(rowData.phone),
-        taxId: parseString(rowData.taxId),
-        address: parseString(rowData.address),
-        city: parseString(rowData.city),
-        state: parseString(rowData.state),
-        country: parseString(rowData.country),
-        website: parseString(rowData.website),
-        notes: parseString(rowData.notes),
-        isActive: true,
-      })
-      await supplierRepo.save(supplier)
-      result.suppliers.created++
-    } catch (error) {
-      result.suppliers.errors.push({
-        row: rowNum,
-        message: error instanceof Error ? error.message : 'Error desconocido',
-      })
-    }
+  if (categoriesToSave.length > 0) {
+    const savedCategories = await categoryRepo.save(categoriesToSave)
+    result.categories.created += savedCategories.length
+    savedCategories.forEach((cat) => {
+      cache.categoryCache.set(cat.name.toLowerCase(), cat)
+    })
   }
+
+  // Bulk insert suppliers
+  const suppliersToSave = data.suppliers
+    .map((rowData, idx) => {
+      const rowNum = idx + 2
+      try {
+        const name = parseString(rowData.name)
+        if (!name) {
+          result.suppliers.errors.push({ row: rowNum, message: 'Nombre de proveedor requerido' })
+          return null
+        }
+
+        const normalizedName = name.toLowerCase()
+        if (cache.supplierCache.has(normalizedName)) {
+          return null // Already exists
+        }
+
+        return supplierRepo.create({
+          storeId,
+          name,
+          contactPerson: parseString(rowData.contactPerson),
+          email: parseString(rowData.email),
+          phone: parseString(rowData.phone),
+          taxId: parseString(rowData.taxId),
+          address: parseString(rowData.address),
+          city: parseString(rowData.city),
+          state: parseString(rowData.state),
+          country: parseString(rowData.country),
+          website: parseString(rowData.website),
+          notes: parseString(rowData.notes),
+          isActive: true,
+        })
+      } catch (error) {
+        result.suppliers.errors.push({
+          row: rowNum,
+          message: error instanceof Error ? error.message : 'Error desconocido',
+        })
+        return null
+      }
+    })
+    .filter((sup) => sup !== null) as Supplier[]
+
+  if (suppliersToSave.length > 0) {
+    const savedSuppliers = await supplierRepo.save(suppliersToSave)
+    result.suppliers.created += savedSuppliers.length
+    savedSuppliers.forEach((sup) => {
+      cache.supplierCache.set(sup.name.toLowerCase(), sup)
+    })
+  }
+
+  // Process products
+  const productsToCreate: Product[] = []
+  const productsToUpdate: Array<{ id: string; data: Partial<Product> }> = []
+  const barcodesToSave: ProductBarcode[] = []
 
   for (const [idx, rowData] of data.products.entries()) {
     const rowNum = idx + 2
@@ -209,31 +280,23 @@ export async function importData(
       let product: Product | null = null
 
       if (sku) {
-        product = await productRepo
-          .createQueryBuilder('product')
-          .where('product.storeId = :storeId', { storeId })
-          .andWhere('LOWER(product.sku) = :sku', { sku: sku.toLowerCase() })
-          .getOne()
+        product = productsBySku.get(sku.toLowerCase()) ?? null
       }
 
       if (!product && name) {
-        product = await productRepo
-          .createQueryBuilder('product')
-          .where('product.storeId = :storeId', { storeId })
-          .andWhere('LOWER(product.name) = :name', { name: name.toLowerCase() })
-          .getOne()
+        product = productsByName.get(name.toLowerCase()) ?? null
       }
 
       const categoryName = parseString(rowData.category)
       let categoryId: string | undefined
       if (categoryName) {
-        categoryId = await findOrCreateCategory(storeId, categoryName, createCategories) ?? undefined
+        categoryId = await findOrCreateCategory(storeId, categoryName, createCategories, cache)
       }
 
       const supplierName = parseString(rowData.supplier)
       let supplierId: string | undefined
       if (supplierName) {
-        supplierId = await findOrCreateSupplier(storeId, supplierName, createSuppliers) ?? undefined
+        supplierId = await findOrCreateSupplier(storeId, supplierName, createSuppliers, cache)
       }
 
       const productData = {
@@ -253,23 +316,26 @@ export async function importData(
       }
 
       if (product && updateExisting) {
-        await productRepo.update(product.id, {
-          ...productData,
-          sku: product.sku,
+        productsToUpdate.push({
+          id: product.id,
+          data: {
+            ...productData,
+            sku: product.sku,
+          },
         })
         result.products.updated++
       } else if (!product) {
         const newProduct = productRepo.create(productData)
-        await productRepo.save(newProduct)
+        productsToCreate.push(newProduct)
 
         const barcode = parseString(rowData.barcode)
         if (barcode) {
-          const newBarcode = barcodeRepo.create({
-            productId: newProduct.id,
+          // We'll set the productId after creation
+          barcodesToSave.push({
+            productId: '', // Will be set after product creation
             barcode,
             isPrimary: true,
-          })
-          await barcodeRepo.save(newBarcode)
+          } as any)
         }
 
         result.products.created++
@@ -280,6 +346,43 @@ export async function importData(
         message: error instanceof Error ? error.message : 'Error desconocido',
       })
     }
+  }
+
+  // Bulk save products
+  if (productsToCreate.length > 0) {
+    const savedProducts = await productRepo.save(productsToCreate)
+
+    // Update barcodes with correct product IDs
+    for (let i = 0; i < barcodesToSave.length; i++) {
+      const barcode = barcodesToSave[i]
+      const product = savedProducts[i]
+      if (product && barcode) {
+        barcode.productId = product.id
+      }
+    }
+
+    const validBarcodes = barcodesToSave.filter((b) => b.productId)
+    if (validBarcodes.length > 0) {
+      await barcodeRepo.save(validBarcodes)
+    }
+  }
+
+  // Bulk update products
+  if (productsToUpdate.length > 0) {
+    for (const { id, data } of productsToUpdate) {
+      await productRepo.update(id, data)
+    }
+  }
+
+  // Save any new categories and suppliers that were created during processing
+  if (cache.newCategories.size > 0) {
+    const categoriesToCreate = Array.from(cache.newCategories.values())
+    await categoryRepo.save(categoriesToCreate)
+  }
+
+  if (cache.newSuppliers.size > 0) {
+    const suppliersToCreate = Array.from(cache.newSuppliers.values())
+    await supplierRepo.save(suppliersToCreate)
   }
 
   return result

@@ -9,8 +9,6 @@ import {
   Index,
   Unique,
 } from 'typeorm'
-import type { Supplier } from './supplier.entity'
-import type { Product } from './product.entity'
 
 @Entity('supplier_product')
 @Unique(['supplierId', 'productId'])
@@ -57,15 +55,15 @@ export class SupplierProduct {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('supplier', (supplier: any) => supplier.supplierProducts, {
+  @ManyToOne('supplier', 'supplierProducts', {
     onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'supplierId' })
-  supplier!: Supplier
+  supplier!: any
 
-  @ManyToOne('product', (product: any) => product.supplierProducts, {
+  @ManyToOne('product', 'supplierProducts', {
     onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'productId' })
-  product!: Product
+  product!: any
 }

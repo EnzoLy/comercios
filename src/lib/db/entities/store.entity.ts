@@ -9,12 +9,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { User } from './user.entity'
-import { Employment } from './employment.entity'
-import { Category } from './category.entity'
-import { Product } from './product.entity'
-import { Sale } from './sale.entity'
-import { Supplier } from './supplier.entity'
 
 @Entity('store')
 export class Store {
@@ -128,23 +122,29 @@ export class Store {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne(() => User, (user: any) => user.ownedStores, { onDelete: 'CASCADE' })
+  @ManyToOne('user', 'ownedStores', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'owner_id' })
   owner!: any
 
-  @OneToMany(() => Employment, (employment: any) => employment.store)
+  @OneToMany('employment', 'store')
   @JoinColumn({ name: 'store_id' })
   employments!: any[]
 
-  @OneToMany(() => Category, (category: any) => category.store)
+  @OneToMany('category', 'store')
   categories!: any[]
 
-  @OneToMany(() => Product, (product: any) => product.store)
+  @OneToMany('product', 'store')
   products!: any[]
 
-  @OneToMany(() => Sale, (sale: any) => sale.store)
+  @OneToMany('sale', 'store')
   sales!: any[]
 
-  @OneToMany(() => Supplier, (supplier: any) => supplier.store)
+  @OneToMany('supplier', 'store')
   suppliers!: any[]
+
+  @OneToMany('shift_close', 'store')
+  shiftCloses?: any[]
+
+  @OneToMany('employee_shift', 'store')
+  employeeShifts?: any[]
 }

@@ -10,19 +10,14 @@ import {
   Index,
   Unique,
 } from 'typeorm'
-import { Store } from './store.entity'
-import { Category } from './category.entity'
-import { Supplier } from './supplier.entity'
-import type { StockMovement } from './stock-movement.entity'
-import type { SaleItem } from './sale-item.entity'
-import type { ProductBarcode } from './product-barcode.entity'
-import type { SupplierProduct } from './supplier-product.entity'
-import type { ProductBatch } from './product-batch.entity'
 
 @Entity('product')
 @Unique(['storeId', 'sku'])
 @Index(['storeId', 'barcode'])
 @Index(['storeId', 'sku'])
+@Index(['storeId', 'isActive'])
+@Index(['storeId', 'categoryId'])
+@Index(['storeId', 'name'])
 export class Product {
   @PrimaryGeneratedColumn('uuid')
   id!: string
@@ -110,30 +105,30 @@ export class Product {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne(() => Store, (store: any) => store.products, { onDelete: 'CASCADE' })
+  @ManyToOne('store', 'products', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: any
 
-  @ManyToOne(() => Category, (category: any) => category.products, { onDelete: 'SET NULL' })
+  @ManyToOne('category', 'products', { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'categoryId' })
   category?: any
 
-  @ManyToOne(() => Supplier, (supplier: any) => supplier.products, { onDelete: 'SET NULL' })
+  @ManyToOne('supplier', 'products', { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'supplierId' })
   supplier?: any
 
-  @OneToMany('stock_movement', (movement: any) => movement.product)
+  @OneToMany('stock_movement', 'product')
   stockMovements!: any[]
 
-  @OneToMany('sale_item', (saleItem: any) => saleItem.product)
+  @OneToMany('sale_item', 'product')
   saleItems!: any[]
 
-  @OneToMany('product_barcode', (barcode: any) => barcode.product)
+  @OneToMany('product_barcode', 'product')
   barcodes!: any[]
 
-  @OneToMany('supplier_product', (sp: any) => sp.product)
+  @OneToMany('supplier_product', 'product')
   supplierProducts?: any[]
 
-  @OneToMany('product_batch', (batch: any) => batch.product)
+  @OneToMany('product_batch', 'product')
   batches!: any[]
 }

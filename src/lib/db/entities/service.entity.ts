@@ -9,56 +9,52 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Store } from './store.entity'
-import { ServiceCategory } from './service-category.entity'
-import { SaleItem } from './sale-item.entity'
 
 @Entity('service')
 @Index(['storeId'])
 @Index(['storeId', 'name'])
 export class Service {
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  id!: string
 
   @Column('uuid', { name: 'store_id' })
-  storeId: string
+  storeId!: string
 
   @Column('varchar', { length: 255 })
-  name: string
+  name!: string
 
   @Column('text', { nullable: true })
-  description: string
+  description!: string
 
   @Column('decimal', { precision: 10, scale: 2 })
-  price: number
+  price!: number
 
   @Column('uuid', { name: 'category_id', nullable: true })
-  categoryId: string | null
+  categoryId!: string | null
 
   @Column('varchar', { name: 'image_url', length: 500, nullable: true })
-  imageUrl: string
+  imageUrl!: string
 
   @Column('boolean', { name: 'is_active', default: true })
-  isActive: boolean
+  isActive!: boolean
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date
+  createdAt!: Date
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date
+  updatedAt!: Date
 
-  @ManyToOne(() => Store, { onDelete: 'CASCADE' })
+  @ManyToOne('store', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'store_id' })
-  store: Store
+  store!: any
 
-  @ManyToOne(() => ServiceCategory, (category) => category.services, {
+  @ManyToOne('service_category', 'services', {
     nullable: true,
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'category_id' })
-  category: ServiceCategory | null
+  category!: any
 
-
-  @OneToMany(() => SaleItem, (saleItem) => saleItem.service)
-  saleItems: SaleItem[]
+  @OneToMany('sale_item', 'service')
+  saleItems!: any[]
 }

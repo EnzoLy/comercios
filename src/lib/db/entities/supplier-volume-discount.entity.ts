@@ -8,7 +8,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { SupplierCommercialTerms } from './supplier-commercial-terms.entity'
 
 @Entity('supplier_volume_discount')
 @Index(['commercialTermsId', 'isActive'])
@@ -52,9 +51,9 @@ export class SupplierVolumeDiscount {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne(() => SupplierCommercialTerms, (terms: any) => terms.volumeDiscounts, {
+  @ManyToOne('supplier_commercial_terms', 'volumeDiscounts', {
     onDelete: 'CASCADE'
   })
   @JoinColumn({ name: 'commercialTermsId' })
-  commercialTerms!: SupplierCommercialTerms
+  commercialTerms!: any
 }

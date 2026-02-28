@@ -8,7 +8,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Product } from './product.entity'
 
 @Entity('product_barcode')
 @Index(['productId'])
@@ -47,7 +46,7 @@ export class ProductBarcode {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne(() => Product, (product: any) => product.barcodes, {
+  @ManyToOne('product', 'barcodes', {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'productId' })

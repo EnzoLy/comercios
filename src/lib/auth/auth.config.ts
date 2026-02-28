@@ -1,10 +1,9 @@
 import type { NextAuthConfig } from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
-import bcrypt from 'bcryptjs'
-import { signInSchema } from '../validations/auth.schema'
+import { validateCredentials, getUserByEmail } from './credential-service'
+import { buildAuthUser, validateAdminAccess } from './user-store-service'
 import { getRepository } from '../db'
 import { User } from '../db/entities/user.entity'
-import { Employment } from '../db/entities/employment.entity'
 
 export const authConfig: NextAuthConfig = {
   trustHost: true,
@@ -23,96 +22,24 @@ export const authConfig: NextAuthConfig = {
           // Check for QR token login flag
           const isQrLogin = password === '__QR_TOKEN_LOGIN__'
 
-          // For QR login, skip password validation
-          if (!isQrLogin) {
-            // Normal login - validate credentials with schema
-            const validated = signInSchema.parse({ email, password })
-            const validatedEmail = validated.email
-            const validatedPassword = validated.password
+          let user: any
 
-            // Find user with employments
-            const userRepo = await getRepository(User)
-            const user = await userRepo.findOne({
-              where: { email: validatedEmail },
-              relations: ['employments', 'employments.store'],
-            })
-
-            if (!user || !user.isActive) {
-              return null
-            }
-
-            // Verify password
-            const isValidPassword = await bcrypt.compare(validatedPassword, user.password)
-            if (!isValidPassword) {
-              return null
-            }
+          if (isQrLogin) {
+            // QR login - only validate email exists
+            user = await getUserByEmail(email)
+          } else {
+            // Normal login - validate credentials
+            user = await validateCredentials(email, password)
 
             // For normal login, restrict to ADMIN or OWNER
-            const hasAdminAccess = (user.employments || []).some(
-              (emp: Employment) => emp.isActive && (emp.role === 'ADMIN' || emp.store.ownerId === user.id)
-            )
-
-            if (!hasAdminAccess) {
+            if (user && !validateAdminAccess(user)) {
               console.warn(`Login denied: ${email} has no ADMIN/OWNER role`)
               return null
             }
-
-            // Build stores array from employments
-            const stores = (user.employments || [])
-              .filter((emp: Employment) => emp.isActive)
-              .map((emp: Employment) => ({
-                storeId: emp.storeId,
-                name: emp.store.name,
-                slug: emp.store.slug,
-                employmentRole: emp.role,
-                isOwner: emp.store.ownerId === user.id,
-                subscriptionPlan: emp.store.subscriptionPlan || 'FREE',
-              }))
-
-            // Return user with stores
-            return {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-              role: user.role,
-              mustChangePassword: user.mustChangePassword,
-              colorTheme: user.colorTheme,
-              stores,
-            }
-          } else {
-            // QR login - only validate email exists
-            const userRepo = await getRepository(User)
-            const user = await userRepo.findOne({
-              where: { email },
-              relations: ['employments', 'employments.store'],
-            })
-
-            if (!user || !user.isActive) {
-              return null
-            }
-
-            // Build stores array from employments
-            const stores = (user.employments || [])
-              .filter((emp: Employment) => emp.isActive)
-              .map((emp: Employment) => ({
-                storeId: emp.storeId,
-                name: emp.store.name,
-                slug: emp.store.slug,
-                employmentRole: emp.role,
-                isOwner: emp.store.ownerId === user.id,
-                subscriptionPlan: emp.store.subscriptionPlan || 'FREE',
-              }))
-
-            return {
-              id: user.id,
-              email: user.email,
-              name: user.name,
-              role: user.role,
-              mustChangePassword: user.mustChangePassword,
-              colorTheme: user.colorTheme,
-              stores,
-            }
           }
+
+          // Return authorized user with store access
+          return user ? buildAuthUser(user) : null
         } catch (error) {
           console.error('Auth error:', error)
           return null
@@ -157,20 +84,12 @@ export const authConfig: NextAuthConfig = {
           })
 
           if (freshUser) {
-            const stores = (freshUser.employments || [])
-              .filter((emp: Employment) => emp.isActive)
-              .map((emp: Employment) => ({
-                storeId: emp.storeId,
-                name: emp.store.name,
-                slug: emp.store.slug,
-                employmentRole: emp.role,
-                isOwner: emp.store.ownerId === freshUser.id,
-                subscriptionPlan: emp.store.subscriptionPlan || 'FREE',
-              }))
-
-            token.name = freshUser.name
-            token.colorTheme = freshUser.colorTheme
-            token.stores = stores
+            const authUser = buildAuthUser(freshUser as User)
+            token.name = authUser.name
+            token.role = authUser.role
+            token.mustChangePassword = authUser.mustChangePassword
+            token.colorTheme = authUser.colorTheme
+            token.stores = authUser.stores
           }
         } catch (error) {
           console.error('Error refreshing user data:', error)

@@ -7,8 +7,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Employment } from './employment.entity'
-import { User } from './user.entity'
 
 @Entity('employment_access_token')
 @Index(['token'], { unique: true })
@@ -52,11 +50,11 @@ export class EmploymentAccessToken {
   createdAt!: Date
 
   // Relationships
-  @ManyToOne(() => Employment, { onDelete: 'CASCADE' })
+  @ManyToOne('employment', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'employment_id' })
   employment!: any
 
-  @ManyToOne(() => User, { onDelete: 'SET NULL' })
+  @ManyToOne('user', { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'created_by' })
   creator!: any
 }

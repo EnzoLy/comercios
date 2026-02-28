@@ -9,9 +9,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Store } from './store.entity'
-import { Supplier } from './supplier.entity'
-import { User } from './user.entity'
 
 export enum PurchaseOrderStatus {
   DRAFT = 'DRAFT',
@@ -88,25 +85,25 @@ export class PurchaseOrder {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne(() => Store, { onDelete: 'CASCADE' })
+  @ManyToOne('store', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
-  store!: Store
+  store!: any
 
-  @ManyToOne(() => Supplier, (supplier: any) => supplier.purchaseOrders, {
+  @ManyToOne('supplier', 'purchaseOrders', {
     onDelete: 'RESTRICT'
   })
   @JoinColumn({ name: 'supplierId' })
-  supplier!: Supplier
+  supplier!: any
 
-  @ManyToOne(() => User)
+  @ManyToOne('user')
   @JoinColumn({ name: 'createdBy' })
-  createdByUser?: User
+  createdByUser?: any
 
-  @ManyToOne(() => User)
+  @ManyToOne('user')
   @JoinColumn({ name: 'approvedBy' })
-  approvedByUser?: User
+  approvedByUser?: any
 
-  @OneToMany('purchase_order_item', (item: any) => item.purchaseOrder, {
+  @OneToMany('purchase_order_item', 'purchaseOrder', {
     cascade: true
   })
   items?: any[]

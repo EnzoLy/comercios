@@ -8,8 +8,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Store } from './store.entity'
-import { User } from './user.entity'
 
 export enum ShiftStatus {
   ACTIVE = 'ACTIVE',
@@ -73,11 +71,11 @@ export class EmployeeShift {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne(() => Store, (store: any) => store.employeeShifts, { onDelete: 'CASCADE' })
+  @ManyToOne('store', 'employeeShifts', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: any
 
-  @ManyToOne(() => User, (user: any) => user.shifts, { onDelete: 'CASCADE' })
+  @ManyToOne('user', 'shifts', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'employeeId' })
   employee!: any
 }

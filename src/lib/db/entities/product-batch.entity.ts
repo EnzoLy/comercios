@@ -9,8 +9,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Product } from './product.entity'
-import type { BatchStockMovement } from './batch-stock-movement.entity'
 
 @Entity('product_batch')
 @Index(['productId', 'expirationDate'])
@@ -58,10 +56,10 @@ export class ProductBatch {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne(() => Product, (product: any) => product.batches, { onDelete: 'CASCADE' })
+  @ManyToOne('product', 'batches', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'productId' })
   product!: any
 
-  @OneToMany('batch_stock_movement', (movement: any) => movement.batch)
+  @OneToMany('batch_stock_movement', 'batch')
   movements!: any[]
 }

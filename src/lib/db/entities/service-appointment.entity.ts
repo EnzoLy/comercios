@@ -8,8 +8,6 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Store } from './store.entity'
-import { Service } from './service.entity'
 
 export enum AppointmentStatus {
   PENDING = 'PENDING',
@@ -24,45 +22,45 @@ export enum AppointmentStatus {
 @Index(['serviceId'])
 export class ServiceAppointment {
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  id!: string
 
   @Column('uuid', { name: 'store_id' })
-  storeId: string
+  storeId!: string
 
   @Column('uuid', { name: 'service_id' })
-  serviceId: string
+  serviceId!: string
 
   @Column('varchar', { name: 'client_name', length: 255 })
-  clientName: string
+  clientName!: string
 
   @Column('varchar', { name: 'client_phone', length: 20, nullable: true })
-  clientPhone: string | null
+  clientPhone!: string | null
 
   @Column('varchar', { name: 'client_email', length: 255, nullable: true })
-  clientEmail: string | null
+  clientEmail!: string | null
 
   @Column('timestamp', { name: 'scheduled_at' })
-  scheduledAt: Date
+  scheduledAt!: Date
 
   @Column('enum', { name: 'status', enum: AppointmentStatus, default: AppointmentStatus.PENDING })
-  status: AppointmentStatus
+  status!: AppointmentStatus
 
   @Column('text', { nullable: true })
-  notes: string | null
+  notes!: string | null
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date
+  createdAt!: Date
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date
+  updatedAt!: Date
 
-  @ManyToOne(() => Store, { onDelete: 'CASCADE' })
+  @ManyToOne('store', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'store_id' })
-  store: Store
+  store!: any
 
-  @ManyToOne(() => Service, {
+  @ManyToOne('service', {
     onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'service_id' })
-  service: Service
+  service!: any
 }

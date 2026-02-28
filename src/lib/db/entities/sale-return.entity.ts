@@ -46,10 +46,10 @@ export class SaleReturn {
   createdAt!: Date
 
   // Relationships
-  @OneToMany('sale_return_item', (item: any) => item.saleReturn, { cascade: true })
+  @OneToMany('sale_return_item', 'saleReturn', { cascade: true })
   items!: any[]
 
-  @ManyToOne('sale', (sale: any) => sale.returns, { onDelete: 'RESTRICT' })
+  @ManyToOne('sale', 'returns', { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'sale_id' })
   sale!: any
 }

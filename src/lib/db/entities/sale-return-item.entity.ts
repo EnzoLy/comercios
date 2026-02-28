@@ -33,7 +33,7 @@ export class SaleReturnItem {
   restockItem!: boolean
 
   // Relationships
-  @ManyToOne('sale_return', (saleReturn: any) => saleReturn.items, { onDelete: 'CASCADE' })
+  @ManyToOne('sale_return', 'items', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'sale_return_id' })
   saleReturn!: any
 

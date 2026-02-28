@@ -9,38 +9,36 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm'
-import { Store } from './store.entity'
-import { Service } from './service.entity'
 
 @Entity('service_category')
 @Index(['storeId'])
 @Index(['storeId', 'name'], { unique: true })
 export class ServiceCategory {
   @PrimaryGeneratedColumn('uuid')
-  id: string
+  id!: string
 
   @Column('uuid', { name: 'store_id' })
-  storeId: string
+  storeId!: string
 
   @Column('varchar', { length: 255 })
-  name: string
+  name!: string
 
   @Column('text', { nullable: true })
-  description: string
+  description!: string
 
   @Column('varchar', { length: 7, default: '#3b82f6' })
-  color: string
+  color!: string
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date
+  createdAt!: Date
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date
+  updatedAt!: Date
 
-  @ManyToOne(() => Store, { onDelete: 'CASCADE' })
+  @ManyToOne('store', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'store_id' })
-  store: Store
+  store!: any
 
-  @OneToMany(() => Service, (service) => service.category, { cascade: true })
-  services: Service[]
+  @OneToMany('service', 'category', { cascade: true })
+  services!: any[]
 }
