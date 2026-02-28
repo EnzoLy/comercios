@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Trash2, Eye, Search, Filter } from 'lucide-react'
+import { Plus, Trash2, ExternalLink, Copy, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -30,19 +30,30 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { toast } from 'sonner'
+
+interface QuoteItem {
+  itemType: string
+  productId?: string | null
+  serviceId?: string | null
+  name: string
+  quantity: number
+  unitPrice: number
+  discount: number
+  taxRate: number
+}
 
 interface Quote {
   id: string
   quoteNumber: string
   clientName: string
+  clientPhone?: string | null
+  notes?: string | null
   status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED'
   total: number
   createdAt: string
-}
-
-interface StatsCard {
-  label: string
-  value: string | number
+  accessToken: string
+  items: QuoteItem[]
 }
 
 const statusColors = {
@@ -64,69 +75,105 @@ const statusLabels = {
 export default function QuotesPage() {
   const params = useParams()
   const storeSlug = params.storeSlug as string
+  const [storeId, setStoreId] = useState<string>('')
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<string>('all')
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
   const [stats, setStats] = useState({ total: 0, draft: 0, accepted: 0, totalValue: 0 })
 
-  useEffect(() => {
-    fetchQuotes()
-  }, [search, status, storeSlug])
+  const getStoreId = useCallback(async () => {
+    if (storeId) return storeId
+    const res = await fetch(`/api/stores?slug=${storeSlug}`)
+    const data = await res.json()
+    const id = data[0]?.id
+    setStoreId(id)
+    return id
+  }, [storeSlug, storeId])
 
-  const fetchQuotes = async () => {
+  const fetchQuotes = useCallback(async () => {
     try {
       setLoading(true)
-      const storeId = await getStoreId()
-      const params = new URLSearchParams()
-      if (search) params.append('search', search)
-      if (status && status !== 'all') params.append('status', status)
+      const id = await getStoreId()
+      const qs = new URLSearchParams()
+      if (search) qs.append('search', search)
+      if (status && status !== 'all') qs.append('status', status)
 
-      const res = await fetch(`/api/stores/${storeId}/quotes?${params.toString()}`)
+      const res = await fetch(`/api/stores/${id}/quotes?${qs.toString()}`)
       const data = await res.json()
-      setQuotes(data.quotes || [])
-
-      // Calculate stats
-      const allQuotes = data.quotes || []
-      const draftCount = allQuotes.filter((q: Quote) => q.status === 'DRAFT').length
-      const acceptedCount = allQuotes.filter((q: Quote) => q.status === 'ACCEPTED').length
-      const totalValue = allQuotes.reduce((sum: number, q: Quote) => sum + q.total, 0)
+      const allQuotes: Quote[] = data.quotes || []
+      setQuotes(allQuotes)
 
       setStats({
         total: allQuotes.length,
-        draft: draftCount,
-        accepted: acceptedCount,
-        totalValue,
+        draft: allQuotes.filter((q) => q.status === 'DRAFT').length,
+        accepted: allQuotes.filter((q) => q.status === 'ACCEPTED').length,
+        totalValue: allQuotes.reduce((sum, q) => sum + Number(q.total), 0),
       })
     } catch (error) {
       console.error('Failed to fetch quotes:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [getStoreId, search, status])
 
-  const getStoreId = async () => {
-    const res = await fetch(`/api/stores?slug=${storeSlug}`)
-    const data = await res.json()
-    return data[0]?.id
-  }
+  useEffect(() => {
+    fetchQuotes()
+  }, [fetchQuotes])
 
   const handleDelete = async () => {
     if (!deleteId) return
     try {
-      const storeId = await getStoreId()
-      await fetch(`/api/stores/${storeId}/quotes/${deleteId}`, {
-        method: 'DELETE',
-      })
+      const id = await getStoreId()
+      await fetch(`/api/stores/${id}/quotes/${deleteId}`, { method: 'DELETE' })
       setDeleteId(null)
       fetchQuotes()
     } catch (error) {
       console.error('Failed to delete quote:', error)
+      toast.error('Error al eliminar el presupuesto')
     }
   }
 
-  const statsCards: StatsCard[] = [
+  const handleDuplicate = async (quote: Quote) => {
+    setDuplicatingId(quote.id)
+    try {
+      const id = await getStoreId()
+      const body = {
+        clientName: quote.clientName,
+        clientPhone: quote.clientPhone ?? undefined,
+        notes: quote.notes ?? undefined,
+        items: quote.items.map((item) => ({
+          itemType: item.itemType,
+          productId: item.productId ?? undefined,
+          serviceId: item.serviceId ?? undefined,
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          discount: item.discount,
+          taxRate: item.taxRate,
+        })),
+      }
+
+      const res = await fetch(`/api/stores/${id}/quotes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      if (!res.ok) throw new Error('Failed to duplicate')
+      toast.success('Presupuesto duplicado')
+      fetchQuotes()
+    } catch (error) {
+      console.error('Failed to duplicate quote:', error)
+      toast.error('Error al duplicar el presupuesto')
+    } finally {
+      setDuplicatingId(null)
+    }
+  }
+
+  const statsCards = [
     { label: 'Total de Presupuestos', value: stats.total },
     { label: 'Borradores', value: stats.draft },
     { label: 'Aceptados', value: stats.accepted },
@@ -140,7 +187,7 @@ export default function QuotesPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Presupuestos</h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-muted-foreground">
               Gestiona las cotizaciones para clientes
             </p>
           </div>
@@ -155,13 +202,8 @@ export default function QuotesPage() {
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
           {statsCards.map((card) => (
-            <div
-              key={card.label}
-              className="rounded-lg border bg-card p-6 shadow-sm"
-            >
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                {card.label}
-              </p>
+            <div key={card.label} className="rounded-lg border bg-card p-6 shadow-sm">
+              <p className="text-sm font-medium text-muted-foreground">{card.label}</p>
               <p className="text-2xl font-bold mt-2">{card.value}</p>
             </div>
           ))}
@@ -170,7 +212,7 @@ export default function QuotesPage() {
         {/* Filters */}
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por número, cliente..."
               className="pl-10"
@@ -197,7 +239,7 @@ export default function QuotesPage() {
         <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="border-b bg-gray-50 dark:bg-gray-900">
+              <TableRow className="border-b bg-muted/50">
                 <TableHead>Número</TableHead>
                 <TableHead>Cliente</TableHead>
                 <TableHead>Estado</TableHead>
@@ -209,13 +251,13 @@ export default function QuotesPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     Cargando...
                   </TableCell>
                 </TableRow>
               ) : quotes.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     No hay presupuestos
                   </TableCell>
                 </TableRow>
@@ -225,11 +267,8 @@ export default function QuotesPage() {
                     <TableCell className="font-medium">{quote.quoteNumber}</TableCell>
                     <TableCell>{quote.clientName}</TableCell>
                     <TableCell>
-                      <span
-                        className={`text-xs font-medium px-2 py-1 rounded-full ${statusColors[quote.status as keyof typeof statusColors]
-                          }`}
-                      >
-                        {statusLabels[quote.status as keyof typeof statusLabels]}
+                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusColors[quote.status]}`}>
+                        {statusLabels[quote.status]}
                       </span>
                     </TableCell>
                     <TableCell className="text-right font-medium">
@@ -240,13 +279,27 @@ export default function QuotesPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
-                        <Link
-                          href={`/dashboard/${storeSlug}/quotes/${quote.id}`}
+                        {/* Open public quote view */}
+                        <a
+                          href={`/quote/${quote.accessToken}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4" />
+                          <Button variant="outline" size="sm" title="Ver presupuesto">
+                            <ExternalLink className="h-4 w-4" />
                           </Button>
-                        </Link>
+                        </a>
+                        {/* Duplicate */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          title="Duplicar presupuesto"
+                          disabled={duplicatingId === quote.id}
+                          onClick={() => handleDuplicate(quote)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        {/* Delete */}
                         <Button
                           variant="destructive"
                           size="sm"
