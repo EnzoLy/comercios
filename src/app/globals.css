@@ -217,3 +217,20 @@ video {
   top: 0;
   left: 0;
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  @page {
+    margin: 1cm;
+    size: A4;
+  }
+}

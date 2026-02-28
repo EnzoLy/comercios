@@ -44,6 +44,7 @@ interface QuoteData {
 interface QuoteDisplayProps {
   quote: QuoteData
   quoteUrl: string
+  hideActions?: boolean
 }
 
 const statusColors = {
@@ -62,7 +63,7 @@ const statusLabels = {
   EXPIRED: 'Vencido',
 }
 
-export function QuoteDisplay({ quote, quoteUrl }: QuoteDisplayProps) {
+export function QuoteDisplay({ quote, quoteUrl, hideActions = false }: QuoteDisplayProps) {
   const handlePrint = () => {
     window.print()
   }
@@ -78,7 +79,7 @@ export function QuoteDisplay({ quote, quoteUrl }: QuoteDisplayProps) {
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {/* Action Bar - Hidden when printing */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 no-print bg-card/40 backdrop-blur-xl p-4 sm:p-6 rounded-3xl border border-border shadow-2xl shadow-black/5">
+      {!hideActions && <div className="flex flex-col sm:flex-row items-center justify-between gap-4 no-print bg-card/40 backdrop-blur-xl p-4 sm:p-6 rounded-3xl border border-border shadow-2xl shadow-black/5">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
             <FileText className="h-5 w-5" />
@@ -100,7 +101,7 @@ export function QuoteDisplay({ quote, quoteUrl }: QuoteDisplayProps) {
             PDF
           </Button>
         </div>
-      </div>
+      </div>}
 
       {/* Quote Document Canvas */}
       <div id="quote-content" className="bg-card text-card-foreground p-8 md:p-12 shadow-[0_0_50px_-12px_rgba(0,0,0,0.1)] rounded-[2.5rem] border border-border print:shadow-none print:border-none print:p-0 print:rounded-none relative overflow-hidden">
@@ -109,7 +110,7 @@ export function QuoteDisplay({ quote, quoteUrl }: QuoteDisplayProps) {
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl no-print" />
 
         {/* Header Section */}
-        <div className="relative z-10 flex flex-col md:flex-row justify-between gap-8 pb-12 border-b border-border">
+        <div className="relative z-10 flex flex-col md:flex-row justify-between gap-8 pb-12 border-b border-border print:pb-4 print:gap-4">
           <div className="space-y-4">
             <div className="space-y-1">
               <h1 className="text-4xl font-black tracking-tighter leading-none">
@@ -164,7 +165,7 @@ export function QuoteDisplay({ quote, quoteUrl }: QuoteDisplayProps) {
         </div>
 
         {/* Client Info */}
-        <div className="py-8">
+        <div className="py-8 print:py-3">
           <div className="space-y-2">
             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cliente</p>
             <div className="space-y-1">
@@ -177,7 +178,7 @@ export function QuoteDisplay({ quote, quoteUrl }: QuoteDisplayProps) {
         </div>
 
         {/* Content Section */}
-        <div className="py-12 space-y-12">
+        <div className="py-12 space-y-12 print:py-3 print:space-y-4">
           <div className="overflow-hidden">
             <table className="w-full border-collapse">
               <thead>
@@ -199,7 +200,7 @@ export function QuoteDisplay({ quote, quoteUrl }: QuoteDisplayProps) {
               <tbody className="divide-y divide-border/10">
                 {quote.items.map((item) => (
                   <tr key={item.id} className="group border-b border-border/5 hover:bg-muted/20 transition-colors">
-                    <td className="py-6 px-4">
+                    <td className="py-6 px-4 print:py-2">
                       <div className="flex items-center gap-2">
                         <div className="font-bold text-foreground tracking-tight">{item.name}</div>
                         {item.itemType === 'service' && (
@@ -209,15 +210,15 @@ export function QuoteDisplay({ quote, quoteUrl }: QuoteDisplayProps) {
                         )}
                       </div>
                     </td>
-                    <td className="text-center py-6 px-2">
+                    <td className="text-center py-6 px-2 print:py-2">
                       <span className="inline-flex items-center justify-center bg-muted text-foreground text-xs font-black rounded-lg h-7 w-7 border border-border/40">
                         {item.quantity}
                       </span>
                     </td>
-                    <td className="text-right py-6 px-2 text-sm font-bold text-foreground/70">
+                    <td className="text-right py-6 px-2 text-sm font-bold text-foreground/70 print:py-2">
                       {formatCurrency(item.unitPrice)}
                     </td>
-                    <td className="text-right py-6 px-4">
+                    <td className="text-right py-6 px-4 print:py-2">
                       <div className="font-black text-foreground tracking-tight">
                         {formatCurrency(item.total)}
                       </div>
@@ -233,13 +234,13 @@ export function QuoteDisplay({ quote, quoteUrl }: QuoteDisplayProps) {
             </table>
           </div>
 
-          <div className="flex flex-col md:flex-row justify-between gap-12 items-start pt-8 border-t border-border">
+          <div className="flex flex-col md:flex-row justify-between gap-12 items-start pt-8 border-t border-border print:gap-4 print:pt-3">
             {/* QR Code */}
             <div className="flex flex-col items-center md:items-start gap-4">
-              <div className="bg-white p-4 rounded-[2rem] border border-slate-200 shadow-xl shadow-black/5 flex items-center justify-center">
+              <div className="bg-white p-4 rounded-[2rem] border border-slate-200 shadow-xl shadow-black/5 flex items-center justify-center print:p-2 print:rounded-xl print:shadow-none">
                 <QRCodeSVG
                   value={quoteUrl}
-                  size={140}
+                  size={110}
                   level="H"
                   bgColor="#ffffff"
                   fgColor="#000000"
@@ -291,14 +292,14 @@ export function QuoteDisplay({ quote, quoteUrl }: QuoteDisplayProps) {
 
         {/* Notes */}
         {quote.notes && (
-          <div className="border-t pt-8 space-y-2">
+          <div className="border-t pt-8 space-y-2 print:pt-3">
             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Notas</p>
             <p className="text-sm whitespace-pre-wrap text-foreground">{quote.notes}</p>
           </div>
         )}
 
         {/* Status Badge */}
-        <div className="mt-8 flex items-center gap-3">
+        <div className="mt-8 flex items-center gap-3 print:mt-3">
           <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Estado:</span>
           <Badge className={statusColors[quote.status as keyof typeof statusColors]}>
             {statusLabels[quote.status as keyof typeof statusLabels]}
