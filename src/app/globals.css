@@ -225,12 +225,27 @@ video {
 
   body {
     background: white !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
   }
 
   @page {
     margin: 1cm;
     size: A4;
+  }
+
+  /* Force black & white on the quote/invoice document */
+  #quote-content,
+  #quote-content *:not(.print-qr):not(.print-qr *) {
+    color: black !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: #bbb !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Keep QR code white so it stays scannable */
+  #quote-content .print-qr {
+    background-color: white !important;
+    border: 1px solid #bbb !important;
   }
 }

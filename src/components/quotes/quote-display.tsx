@@ -237,7 +237,7 @@ export function QuoteDisplay({ quote, quoteUrl, hideActions = false }: QuoteDisp
           <div className="flex flex-col md:flex-row justify-between gap-12 items-start pt-8 border-t border-border print:gap-4 print:pt-3">
             {/* QR Code */}
             <div className="flex flex-col items-center md:items-start gap-4">
-              <div className="bg-white p-4 rounded-[2rem] border border-slate-200 shadow-xl shadow-black/5 flex items-center justify-center print:p-2 print:rounded-xl print:shadow-none">
+              <div className="print-qr bg-white p-4 rounded-[2rem] border border-slate-200 shadow-xl shadow-black/5 flex items-center justify-center print:p-2 print:rounded-xl print:shadow-none">
                 <QRCodeSVG
                   value={quoteUrl}
                   size={110}
