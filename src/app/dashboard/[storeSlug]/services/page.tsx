@@ -3,18 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Trash2, Edit, Search } from 'lucide-react'
+import { Plus, Trash2, Edit, Search, Wrench, Activity, ArrowUpRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +17,7 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { toast } from 'sonner'
 
 interface Service {
   id: string
@@ -35,11 +30,6 @@ interface Service {
   createdAt: string
 }
 
-interface StatsCard {
-  label: string
-  value: string | number
-}
-
 export default function ServicesPage() {
   const params = useParams()
   const storeSlug = params.storeSlug as string
@@ -47,7 +37,7 @@ export default function ServicesPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [stats, setStats] = useState({ total: 0, active: 0, revenue: 0 })
+  const [stats, setStats] = useState({ total: 0, active: 0 })
 
   useEffect(() => {
     fetchServices()
@@ -61,14 +51,11 @@ export default function ServicesPage() {
         `/api/stores/${storeId}/services?search=${search}&includeInactive=true`
       )
       const data = await res.json()
-      setServices(data.services || [])
-
-      // Calculate stats
-      const active = data.services.filter((s: Service) => s.isActive).length
+      const all: Service[] = data.services || []
+      setServices(all)
       setStats({
-        total: data.services.length,
-        active,
-        revenue: 0, // Would calculate from sales data
+        total: all.length,
+        active: all.filter((s) => s.isActive).length,
       })
     } catch (error) {
       console.error('Failed to fetch services:', error)
@@ -87,153 +74,210 @@ export default function ServicesPage() {
     if (!deleteId) return
     try {
       const storeId = await getStoreId()
-      await fetch(`/api/stores/${storeId}/services/${deleteId}`, {
-        method: 'DELETE',
-      })
+      await fetch(`/api/stores/${storeId}/services/${deleteId}`, { method: 'DELETE' })
       setDeleteId(null)
       fetchServices()
-    } catch (error) {
-      console.error('Failed to delete service:', error)
+    } catch {
+      toast.error('Error al eliminar el servicio')
     }
   }
 
-  const statsCards: StatsCard[] = [
-    { label: 'Total de Servicios', value: stats.total },
-    { label: 'Activos', value: stats.active },
-    { label: 'Ingresos', value: `$${stats.revenue.toFixed(2)}` },
-  ]
-
   return (
-    <div className="p-4 md:p-8">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+    <div className="p-4 md:p-8 space-y-8 animate-in fade-in duration-700">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Servicios</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Gestiona los servicios que ofreces
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">
+            <span className="gradient-text">Servicios</span>
+          </h1>
+          <p className="text-muted-foreground flex items-center gap-2">
+            <Wrench className="h-4 w-4 text-primary" />
+            Servicios y prestaciones que ofrecés a tus clientes.
           </p>
         </div>
         <Link href={`/dashboard/${storeSlug}/services/new`}>
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
+          <Button className="h-11 rounded-xl px-6 font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all">
+            <Plus className="mr-2 h-4 w-4" />
             Nuevo Servicio
           </Button>
         </Link>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {statsCards.map((card) => (
-          <div
-            key={card.label}
-            className="rounded-lg border bg-card p-6 shadow-sm"
-          >
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              {card.label}
-            </p>
-            <p className="text-2xl font-bold mt-2">{card.value}</p>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="border border-border bg-card shadow-xl shadow-slate-950/5 overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Wrench className="h-12 w-12" />
           </div>
-        ))}
-      </div>
-
-      {/* Search */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Buscar servicios..."
-            className="pl-10"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-b bg-gray-50 dark:bg-gray-900">
-              <TableHead>Nombre</TableHead>
-              <TableHead>Precio</TableHead>
-              <TableHead>Categoría</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                  Cargando...
-                </TableCell>
-              </TableRow>
-            ) : services.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                  No hay servicios
-                </TableCell>
-              </TableRow>
-            ) : (
-              services.map((service) => (
-                <TableRow key={service.id} className="border-b">
-                  <TableCell className="font-medium">{service.name}</TableCell>
-                  <TableCell>{formatCurrency(service.price)}</TableCell>
-                  <TableCell>{service.category?.name || '-'}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`text-xs font-medium px-2 py-1 rounded-full ${
-                        service.isActive
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
-                      }`}
-                    >
-                      {service.isActive ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
-                      <Link
-                        href={`/dashboard/${storeSlug}/services/${service.id}`}
-                      >
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => setDeleteId(service.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-        {/* Delete Dialog */}
-        <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-          <AlertDialogContent>
-            <AlertDialogTitle>Eliminar Servicio</AlertDialogTitle>
-            <AlertDialogDescription>
-              ¿Estás seguro? Si el servicio tiene ventas asociadas, se desactivará
-              en lugar de eliminarse.
-            </AlertDialogDescription>
-            <div className="flex gap-2 justify-end">
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="bg-red-600">
-                Eliminar
-              </AlertDialogAction>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Wrench className="h-3 w-3 text-primary" />
+              Total Servicios
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-black tracking-tight">{stats.total}</div>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">
+                Registrados
+              </span>
             </div>
-          </AlertDialogContent>
-        </AlertDialog>
+          </CardContent>
+        </Card>
+
+        <Card className="border border-border bg-card shadow-xl shadow-slate-950/5 overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Activity className="h-12 w-12" />
+          </div>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Activity className="h-3 w-3 text-emerald-500" />
+              Activos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-black tracking-tight">{stats.active}</div>
+            <div className="flex items-center gap-2 mt-2">
+              <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-600 border-none text-[10px] font-bold px-2 py-0">
+                <ArrowUpRight className="h-3 w-3 mr-0.5" />
+                Disponibles
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Table Card */}
+      <Card className="border border-border bg-card shadow-xl shadow-slate-950/5">
+        <CardHeader className="px-6 py-6 border-b border-border/40">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-xl font-bold">Catálogo de Servicios</CardTitle>
+              <CardDescription className="text-xs font-bold uppercase tracking-widest opacity-60">
+                Gestión de servicios
+              </CardDescription>
+            </div>
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+              <Input
+                placeholder="Buscar servicios..."
+                className="h-10 pl-9 rounded-xl border-border bg-secondary/50 focus-visible:ring-primary"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="text-center py-16 text-muted-foreground text-sm font-bold">
+              Cargando...
+            </div>
+          ) : services.length === 0 ? (
+            <div className="text-center py-24 flex flex-col items-center">
+              <div className="h-20 w-20 bg-muted/50 rounded-full flex items-center justify-center mb-6">
+                <Wrench className="h-10 w-10 text-muted-foreground/30" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Sin Servicios</h3>
+              <p className="text-muted-foreground max-w-xs text-sm">
+                Aún no creaste ningún servicio. Agregá servicios para incluirlos en presupuestos y ventas.
+              </p>
+              <Link href={`/dashboard/${storeSlug}/services/new`}>
+                <Button className="mt-8 rounded-xl font-bold px-8">Crear Servicio</Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[600px]">
+                <thead>
+                  <tr className="bg-muted/30 border-b border-border/40">
+                    <th className="text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 py-4 px-6">Nombre</th>
+                    <th className="text-left text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 py-4 px-6">Categoría</th>
+                    <th className="text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 py-4 px-6">Precio</th>
+                    <th className="text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 py-4 px-6">Estado</th>
+                    <th className="py-4 px-6"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  {services.map((service) => (
+                    <tr key={service.id} className="group hover:bg-muted/20 transition-colors">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <Wrench className="h-3.5 w-3.5" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-foreground/90">{service.name}</p>
+                            {service.description && (
+                              <p className="text-[10px] text-muted-foreground opacity-60 font-bold uppercase tracking-tighter truncate max-w-[200px]">
+                                {service.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className="text-sm text-muted-foreground font-semibold">
+                          {service.category?.name || '—'}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <span className="text-base font-black tracking-tight">
+                          {formatCurrency(service.price)}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <Badge
+                          className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 border-none ${
+                            service.isActive
+                              ? 'bg-emerald-500/10 text-emerald-600'
+                              : 'bg-secondary/50 text-muted-foreground'
+                          }`}
+                        >
+                          {service.isActive ? 'Activo' : 'Inactivo'}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex gap-1 justify-end">
+                          <Link href={`/dashboard/${storeSlug}/services/${service.id}`}>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-xl hover:bg-destructive/10 hover:text-destructive transition-all"
+                            onClick={() => setDeleteId(service.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Delete Dialog */}
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogTitle>Eliminar Servicio</AlertDialogTitle>
+          <AlertDialogDescription>
+            ¿Estás seguro? Si el servicio tiene ventas asociadas, se desactivará en lugar de eliminarse.
+          </AlertDialogDescription>
+          <div className="flex gap-2 justify-end">
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600">
+              Eliminar
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
