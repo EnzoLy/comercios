@@ -68,7 +68,7 @@ export class SupplierCommercialTerms {
   updatedAt!: Date
 
   // Relationships
-  @OneToOne('supplier', { onDelete: 'CASCADE' })
+  @OneToOne(() => Supplier, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'supplierId' })
   supplier!: Supplier
 
