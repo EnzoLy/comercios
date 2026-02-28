@@ -121,18 +121,18 @@ export class Product {
   @JoinColumn({ name: 'supplierId' })
   supplier?: any
 
-  @OneToMany('stock_movement', (movement: any) => movement.product)
+  @OneToMany('StockMovement', (movement: any) => movement.product)
   stockMovements!: any[]
 
-  @OneToMany('sale_item', (saleItem: any) => saleItem.product)
+  @OneToMany('SaleItem', (saleItem: any) => saleItem.product)
   saleItems!: any[]
 
-  @OneToMany('product_barcode', (barcode: any) => barcode.product)
+  @OneToMany('ProductBarcode', (barcode: any) => barcode.product)
   barcodes!: any[]
 
-  @OneToMany('supplier_product', (sp: any) => sp.product)
+  @OneToMany('SupplierProduct', (sp: any) => sp.product)
   supplierProducts?: any[]
 
-  @OneToMany('product_batch', (batch: any) => batch.product)
+  @OneToMany('ProductBatch', (batch: any) => batch.product)
   batches!: any[]
 }

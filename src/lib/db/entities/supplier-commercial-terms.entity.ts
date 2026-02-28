@@ -72,6 +72,6 @@ export class SupplierCommercialTerms {
   @JoinColumn({ name: 'supplierId' })
   supplier!: Supplier
 
-  @OneToMany('supplier_volume_discount', (discount: any) => discount.commercialTerms)
+  @OneToMany('SupplierVolumeDiscount', (discount: any) => discount.commercialTerms)
   volumeDiscounts?: any[]
 }
