@@ -58,7 +58,7 @@ export class Service {
   @JoinColumn({ name: 'category_id' })
   category: ServiceCategory | null
 
-  @OneToMany('ServiceAppointment', (appointment: any) => appointment.service, {
+  @OneToMany('ServiceAppointment', 'service', {
     cascade: true,
   })
   appointments: any[]
