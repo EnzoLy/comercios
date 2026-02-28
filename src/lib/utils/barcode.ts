@@ -6,6 +6,8 @@
  * Incluyen precio o peso en el código mismo
  */
 
+import { Product } from '@/types'
+
 export interface WeighedProductInfo {
   productId: string // Código base del producto (sin peso/precio)
   weight: number // Peso en la unidad del producto (kg, g, lb, etc.)
@@ -173,13 +175,4 @@ export async function findProductByAnyBarcode(
     .getOne()
 
   return barcodeEntity?.product || null
-}
-
-interface Product {
-  id: string
-  storeId: string
-  barcode?: string
-  isWeighedProduct: boolean
-  sellingPrice: number
-  weightUnit?: string
 }

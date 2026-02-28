@@ -8,33 +8,7 @@ import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { Search, Loader2, Package, Box } from 'lucide-react'
 import { useDebounce } from '@/hooks/use-debounce'
-
-interface Product {
-  id: string
-  name: string
-  sku: string
-  sellingPrice: number | string
-  costPrice: number | string
-  currentStock: number
-  imageUrl?: string
-  isActive?: boolean
-  barcode?: string
-  barcodes?: { barcode: string }[]
-  categoryId?: string
-  itemType?: 'product'
-}
-
-interface Service {
-  id: string
-  name: string
-  price: number | string
-  description?: string
-  imageUrl?: string
-  isActive?: boolean
-  itemType: 'service'
-}
-
-type SearchResult = Product | Service
+import { Product, Service, SearchResult } from '@/types'
 
 interface ProductSearchProps {
   storeId: string

@@ -11,10 +11,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Label } from '@/components/ui/label'
 import { changePasswordSchema, type ChangePasswordInput } from '@/lib/validations/password.schema'
 import { ShieldAlert, KeyRound, CheckCircle2 } from 'lucide-react'
-import { signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 
 export default function ChangePasswordPage() {
   const router = useRouter()
+  const { update: updateSession } = useSession()
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
@@ -42,12 +43,15 @@ export default function ChangePasswordPage() {
         return
       }
 
+      // Refresh the JWT token to update mustChangePassword flag
+      await updateSession()
+
       setIsSuccess(true)
       toast.success('Contraseña actualizada con éxito')
 
-      // Force re-login to update session
+      // Redirect to dashboard after successful password change
       setTimeout(() => {
-        signOut({ callbackUrl: '/auth/signin' })
+        router.push('/dashboard')
       }, 2000)
     } catch (error) {
       toast.error('Ocurrió un error inesperado')
@@ -66,7 +70,7 @@ export default function ChangePasswordPage() {
             </div>
             <CardTitle className="text-2xl">¡Contraseña Actualizada!</CardTitle>
             <CardDescription className="text-base text-gray-600 dark:text-gray-400">
-              Tu contraseña ha sido cambiada correctamente. Serás redirigido a la página de inicio de sesión en unos segundos...
+              Tu contraseña ha sido cambiada correctamente. Serás redirigido al dashboard en unos segundos...
             </CardDescription>
           </CardContent>
         </Card>

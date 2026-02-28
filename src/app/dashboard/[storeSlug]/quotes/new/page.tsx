@@ -24,17 +24,7 @@ import {
 import { ArrowLeft, Plus, Trash2, Search } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils/currency'
-
-interface QuoteItem {
-  itemType: 'product' | 'service' | 'custom'
-  productId?: string
-  serviceId?: string
-  name: string
-  quantity: number
-  unitPrice: number
-  discount: number
-  taxRate: number
-}
+import { QuoteItem } from '@/types'
 
 export default function NewQuotePage() {
   const params = useParams()

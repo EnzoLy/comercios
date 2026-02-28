@@ -5,43 +5,10 @@ import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils/currency'
 import { Printer, Download, Phone, Mail, MapPin, FileText, ShieldCheck } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
-
-interface QuoteItem {
-  id: string
-  name: string
-  itemType: string
-  quantity: number
-  unitPrice: number
-  discount: number
-  total: number
-  taxRate: number
-  taxAmount: number
-}
-
-interface QuoteData {
-  id: string
-  quoteNumber: string
-  clientName: string
-  clientPhone?: string
-  status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED'
-  subtotal: number
-  tax: number
-  discount: number
-  total: number
-  notes?: string
-  createdAt: string
-  items: QuoteItem[]
-  store: {
-    id: string
-    name: string
-    email?: string
-    phone?: string
-    address?: string
-  }
-}
+import { QuoteItem, Quote } from '@/types'
 
 interface QuoteDisplayProps {
-  quote: QuoteData
+  quote: Quote & { subtotal?: number; tax?: number; discount?: number }
   quoteUrl: string
   hideActions?: boolean
 }
@@ -204,7 +171,7 @@ export function QuoteDisplay({ quote, quoteUrl, hideActions = false }: QuoteDisp
                     </td>
                     <td className="text-right py-6 px-4 print:py-2">
                       <div className="font-black text-foreground tracking-tight">
-                        {formatCurrency(item.total)}
+                        {formatCurrency(item.total ?? 0)}
                       </div>
                       {item.discount > 0 && (
                         <div className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter mt-1">
@@ -246,20 +213,20 @@ export function QuoteDisplay({ quote, quoteUrl, hideActions = false }: QuoteDisp
               <div className="space-y-3">
                 <div className="flex justify-between text-xs font-black uppercase tracking-widest text-muted-foreground">
                   <span>Subtotal Neto</span>
-                  <span className="text-foreground font-black">{formatCurrency(quote.subtotal)}</span>
+                  <span className="text-foreground font-black">{formatCurrency(quote.subtotal ?? 0)}</span>
                 </div>
 
-                {quote.tax > 0 && (
+                {(quote.tax ?? 0) > 0 && (
                   <div className="flex justify-between text-xs font-black uppercase tracking-widest text-muted-foreground">
                     <span>IVA</span>
-                    <span className="text-foreground font-black">{formatCurrency(quote.tax)}</span>
+                    <span className="text-foreground font-black">{formatCurrency(quote.tax ?? 0)}</span>
                   </div>
                 )}
 
-                {quote.discount > 0 && (
+                {(quote.discount ?? 0) > 0 && (
                   <div className="flex justify-between text-xs font-black uppercase tracking-widest text-muted-foreground">
                     <span>Descuento</span>
-                    <span className="text-emerald-500 font-black">-{formatCurrency(quote.discount)}</span>
+                    <span className="text-emerald-500 font-black">-{formatCurrency(quote.discount ?? 0)}</span>
                   </div>
                 )}
 

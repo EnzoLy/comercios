@@ -28,15 +28,7 @@ import { Loader2, Package, Search, Plus, PackagePlus } from 'lucide-react'
 import { BulkPriceAdjustmentDialog } from '@/components/products/bulk-price-adjustment-dialog'
 import { AddExistingProductDialog } from '@/components/categories/add-existing-product-dialog'
 import { useStore } from '@/hooks/use-store'
-
-interface Product {
-  id: string
-  name: string
-  sku: string
-  costPrice: number
-  sellingPrice: number
-  currentStock: number
-}
+import { Product } from '@/types'
 
 interface CategoryProductsDialogProps {
   isOpen: boolean

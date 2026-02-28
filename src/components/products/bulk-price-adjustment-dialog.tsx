@@ -25,13 +25,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Loader2, TrendingUp, TrendingDown, Minus } from 'lucide-react'
-
-interface Product {
-  id: string
-  name: string
-  costPrice: number
-  sellingPrice: number
-}
+import { Product } from '@/types'
 
 interface BulkPriceAdjustmentDialogProps {
   isOpen: boolean

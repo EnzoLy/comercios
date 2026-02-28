@@ -30,30 +30,14 @@ import {
   FileText,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
-
+import { NavItem, NavGroup, Plan } from '@/types'
 
 interface SidebarProps {
   storeSlug: string
   isOwner: boolean
   role?: string
-  plan?: 'FREE' | 'BASICO' | 'PRO' | null
+  plan?: Plan | null
   checkoutUrl?: string | null
-}
-
-interface NavItem {
-  label: string
-  href: string
-  icon: React.ComponentType<{ className?: string }>
-  permission?: 'manage_products' | 'manage_inventory' | 'make_sales' | 'view_reports' | 'manage_employees' | 'manage_store'
-  ownerOnly?: boolean
-}
-
-interface NavGroup {
-  label: string
-  href?: string
-  icon: React.ComponentType<{ className?: string }>
-  children: NavItem[]
-  permission?: 'manage_products'
 }
 
 export function Sidebar({ storeSlug, isOwner, role, plan, checkoutUrl }: SidebarProps) {

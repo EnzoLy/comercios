@@ -95,7 +95,7 @@ export function SupplierTabs({ supplier, commercialTerms, storeId, storeSlug }: 
         <TabsContent value="terms">
           <SupplierCommercialTerms
             supplierId={supplier.id}
-            initialTerms={commercialTerms}
+            initialTerms={commercialTerms as any}
             storeId={storeId}
           />
         </TabsContent>

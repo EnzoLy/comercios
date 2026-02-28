@@ -25,30 +25,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
-
-interface QuoteItem {
-  itemType: string
-  productId?: string | null
-  serviceId?: string | null
-  name: string
-  quantity: number
-  unitPrice: number
-  discount: number
-  taxRate: number
-}
-
-interface Quote {
-  id: string
-  quoteNumber: string
-  clientName: string
-  clientPhone?: string | null
-  notes?: string | null
-  status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED'
-  total: number
-  createdAt: string
-  accessToken: string
-  items: QuoteItem[]
-}
+import { QuoteItem, Quote } from '@/types'
 
 const statusColors: Record<string, string> = {
   DRAFT: 'bg-secondary/50 text-muted-foreground border-none',

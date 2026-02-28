@@ -30,26 +30,12 @@ import {
 } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
+import { NavItem, NavGroup } from '@/types'
 
 interface MobileSidebarProps {
   storeSlug: string
   isOwner: boolean
   role?: string
-}
-
-interface NavItem {
-  label: string
-  href: string
-  icon: React.ComponentType<{ className?: string }>
-  permission?: 'manage_products' | 'manage_inventory' | 'make_sales' | 'view_reports' | 'manage_employees' | 'manage_store'
-  ownerOnly?: boolean
-}
-
-interface NavGroup {
-  label: string
-  icon: React.ComponentType<{ className?: string }>
-  children: NavItem[]
-  permission?: 'manage_products'
 }
 
 export function MobileSidebar({ storeSlug, isOwner, role }: MobileSidebarProps) {

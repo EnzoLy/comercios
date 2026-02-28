@@ -15,39 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { BulkExpirationToggleDialog } from '@/components/products/bulk-expiration-toggle-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
-
-interface Product {
-  id: string
-  name: string
-  sku: string
-  barcode?: string
-  sellingPrice: number
-  costPrice: number
-  currentStock: number
-  minStockLevel: number
-  maxStockLevel: number
-  isActive: boolean
-  trackStock: boolean
-  trackExpirationDates?: boolean
-  imageUrl?: string
-  category?: { id: string; name: string }
-  supplier?: { id: string; name: string }
-  barcodes?: Array<{ id: string; barcode: string; isPrimary: boolean }>
-  expirationStatus?: {
-    hasExpired: boolean
-    hasExpiringSoon: boolean
-    nearestExpirationDays: number
-    nearestExpirationDate: string
-  }
-}
-
-interface ProductsResponse {
-  products: Product[]
-  total: number
-  page: number
-  pageSize: number
-  hasMore: boolean
-}
+import { Product, ProductsResponse } from '@/types'
 
 export default function ProductsPage() {
   const router = useRouter()
@@ -248,7 +216,7 @@ export default function ProductsPage() {
     return <LoadingPage title="Cargando..." description="Obteniendo información de la tienda..." />
   }
 
-  const lowStockCount = products.filter(p => p.currentStock <= p.minStockLevel).length
+  const lowStockCount = products.filter(p => p.currentStock <= (p.minStockLevel ?? 10)).length
 
   return (
     <div className="p-4 md:p-8">
@@ -333,7 +301,7 @@ export default function ProductsPage() {
           <CardContent>
             <div className="text-4xl font-black text-white">
               <span className="text-lg opacity-60 mr-1">$</span>
-              {products.reduce((sum, p) => sum + (p.costPrice * p.currentStock), 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}
+              {products.reduce((sum, p) => sum + (Number(p.costPrice) * p.currentStock), 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}
             </div>
             <p className="text-xs text-white/60 mt-2 font-medium">Basado en costo y stock actual</p>
           </CardContent>
@@ -557,7 +525,7 @@ export default function ProductsPage() {
                                 <Package className="h-7 w-7 text-muted-foreground/30" />
                               </div>
                             )}
-                            {product.currentStock <= product.minStockLevel && (
+                            {product.currentStock <= (product.minStockLevel ?? 10) && (
                               <div className="absolute -top-1 -right-1 h-4 w-4 bg-orange-500 rounded-full border-2 border-background shadow-sm animate-pulse" />
                             )}
                           </div>
@@ -617,17 +585,17 @@ export default function ProductsPage() {
                         <div className="inline-flex flex-col items-end">
                           <div className={`flex items-center gap-2 px-3 py-1 rounded-xl text-lg font-black border-2 ${product.currentStock <= 0
                             ? 'bg-destructive/10 text-destructive border-destructive/20'
-                            : product.currentStock <= product.minStockLevel
+                            : product.currentStock <= (product.minStockLevel ?? 10)
                               ? 'bg-orange-500/10 text-orange-600 border-orange-500/20'
                               : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                             }`}>
                             {product.currentStock}
-                            {product.currentStock <= product.minStockLevel && (
+                            {product.currentStock <= (product.minStockLevel ?? 10) && (
                               <AlertTriangle className={`h-4 w-4 ${product.currentStock <= 0 ? 'text-destructive' : 'text-orange-600'}`} />
                             )}
                           </div>
                           <p className="text-[10px] font-bold text-muted-foreground/80 mt-1.5 uppercase tracking-widest pr-1">
-                            Mín: {product.minStockLevel}
+                            Mín: {(product.minStockLevel ?? 10)}
                           </p>
                         </div>
                       </td>
@@ -765,7 +733,7 @@ export default function ProductsPage() {
               {deletingProduct && (
                 <div className="mt-6 p-4 bg-muted/50 rounded-2xl border border-border">
                   <p className="text-sm font-medium">Este producto tiene <span className="font-bold text-foreground">{deletingProduct.currentStock}</span> unidades en stock.</p>
-                  {deletingProduct.currentStock <= deletingProduct.minStockLevel && (
+                  {deletingProduct.currentStock <= (deletingProduct.minStockLevel ?? 10) && (
                     <p className="flex items-center gap-2 mt-2 text-sm text-orange-600 font-bold">
                       <AlertTriangle className="h-4 w-4" />
                       Advertencia: El stock está bajo.

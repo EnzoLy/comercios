@@ -73,37 +73,63 @@ export function ActiveEmployeeProvider({ children }: { children: ReactNode }) {
     }
     setPreviousStoreSlug(storeSlug)
 
-    // Check query params for QR login data first
-    const qrUserId = searchParams?.get('qrUserId')
-    const qrRole = searchParams?.get('qrRole')
-    const qrName = searchParams?.get('qrName')
+    // Check query params for QR login employment validation
     const qrEmploymentId = searchParams?.get('qrEmploymentId')
 
-    // If we have QR data and haven't processed it yet
-    if (qrUserId && qrRole && qrName && !qrProcessed) {
+    // If we have QR employment ID and haven't processed it yet, validate via API
+    if (qrEmploymentId && !qrProcessed) {
       setIsLoading(true)
-      // Set activeEmployee from QR login data immediately
-      setActiveEmployeeState({
-        id: qrUserId,
-        name: qrName,
-        role: qrRole,
-        isOwner: false,
-        employmentId: qrEmploymentId || undefined,
-      })
-      setQrProcessed(true)
-      setIsLoading(false)
+
+      // Validate QR employment via secure API endpoint
+      const validateQREmployment = async () => {
+        try {
+          const response = await fetch('/api/auth/qr-validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              employmentId: qrEmploymentId,
+              storeId: session?.user?.stores?.find((s) => s.slug === storeSlug)?.storeId,
+            }),
+          })
+
+          if (!response.ok) {
+            console.error('QR validation failed')
+            setQrProcessed(true)
+            setIsLoading(false)
+            return
+          }
+
+          const validatedData = await response.json()
+
+          // Set activeEmployee from validated QR data
+          setActiveEmployeeState({
+            id: validatedData.userId,
+            name: validatedData.userName,
+            role: validatedData.role,
+            isOwner: false,
+            employmentId: validatedData.employmentId,
+          })
+          setQrProcessed(true)
+        } catch (error) {
+          console.error('QR validation error:', error)
+        } finally {
+          setIsLoading(false)
+        }
+      }
+
+      validateQREmployment()
       return
     }
 
     // If we already processed QR data AND QR params still exist, keep activeEmployee
-    if (qrProcessed && qrUserId && qrRole && qrName) {
+    if (qrProcessed && qrEmploymentId) {
       // Don't reset activeEmployee while QR params are still in URL
       setIsLoading(false)
       return
     }
 
     // If QR params are gone (navigated away or cleared), reset the flag
-    if (qrProcessed && !qrUserId) {
+    if (qrProcessed && !qrEmploymentId) {
       setQrProcessed(false)
     }
 

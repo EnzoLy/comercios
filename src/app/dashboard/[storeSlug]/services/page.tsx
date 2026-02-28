@@ -18,17 +18,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
-
-interface Service {
-  id: string
-  name: string
-  description: string
-  price: number
-  duration: number
-  isActive: boolean
-  category?: { name: string }
-  createdAt: string
-}
+import { Service } from '@/types'
 
 export default function ServicesPage() {
   const params = useParams()

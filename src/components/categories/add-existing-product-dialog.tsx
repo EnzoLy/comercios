@@ -24,16 +24,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { Loader2, Search, PackagePlus } from 'lucide-react'
-
-interface Product {
-  id: string
-  name: string
-  sku: string
-  costPrice: number
-  sellingPrice: number
-  currentStock: number
-  categoryId?: string
-}
+import { Product } from '@/types'
 
 interface AddExistingProductDialogProps {
   isOpen: boolean

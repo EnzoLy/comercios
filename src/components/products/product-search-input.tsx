@@ -5,16 +5,7 @@ import { createPortal } from 'react-dom'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { Search, Loader2, Package } from 'lucide-react'
-
-interface Product {
-  id: string
-  name: string
-  sku: string
-  barcode?: string
-  sellingPrice: number
-  currentStock: number
-  imageUrl?: string
-}
+import { Product } from '@/types'
 
 interface ProductSearchInputProps {
   value: string

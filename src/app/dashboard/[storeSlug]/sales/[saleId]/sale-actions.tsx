@@ -5,16 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Printer, RotateCcw } from 'lucide-react'
 import { SaleInvoiceButton } from './invoice-button'
 import { ReturnDialog } from './return-dialog'
-
-interface SaleItemData {
-  id: string
-  productId: string | null
-  productName: string
-  productSku?: string | null
-  quantity: number
-  unitPrice: number
-  alreadyReturned: number
-}
+import { SaleItemData } from '@/types'
 
 interface SaleActionsProps {
   saleId: string

@@ -32,11 +32,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
-
-interface Service {
-  id: string
-  name: string
-}
+import { Service } from '@/types'
 
 interface Appointment {
   id: string

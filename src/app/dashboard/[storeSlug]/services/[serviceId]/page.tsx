@@ -15,16 +15,7 @@ import {
 } from '@/components/ui/select'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-
-interface Service {
-  id: string
-  name: string
-  description: string
-  price: number
-  duration: number
-  categoryId: string | null
-  isActive: boolean
-}
+import { Service } from '@/types'
 
 interface ServiceCategory {
   id: string
