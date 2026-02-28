@@ -11,6 +11,7 @@ import {
 } from 'typeorm'
 import { Store } from './store.entity'
 import { Supplier } from './supplier.entity'
+import { User } from './user.entity'
 
 export enum PurchaseOrderStatus {
   DRAFT = 'DRAFT',
@@ -97,15 +98,15 @@ export class PurchaseOrder {
   @JoinColumn({ name: 'supplierId' })
   supplier!: Supplier
 
-  @ManyToOne('User')
+  @ManyToOne(() => User)
   @JoinColumn({ name: 'createdBy' })
-  createdByUser?: any
+  createdByUser?: User
 
-  @ManyToOne('User')
+  @ManyToOne(() => User)
   @JoinColumn({ name: 'approvedBy' })
-  approvedByUser?: any
+  approvedByUser?: User
 
-  @OneToMany('PurchaseOrderItem', (item: any) => item.purchaseOrder, {
+  @OneToMany('purchase_order_item', (item: any) => item.purchaseOrder, {
     cascade: true
   })
   items?: any[]

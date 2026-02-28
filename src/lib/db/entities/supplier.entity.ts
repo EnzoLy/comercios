@@ -76,25 +76,25 @@ export class Supplier {
   updatedAt!: Date
 
   // Relationships
-  @ManyToOne('Store', (store: any) => store.suppliers, { onDelete: 'CASCADE' })
+  @ManyToOne('store', (store: any) => store.suppliers, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store!: Store
 
-  @OneToMany('Product', (product: any) => product.supplier)
+  @OneToMany('product', (product: any) => product.supplier)
   products!: Product[]
 
-  @OneToMany('SupplierContact', (contact: any) => contact.supplier)
+  @OneToMany('supplier_contact', (contact: any) => contact.supplier)
   contacts?: any[]
 
-  @OneToMany('SupplierProduct', (sp: any) => sp.supplier)
+  @OneToMany('supplier_product', (sp: any) => sp.supplier)
   supplierProducts?: any[]
 
-  @OneToMany('SupplierDocument', (doc: any) => doc.supplier)
+  @OneToMany('supplier_document', (doc: any) => doc.supplier)
   documents?: any[]
 
-  @OneToMany('SupplierDeliverySchedule', (schedule: any) => schedule.supplier)
+  @OneToMany('supplier_delivery_schedule', (schedule: any) => schedule.supplier)
   deliverySchedules?: any[]
 
-  @OneToMany('PurchaseOrder', (po: any) => po.supplier)
+  @OneToMany('purchase_order', (po: any) => po.supplier)
   purchaseOrders?: any[]
 }

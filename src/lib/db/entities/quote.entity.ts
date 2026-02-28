@@ -85,6 +85,6 @@ export class Quote {
   @JoinColumn({ name: 'store_id' })
   store: Store
 
-  @OneToMany('QuoteItem', (item: any) => item.quote, { cascade: true })
+  @OneToMany('quote_item', (item: any) => item.quote, { cascade: true })
   items: any[]
 }

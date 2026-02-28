@@ -62,6 +62,6 @@ export class ProductBatch {
   @JoinColumn({ name: 'productId' })
   product!: any
 
-  @OneToMany('BatchStockMovement', (movement: any) => movement.batch)
+  @OneToMany('batch_stock_movement', (movement: any) => movement.batch)
   movements!: any[]
 }
