@@ -14,6 +14,7 @@ const statusLabels: Record<string, string> = {
   CANCELLED: 'Cancelada',
   PENDING: 'Pendiente',
   REFUNDED: 'Reembolsada',
+  PARTIALLY_REFUNDED: 'Dev. Parcial',
 }
 
 const paymentMethodLabels: Record<string, string> = {
@@ -235,16 +236,18 @@ export default async function SalesPage({
                       </td>
                       <td className="py-4 px-6 text-center">
                         <Badge
-                          variant={
+                          variant="secondary"
+                          className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 border-none ${
                             sale.status === SaleStatus.COMPLETED
-                              ? 'default'
+                              ? 'bg-emerald-500/20 text-emerald-600'
                               : sale.status === SaleStatus.CANCELLED
-                                ? 'destructive'
-                                : 'secondary'
-                          }
-                          className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 border-none ${sale.status === SaleStatus.COMPLETED ? 'bg-emerald-500/20 text-emerald-600' :
-                            sale.status === SaleStatus.CANCELLED ? 'bg-destructive/20 text-destructive' : ''
-                            }`}
+                                ? 'bg-destructive/20 text-destructive'
+                                : sale.status === SaleStatus.REFUNDED
+                                  ? 'bg-slate-500/20 text-slate-500'
+                                  : sale.status === SaleStatus.PARTIALLY_REFUNDED
+                                    ? 'bg-amber-500/20 text-amber-600'
+                                    : ''
+                          }`}
                         >
                           {statusLabels[sale.status] || sale.status}
                         </Badge>

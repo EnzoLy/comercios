@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getStoreContext } from '@/lib/auth/store-context'
 import { getDataSource } from '@/lib/db'
 import { Sale } from '@/lib/db/entities/sale.entity'
+import { SaleReturn } from '@/lib/db/entities/sale-return.entity'
 import { DigitalInvoice } from '@/lib/db/entities/digital-invoice.entity'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -19,6 +20,7 @@ const statusLabels: Record<string, string> = {
   CANCELLED: 'Cancelada',
   PENDING: 'Pendiente',
   REFUNDED: 'Reembolsada',
+  PARTIALLY_REFUNDED: 'Dev. Parcial',
 }
 
 const paymentMethodLabels: Record<string, string> = {
@@ -26,6 +28,21 @@ const paymentMethodLabels: Record<string, string> = {
   CARD: 'Tarjeta',
   TRANSFER: 'Transferencia Bancaria',
   QR: 'QR',
+}
+
+function getStatusBadgeClass(status: string) {
+  switch (status) {
+    case 'COMPLETED':
+      return 'bg-emerald-500/20 text-emerald-600'
+    case 'CANCELLED':
+      return 'bg-destructive/20 text-destructive'
+    case 'REFUNDED':
+      return 'bg-slate-500/20 text-slate-500'
+    case 'PARTIALLY_REFUNDED':
+      return 'bg-amber-500/20 text-amber-600'
+    default:
+      return ''
+  }
 }
 
 export default async function SaleDetailsPage({
@@ -43,6 +60,7 @@ export default async function SaleDetailsPage({
   const dataSource = await getDataSource()
   const saleRepo = dataSource.getRepository(Sale)
   const invoiceRepo = dataSource.getRepository(DigitalInvoice)
+  const returnRepo = dataSource.getRepository(SaleReturn)
 
   const sale = await saleRepo.findOne({
     where: { id: saleId, storeId: context.storeId },
@@ -53,6 +71,21 @@ export default async function SaleDetailsPage({
     notFound()
   }
 
+  // Fetch existing returns to know already-returned quantities
+  const existingReturns = await returnRepo.find({
+    where: { saleId: sale.id },
+    relations: ['items'],
+  })
+
+  // Build a map of saleItemId → total already returned quantity
+  const returnedQtyBySaleItemId = new Map<string, number>()
+  for (const ret of existingReturns) {
+    for (const ri of ret.items ?? []) {
+      const prev = returnedQtyBySaleItemId.get(ri.saleItemId) || 0
+      returnedQtyBySaleItemId.set(ri.saleItemId, prev + ri.quantity)
+    }
+  }
+
   const existingInvoice = await invoiceRepo.findOne({
     where: { saleId: sale.id },
   })
@@ -60,6 +93,17 @@ export default async function SaleDetailsPage({
   const headersList = await headers()
   const baseUrl = getBaseUrl({ url: headersList.get('x-url') || `https://${headersList.get('host')}` } as Request)
   const invoiceUrl = existingInvoice ? `${baseUrl}/invoice/${existingInvoice.accessToken}` : null
+
+  // Prepare items with alreadyReturned quantities for the dialog
+  const saleItemsForDialog = (sale.items ?? []).map((item: any) => ({
+    id: item.id,
+    productId: item.productId ?? null,
+    productName: item.productName,
+    productSku: item.productSku ?? null,
+    quantity: item.quantity,
+    unitPrice: Number(item.unitPrice),
+    alreadyReturned: returnedQtyBySaleItemId.get(item.id) || 0,
+  }))
 
   return (
     <div id="sale-details-container" className="max-w-5xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in duration-700">
@@ -79,16 +123,8 @@ export default async function SaleDetailsPage({
                 Ticket # {sale.id.substring(0, 8).toUpperCase()}
               </Badge>
               <Badge
-                variant={
-                  sale.status === 'COMPLETED'
-                    ? 'default'
-                    : sale.status === 'CANCELLED'
-                      ? 'destructive'
-                      : 'secondary'
-                }
-                className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 border-none ${sale.status === 'COMPLETED' ? 'bg-emerald-500/20 text-emerald-600' :
-                  sale.status === 'CANCELLED' ? 'bg-destructive/20 text-destructive' : ''
-                  }`}
+                variant="secondary"
+                className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 border-none ${getStatusBadgeClass(sale.status)}`}
               >
                 {statusLabels[sale.status] || sale.status}
               </Badge>
@@ -101,6 +137,8 @@ export default async function SaleDetailsPage({
           <SaleActions
             saleId={sale.id}
             storeId={context.storeId}
+            saleStatus={sale.status}
+            saleItems={saleItemsForDialog}
             existingInvoice={existingInvoice ? {
               id: existingInvoice.id,
               accessToken: existingInvoice.accessToken,
@@ -132,37 +170,88 @@ export default async function SaleDetailsPage({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
-                    {sale.items?.map((item) => (
-                      <tr key={item.id} className="hover:bg-muted/10 transition-colors">
-                        <td className="py-4 px-6">
-                          <div className="flex flex-col">
-                            <span className="text-sm font-bold tracking-tight">{item.productName}</span>
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">{item.productSku}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6 text-center">
-                          <Badge variant="secondary" className="bg-muted border-none font-black text-xs h-6 px-2 min-w-[24px] justify-center">
-                            {item.quantity}
-                          </Badge>
-                        </td>
-                        <td className="py-4 px-6 text-right text-sm font-medium">
-                          ${Number(item.unitPrice).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
-                        </td>
-                        <td className="py-4 px-6 text-right font-black tracking-tight text-sm">
-                          ${Number(item.total).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
-                          {item.discount > 0 && (
-                            <span className="block text-[9px] text-destructive font-bold uppercase">
-                              Desc: -${Number(item.discount).toFixed(2)}
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                    {sale.items?.map((item: any) => {
+                      const returned = returnedQtyBySaleItemId.get(item.id) || 0
+                      return (
+                        <tr key={item.id} className="hover:bg-muted/10 transition-colors">
+                          <td className="py-4 px-6">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold tracking-tight">{item.productName}</span>
+                              <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">{item.productSku}</span>
+                              {returned > 0 && (
+                                <Badge variant="secondary" className="mt-1 w-fit text-[9px] font-black bg-amber-500/10 text-amber-600 border-none">
+                                  {returned} devuelto{returned > 1 ? 's' : ''}
+                                </Badge>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-4 px-6 text-center">
+                            <Badge variant="secondary" className="bg-muted border-none font-black text-xs h-6 px-2 min-w-[24px] justify-center">
+                              {item.quantity}
+                            </Badge>
+                          </td>
+                          <td className="py-4 px-6 text-right text-sm font-medium">
+                            ${Number(item.unitPrice).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="py-4 px-6 text-right font-black tracking-tight text-sm">
+                            ${Number(item.total).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                            {item.discount > 0 && (
+                              <span className="block text-[9px] text-destructive font-bold uppercase">
+                                Desc: -${Number(item.discount).toFixed(2)}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
             </CardContent>
           </Card>
+
+          {/* Returns history */}
+          {existingReturns.length > 0 && (
+            <Card className="border-none bg-amber-500/5 border border-amber-500/10 shadow-sm overflow-hidden">
+              <CardHeader className="px-6 py-4 border-b border-amber-500/20 bg-amber-500/5">
+                <CardTitle className="text-sm font-black uppercase tracking-widest text-amber-600 flex items-center gap-2">
+                  <ShoppingBag className="h-4 w-4" />
+                  Devoluciones Procesadas ({existingReturns.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-amber-500/10">
+                  {existingReturns.map((ret: any) => (
+                    <div key={ret.id} className="px-6 py-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                          #{ret.id.substring(0, 8).toUpperCase()}
+                        </span>
+                        <div className="flex items-center gap-3">
+                          <Badge variant="outline" className="text-[9px] font-black uppercase border-amber-500/30 text-amber-600 bg-amber-500/10">
+                            {ret.refundMethod}
+                          </Badge>
+                          <span className="text-sm font-black text-amber-600">
+                            -${Number(ret.refundAmount).toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      </div>
+                      {ret.notes && (
+                        <p className="text-xs text-muted-foreground italic">{ret.notes}</p>
+                      )}
+                      <div className="text-[10px] text-muted-foreground font-bold">
+                        {new Date(ret.createdAt).toLocaleString('es-ES', {
+                          dateStyle: 'medium',
+                          timeStyle: 'short',
+                          timeZone: 'America/Argentina/Buenos_Aires',
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Totals Summary */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -286,7 +375,7 @@ export default async function SaleDetailsPage({
         @media print {
           body { background: white !important; }
           .no-print { display: none !important; }
-          
+
           #sale-details-container {
             width: 100%;
             max-width: none;

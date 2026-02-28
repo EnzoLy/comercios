@@ -26,6 +26,7 @@ export enum SaleStatus {
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
   REFUNDED = 'REFUNDED',
+  PARTIALLY_REFUNDED = 'PARTIALLY_REFUNDED',
 }
 
 @Entity('sale')
@@ -111,4 +112,7 @@ export class Sale {
 
   @OneToMany('stock_movement', (movement: any) => movement.sale)
   stockMovements!: any[]
+
+  @OneToMany('sale_return', (saleReturn: any) => saleReturn.sale)
+  returns!: any[]
 }

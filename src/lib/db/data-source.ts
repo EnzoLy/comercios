@@ -34,6 +34,8 @@ import { Service } from '@/lib/db/entities/service.entity'
 import { ServiceAppointment } from '@/lib/db/entities/service-appointment.entity'
 import { Quote } from '@/lib/db/entities/quote.entity'
 import { QuoteItem } from '@/lib/db/entities/quote-item.entity'
+import { SaleReturn } from '@/lib/db/entities/sale-return.entity'
+import { SaleReturnItem } from '@/lib/db/entities/sale-return-item.entity'
 
 // Singleton instance to prevent multiple connections in Next.js hot reload
 let dataSource: DataSource | null = null
@@ -93,6 +95,8 @@ export async function getDataSource(): Promise<DataSource> {
           ServiceAppointment,
           Quote,
           QuoteItem,
+          SaleReturn,
+          SaleReturnItem,
         ],
         subscribers: [],
         migrations: [],
@@ -148,6 +152,8 @@ export async function getDataSource(): Promise<DataSource> {
           ServiceAppointment,
           Quote,
           QuoteItem,
+          SaleReturn,
+          SaleReturnItem,
         ],
         subscribers: [],
         migrations: [],
