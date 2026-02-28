@@ -2,7 +2,6 @@
 
 import { QRCodeSVG } from 'qrcode.react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { Printer, Download, Phone, Mail, MapPin, FileText, ShieldCheck } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
@@ -47,21 +46,6 @@ interface QuoteDisplayProps {
   hideActions?: boolean
 }
 
-const statusColors = {
-  DRAFT: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
-  SENT: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  ACCEPTED: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  REJECTED: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  EXPIRED: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-}
-
-const statusLabels = {
-  DRAFT: 'Borrador',
-  SENT: 'Enviado',
-  ACCEPTED: 'Aceptado',
-  REJECTED: 'Rechazado',
-  EXPIRED: 'Vencido',
-}
 
 export function QuoteDisplay({ quote, quoteUrl, hideActions = false }: QuoteDisplayProps) {
   const handlePrint = () => {
@@ -298,13 +282,7 @@ export function QuoteDisplay({ quote, quoteUrl, hideActions = false }: QuoteDisp
           </div>
         )}
 
-        {/* Status Badge */}
-        <div className="mt-8 flex items-center gap-3 print:mt-3">
-          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Estado:</span>
-          <Badge className={statusColors[quote.status as keyof typeof statusColors]}>
-            {statusLabels[quote.status as keyof typeof statusLabels]}
-          </Badge>
-        </div>
+
       </div>
     </div>
   )
