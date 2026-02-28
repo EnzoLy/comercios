@@ -9,6 +9,7 @@ import {
   Index,
 } from 'typeorm'
 import { Store } from './store.entity'
+import { Service } from './service.entity'
 
 export enum AppointmentStatus {
   PENDING = 'PENDING',
@@ -59,9 +60,9 @@ export class ServiceAppointment {
   @JoinColumn({ name: 'store_id' })
   store: Store
 
-  @ManyToOne('Service', 'appointments', {
+  @ManyToOne(() => Service, {
     onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'service_id' })
-  service: any
+  service: Service
 }
