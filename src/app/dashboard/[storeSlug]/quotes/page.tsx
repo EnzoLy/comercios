@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Plus, Trash2, ExternalLink, Copy, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -74,6 +74,7 @@ const statusLabels = {
 
 export default function QuotesPage() {
   const params = useParams()
+  const router = useRouter()
   const storeSlug = params.storeSlug as string
   const [storeId, setStoreId] = useState<string>('')
   const [quotes, setQuotes] = useState<Quote[]>([])
@@ -81,7 +82,6 @@ export default function QuotesPage() {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<string>('all')
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
   const [stats, setStats] = useState({ total: 0, draft: 0, accepted: 0, totalValue: 0 })
 
   const getStoreId = useCallback(async () => {
@@ -136,41 +136,26 @@ export default function QuotesPage() {
     }
   }
 
-  const handleDuplicate = async (quote: Quote) => {
-    setDuplicatingId(quote.id)
-    try {
-      const id = await getStoreId()
-      const body = {
+  const handleDuplicate = (quote: Quote) => {
+    sessionStorage.setItem(
+      'quote_prefill',
+      JSON.stringify({
         clientName: quote.clientName,
-        clientPhone: quote.clientPhone ?? undefined,
-        notes: quote.notes ?? undefined,
+        clientPhone: quote.clientPhone ?? '',
+        notes: quote.notes ?? '',
         items: quote.items.map((item) => ({
           itemType: item.itemType,
           productId: item.productId ?? undefined,
           serviceId: item.serviceId ?? undefined,
           name: item.name,
           quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          discount: item.discount,
-          taxRate: item.taxRate,
+          unitPrice: Number(item.unitPrice),
+          discount: Number(item.discount),
+          taxRate: Number(item.taxRate),
         })),
-      }
-
-      const res = await fetch(`/api/stores/${id}/quotes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
       })
-
-      if (!res.ok) throw new Error('Failed to duplicate')
-      toast.success('Presupuesto duplicado')
-      fetchQuotes()
-    } catch (error) {
-      console.error('Failed to duplicate quote:', error)
-      toast.error('Error al duplicar el presupuesto')
-    } finally {
-      setDuplicatingId(null)
-    }
+    )
+    router.push(`/dashboard/${storeSlug}/quotes/new`)
   }
 
   const statsCards = [
@@ -294,7 +279,6 @@ export default function QuotesPage() {
                           variant="outline"
                           size="sm"
                           title="Duplicar presupuesto"
-                          disabled={duplicatingId === quote.id}
                           onClick={() => handleDuplicate(quote)}
                         >
                           <Copy className="h-4 w-4" />

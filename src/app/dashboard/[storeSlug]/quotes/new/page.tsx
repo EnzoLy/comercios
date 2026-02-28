@@ -57,6 +57,23 @@ export default function NewQuotePage() {
 
   useEffect(() => {
     fetchStoreId()
+
+    // Pre-fill from duplicate
+    const prefill = sessionStorage.getItem('quote_prefill')
+    if (prefill) {
+      try {
+        const data = JSON.parse(prefill)
+        setFormData({
+          clientName: data.clientName ?? '',
+          clientPhone: data.clientPhone ?? '',
+          notes: data.notes ?? '',
+        })
+        setItems(data.items ?? [])
+      } catch {
+        // ignore malformed data
+      }
+      sessionStorage.removeItem('quote_prefill')
+    }
   }, [storeSlug])
 
   const fetchStoreId = async () => {
@@ -207,7 +224,9 @@ export default function NewQuotePage() {
 
       if (!res.ok) throw new Error('Failed to create quote')
       const quote = await res.json()
-      router.push(`/dashboard/${storeSlug}/quotes/${quote.id}`)
+      // Open the public quote view and go back to list
+      window.open(`/quote/${quote.accessToken}`, '_blank')
+      router.push(`/dashboard/${storeSlug}/quotes`)
     } catch (error) {
       console.error('Failed to create quote:', error)
       alert('Error al crear el presupuesto')
