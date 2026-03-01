@@ -108,7 +108,7 @@ export default function SalesByDatePage() {
 
   // Calculate volatility (standard deviation)
   const variance = salesData.length > 0
-    ? revenues.reduce((sum: number, r) => sum + Math.pow(r - avgRevenue, 2), 0) / salesData.length
+    ? revenues.reduce((sum: number, r: number) => sum + Math.pow(r - avgRevenue, 2), 0) / salesData.length
     : 0
   const stdDev = Math.sqrt(variance)
 

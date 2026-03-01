@@ -266,7 +266,7 @@ export async function getCategoryAnalytics(
   )
 
   // Calculate total revenue for percentage calculation
-  const totalRevenue = results.reduce((sum: number, r) => sum + parseFloat(r.revenue || 0), 0)
+  const totalRevenue = results.reduce((sum: number, r: any) => sum + parseFloat(r.revenue || 0), 0)
 
   return results.map((r: any) => {
     const revenue = parseFloat(r.revenue || 0)
