@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { LoadingPage } from '@/components/ui/loading'
+import { Skeleton, StatsSkeleton, TableSkeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Download, TrendingUp, Package, DollarSign, FileText } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -123,11 +123,11 @@ export default function ProductPerformancePage() {
 
   if (isLoading) {
     return (
-      <LoadingPage
-        title="Cargando reporte"
-        description="Generando reporte de productos..."
-        icon={<FileText className="h-8 w-8 text-gray-600" />}
-      />
+      <div className="p-4 md:p-8 space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <StatsSkeleton />
+        <TableSkeleton />
+      </div>
     )
   }
 

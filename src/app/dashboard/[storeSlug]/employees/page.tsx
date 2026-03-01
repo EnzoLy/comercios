@@ -35,7 +35,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { LoadingPage } from '@/components/ui/loading'
+import { Skeleton, TableSkeleton, StatsSkeleton } from '@/components/ui/skeleton'
 import { SetPinDialog } from '@/components/employees/set-pin-dialog'
 import { UserPlus, Users, Crown, Shield, User, Key } from 'lucide-react'
 
@@ -192,11 +192,11 @@ export default function EmployeesPage() {
 
   if (isLoading) {
     return (
-      <LoadingPage
-        title="Cargando empleados"
-        description="Obteniendo lista de empleados..."
-        icon={<Users className="h-8 w-8 text-gray-600" />}
-      />
+      <div className="p-4 md:p-8 space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <StatsSkeleton />
+        <TableSkeleton />
+      </div>
     )
   }
 

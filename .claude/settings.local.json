@@ -28,7 +28,8 @@
       "Bash(playwright-cli close:*)",
       "Bash(playwright-cli open:*)",
       "Bash(playwright-cli tab-select:*)",
-      "Bash(playwright-cli:*)"
+      "Bash(playwright-cli:*)",
+      "Bash(CI=true pnpm install:*)"
     ]
   }
 }

@@ -9,8 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { CategoryForm } from '@/components/categories/category-form'
 import { CategoryProductsDialog } from '@/components/categories/category-products-dialog'
-import { LoadingPage } from '@/components/ui/loading'
 import { Plus, ChevronRight, Trash2, Box, Pencil, FolderTree, AlertTriangle, ChevronDown, Package, RefreshCw } from 'lucide-react'
+import { Skeleton, TableSkeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -215,11 +215,18 @@ export default function CategoriesPage() {
 
   if (isLoading) {
     return (
-      <LoadingPage
-        title="Cargando Estructura"
-        description="Sincronizando el árbol de categorías..."
-        icon={<FolderTree className="h-8 w-8 text-primary animate-pulse" />}
-      />
+      <div className="p-4 md:p-8 space-y-6">
+        <div className="border-b border-border/40 pb-6">
+          <Skeleton className="h-8 w-1/3 mb-2" />
+          <Skeleton className="h-4 w-1/2" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Skeleton className="h-20 rounded-2xl" />
+          <Skeleton className="h-20 rounded-2xl" />
+          <Skeleton className="h-20 rounded-2xl" />
+        </div>
+        <TableSkeleton />
+      </div>
     )
   }
 

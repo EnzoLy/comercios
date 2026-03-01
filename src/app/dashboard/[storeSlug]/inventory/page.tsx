@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { LoadingPage } from '@/components/ui/loading'
+import { Skeleton, StatsSkeleton, TableSkeleton } from '@/components/ui/skeleton'
 import {
   AlertTriangle,
   TrendingUp,
@@ -179,11 +179,11 @@ export default function InventoryPage() {
 
   if (isLoading) {
     return (
-      <LoadingPage
-        title="Cargando inventario"
-        description="Obteniendo información de stock y movimientos..."
-        icon={<Package className="h-8 w-8 text-primary animate-pulse" />}
-      />
+      <div className="p-4 md:p-8 space-y-8">
+        <Skeleton className="h-10 w-64" />
+        <StatsSkeleton />
+        <TableSkeleton />
+      </div>
     )
   }
 

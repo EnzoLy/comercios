@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { LoadingPage } from '@/components/ui/loading'
 import { Plus, Package, AlertTriangle, Search, Filter, ChevronDown, ChevronLeft, ChevronRight, Trash2, RefreshCw, Calendar, Box, ShoppingCart, DollarSign, Pencil, FileSpreadsheet } from 'lucide-react'
+import { Skeleton, TableSkeleton, StatsSkeleton } from '@/components/ui/skeleton'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { BulkExpirationToggleDialog } from '@/components/products/bulk-expiration-toggle-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -213,7 +213,19 @@ export default function ProductsPage() {
   const totalPages = Math.ceil(total / pageSize)
 
   if (!store) {
-    return <LoadingPage title="Cargando..." description="Obteniendo información de la tienda..." />
+    return (
+      <div className="p-4 md:p-8">
+        <div className="mb-8 space-y-4">
+          <Skeleton className="h-10 w-1/3" />
+          <Skeleton className="h-5 w-2/3" />
+        </div>
+        <StatsSkeleton />
+        <div className="mb-8">
+          <Skeleton className="h-32 w-full rounded-lg" />
+        </div>
+        <TableSkeleton />
+      </div>
+    )
   }
 
   const lowStockCount = products.filter(p => p.currentStock <= (p.minStockLevel ?? 10)).length
@@ -438,7 +450,7 @@ export default function ProductsPage() {
 
       {/* Products Table */}
       {loading && products.length === 0 ? (
-        <LoadingPage title="Cargando productos..." description="Obteniendo catálogo..." />
+        <TableSkeleton />
       ) : products.length === 0 ? (
         <Card className="border-none bg-card shadow-xl shadow-slate-950/5 overflow-hidden">
           <CardContent className="flex flex-col items-center justify-center py-16">

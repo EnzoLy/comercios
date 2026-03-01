@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { SignInForm } from '@/components/auth/signin-form'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton, FormSkeleton } from '@/components/ui/skeleton'
 
 export default function SignInPage() {
   return (
@@ -14,7 +15,7 @@ export default function SignInPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Suspense fallback={<div className="h-40 flex items-center justify-center">Cargando...</div>}>
+          <Suspense fallback={<FormSkeleton />}>
             <SignInForm />
           </Suspense>
         </CardContent>

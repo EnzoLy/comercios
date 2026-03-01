@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Skeleton, TableSkeleton } from '@/components/ui/skeleton'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -235,8 +236,10 @@ export default function ServiceCategoriesPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                  Cargando...
+                <TableCell colSpan={5} className="text-center py-8">
+                  <div className="flex justify-center">
+                    <TableSkeleton />
+                  </div>
                 </TableCell>
               </TableRow>
             ) : categories.length === 0 ? (

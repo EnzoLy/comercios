@@ -8,7 +8,7 @@ import { OfflineIndicator } from '@/components/offline/offline-indicator'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { LoadingPage } from '@/components/ui/loading'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Search, ShoppingCart, Package, WifiOff, Banknote, CreditCard, Smartphone, Receipt, RefreshCw, Database } from 'lucide-react'
 import { PaymentMethod } from '@/lib/db/entities/sale.entity'
 import { toast } from 'sonner'
@@ -127,7 +127,12 @@ export default function POSPage() {
   }
 
   if (!store) {
-    return <LoadingPage title="Cargando..." description="Verificando tienda..." />
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-8 space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    )
   }
 
   return (

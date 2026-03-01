@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
+import { Skeleton, TableSkeleton, StatsSkeleton } from '@/components/ui/skeleton'
 import { QuoteItem, Quote } from '@/types'
 
 const statusColors: Record<string, string> = {
@@ -271,8 +272,8 @@ export default function QuotesPage() {
         </CardHeader>
         <CardContent className="p-0">
           {loading ? (
-            <div className="text-center py-16 text-muted-foreground text-sm font-bold">
-              Cargando...
+            <div className="p-4 md:p-8 space-y-6">
+              <TableSkeleton />
             </div>
           ) : quotes.length === 0 ? (
             <div className="text-center py-24 flex flex-col items-center">

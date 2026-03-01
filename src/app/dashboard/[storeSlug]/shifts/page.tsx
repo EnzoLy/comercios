@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useStore } from '@/hooks/use-store'
-import { LoadingPage } from '@/components/ui/loading'
+import { Skeleton, TableSkeleton } from '@/components/ui/skeleton'
 import {
   Clock,
   Plus,
@@ -369,21 +369,19 @@ export default function ShiftsPage() {
 
   if (!store) {
     return (
-      <LoadingPage
-        title="Cargando Turnos"
-        description="Obteniendo información de la tienda..."
-        icon={<Store className="h-8 w-8 text-gray-600" />}
-      />
+      <div className="p-4 md:p-8 space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <TableSkeleton />
+      </div>
     )
   }
 
   if (isLoading) {
     return (
-      <LoadingPage
-        title="Cargando Turnos"
-        description="Obteniendo los turnos programados..."
-        icon={<Clock className="h-8 w-8 text-gray-600" />}
-      />
+      <div className="space-y-6 p-6">
+        <Skeleton className="h-10 w-64" />
+        <TableSkeleton />
+      </div>
     )
   }
 

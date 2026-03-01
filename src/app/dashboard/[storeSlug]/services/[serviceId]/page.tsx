@@ -16,6 +16,7 @@ import {
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Service } from '@/types'
+import { Skeleton, FormSkeleton, PageHeaderSkeleton } from '@/components/ui/skeleton'
 
 interface ServiceCategory {
   id: string
@@ -92,8 +93,23 @@ export default function EditServicePage() {
     }
   }
 
-  if (loading) return <div>Cargando...</div>
-  if (!formData) return <div>Servicio no encontrado</div>
+  if (loading) {
+    return (
+      <div className="max-w-2xl p-4">
+        <Skeleton className="h-6 w-32 mb-6" />
+        <FormSkeleton />
+      </div>
+    )
+  }
+  if (!formData) {
+    return (
+      <div className="max-w-2xl p-4">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground font-medium">Servicio no encontrado</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-2xl">
