@@ -69,20 +69,23 @@ export async function getDailySales(
   storeId: string,
   { startDate, endDate }: AnalyticsParams
 ): Promise<DailySalesResult[]> {
-  const results = await dataSource
-    .getRepository(Sale)
-    .createQueryBuilder('sale')
-    .select("DATE(sale.createdAt) as date")
-    .addSelect('SUM(CAST(sale.total AS DECIMAL(10,2))) as revenue')
-    .addSelect('COUNT(sale.id) as transactions')
-    .addSelect('AVG(CAST(sale.total AS DECIMAL(10,2))) as avgTransaction')
-    .where('sale.storeId = :storeId', { storeId })
-    .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-    .andWhere('sale.createdAt >= :startDate', { startDate })
-    .andWhere('sale.createdAt <= :endDate', { endDate })
-    .groupBy('DATE(sale.createdAt)')
-    .orderBy('DATE(sale.createdAt)', 'ASC')
-    .getRawMany()
+  const results = await dataSource.query(
+    `
+    SELECT
+      DATE(s."createdAt") as date,
+      SUM(CAST(s.total AS DECIMAL(10,2))) as revenue,
+      COUNT(s.id) as transactions,
+      AVG(CAST(s.total AS DECIMAL(10,2))) as "avgTransaction"
+    FROM sale s
+    WHERE s."storeId" = $1
+      AND s.status NOT IN ($2, $3)
+      AND DATE(s."createdAt") >= DATE($4)
+      AND DATE(s."createdAt") <= DATE($5)
+    GROUP BY DATE(s."createdAt")
+    ORDER BY DATE(s."createdAt") ASC
+    `,
+    [storeId, SaleStatus.PENDING, SaleStatus.CANCELLED, startDate, endDate]
+  )
 
   return results.map((r: any) => ({
     date: r.date,
@@ -100,21 +103,23 @@ export async function getMonthlySales(
   storeId: string,
   { startDate, endDate }: AnalyticsParams
 ): Promise<MonthlySalesResult[]> {
-  const results = await dataSource
-    .getRepository(Sale)
-    .createQueryBuilder('sale')
-    .select("TO_CHAR(sale.createdAt, 'YYYY-MM') as month")
-    .addSelect('SUM(CAST(sale.total AS DECIMAL(10,2))) as revenue')
-    .addSelect('COUNT(sale.id) as transactions')
-    .addSelect('AVG(CAST(sale.total AS DECIMAL(10,2))) as avgTransaction')
-    .where('sale.storeId = :storeId', { storeId })
-    .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-    .andWhere('sale.createdAt >= :startDate', { startDate })
-    .andWhere('sale.createdAt <= :endDate', { endDate })
-
-    .groupBy("TO_CHAR(sale.createdAt, 'YYYY-MM')")
-    .orderBy("TO_CHAR(sale.createdAt, 'YYYY-MM')", 'ASC')
-    .getRawMany()
+  const results = await dataSource.query(
+    `
+    SELECT
+      TO_CHAR(s."createdAt", 'YYYY-MM') as month,
+      SUM(CAST(s.total AS DECIMAL(10,2))) as revenue,
+      COUNT(s.id) as transactions,
+      AVG(CAST(s.total AS DECIMAL(10,2))) as "avgTransaction"
+    FROM sale s
+    WHERE s."storeId" = $1
+      AND s.status NOT IN ($2, $3)
+      AND DATE(s."createdAt") >= DATE($4)
+      AND DATE(s."createdAt") <= DATE($5)
+    GROUP BY TO_CHAR(s."createdAt", 'YYYY-MM')
+    ORDER BY TO_CHAR(s."createdAt", 'YYYY-MM') ASC
+    `,
+    [storeId, SaleStatus.PENDING, SaleStatus.CANCELLED, startDate, endDate]
+  )
 
   return results.map((r: any) => ({
     month: r.month,
@@ -132,31 +137,33 @@ export async function getEmployeePerformance(
   storeId: string,
   { startDate, endDate }: AnalyticsParams
 ): Promise<EmployeePerformanceResult[]> {
-  // Use SQL GROUP BY for aggregation instead of loading all data into memory
-  const results = await dataSource
-    .getRepository(Sale)
-    .createQueryBuilder('sale')
-    .select('sale.cashierId as employeeId')
-    .addSelect('cashier.name as employeeName')
-    .addSelect('COUNT(sale.id)::int as transactions')
-    .addSelect('SUM(CAST(sale.total AS DECIMAL(10,2))) as totalRevenue')
-    .addSelect('AVG(CAST(sale.total AS DECIMAL(10,2))) as avgTransaction')
-    .addSelect('MAX(sale.createdAt) as lastSaleDate')
-    .leftJoin(User, 'cashier', 'cashier.id = sale.cashierId')
-    .where('sale.storeId = :storeId', { storeId })
-    .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-    .andWhere('sale.createdAt >= :startDate', { startDate })
-    .andWhere('sale.createdAt <= :endDate', { endDate })
-    .groupBy('sale.cashierId')
-    .addGroupBy('cashier.name')
-    .orderBy('transactions', 'DESC')
-    .getRawMany()
+  // Use raw SQL for reliable aggregation and proper NULL handling
+  const results = await dataSource.query(
+    `
+    SELECT
+      s."cashierId" as "employeeId",
+      COALESCE(NULLIF(TRIM(u.name), ''), 'Empleado ' || SUBSTRING(s."cashierId"::text, 1, 8)) as "employeeName",
+      COUNT(s.id)::int as transactions,
+      SUM(CAST(s.total AS DECIMAL(10,2))) as revenue,
+      AVG(CAST(s.total AS DECIMAL(10,2))) as "avgTransaction",
+      MAX(s."createdAt") as "lastSaleDate"
+    FROM sale s
+    LEFT JOIN "user" u ON u.id = s."cashierId"
+    WHERE s."storeId" = $1
+      AND s.status NOT IN ($2, $3)
+      AND DATE(s."createdAt") >= DATE($4)
+      AND DATE(s."createdAt") <= DATE($5)
+    GROUP BY s."cashierId", COALESCE(NULLIF(TRIM(u.name), ''), 'Empleado ' || SUBSTRING(s."cashierId"::text, 1, 8))
+    ORDER BY transactions DESC
+    `,
+    [storeId, SaleStatus.PENDING, SaleStatus.CANCELLED, startDate, endDate]
+  )
 
   return results.map((r: any) => ({
     employeeId: r.employeeId || 'unknown',
-    employeeName: r.employeeName || 'Unknown',
-    transactions: parseInt(r.transactions) || 0,
-    revenue: String(parseFloat(r.totalRevenue || 0).toFixed(2)),
+    employeeName: r.employeeName || 'Empleado sin nombre',
+    transactions: r.transactions || 0,
+    revenue: String(parseFloat(r.revenue || 0).toFixed(2)),
     avgTransaction: String(parseFloat(r.avgTransaction || 0).toFixed(2)),
     lastSaleDate: r.lastSaleDate || null,
   }))
@@ -170,39 +177,38 @@ export async function getProductAnalytics(
   storeId: string,
   { startDate, endDate }: AnalyticsParams
 ): Promise<ProductAnalyticsResult[]> {
-  // Use SQL GROUP BY for aggregation instead of loading all data into memory
-  const results = await dataSource
-    .getRepository(SaleItem)
-    .createQueryBuilder('saleItem')
-    .select('saleItem.productId as productId')
-    .addSelect('saleItem.productName as productName')
-    .addSelect('saleItem.productSku as sku')
-    .addSelect('product.categoryId as categoryId')
-    .addSelect('category.name as categoryName')
-    .addSelect('product.costPrice as costPrice')
-    .addSelect('SUM(saleItem.quantity)::int as quantitySold')
-    .addSelect('SUM(CAST(saleItem.total AS DECIMAL(10,2))) as revenue')
-    .addSelect('COUNT(saleItem.id)::int as transactions')
-    .addSelect('SUM(CAST(saleItem.taxAmount AS DECIMAL(10,2))) as totalTaxAmount')
-    .innerJoin(Sale, 'sale', 'sale.id = saleItem.saleId')
-    .leftJoin(Product, 'product', 'product.id = saleItem.productId')
-    .leftJoin(Category, 'category', 'category.id = product.categoryId')
-    .where('sale.storeId = :storeId', { storeId })
-    .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-    .andWhere('sale.createdAt >= :startDate', { startDate })
-    .andWhere('sale.createdAt <= :endDate', { endDate })
-    .andWhere('saleItem.productId IS NOT NULL')
-    .groupBy('saleItem.productId')
-    .addGroupBy('saleItem.productName')
-    .addGroupBy('saleItem.productSku')
-    .addGroupBy('product.categoryId')
-    .addGroupBy('category.name')
-    .addGroupBy('product.costPrice')
-    .orderBy('quantitySold', 'DESC')
-    .getRawMany()
+  // Use raw SQL for reliable aggregation
+  const results = await dataSource.query(
+    `
+    SELECT
+      si."productId" as "productId",
+      COALESCE(NULLIF(TRIM(si."productName"), ''), p.name, 'Producto sin nombre') as "productName",
+      COALESCE(NULLIF(TRIM(si."productSku"), ''), p.sku, 'N/A') as "sku",
+      p."categoryId" as "categoryId",
+      c.name as "categoryName",
+      p."costPrice" as "costPrice",
+      SUM(si.quantity)::int as "quantitySold",
+      SUM(CAST(si.total AS DECIMAL(10,2))) as revenue,
+      COUNT(si.id)::int as transactions,
+      SUM(CAST(si."taxAmount" AS DECIMAL(10,2))) as "totalTaxAmount"
+    FROM sale_item si
+    INNER JOIN sale s ON s.id = si."saleId"
+    LEFT JOIN product p ON p.id = si."productId"
+    LEFT JOIN category c ON c.id = p."categoryId"
+    WHERE s."storeId" = $1
+      AND s.status NOT IN ($2, $3)
+      AND DATE(s."createdAt") >= DATE($4)
+      AND DATE(s."createdAt") <= DATE($5)
+      AND si."productId" IS NOT NULL
+    GROUP BY si."productId", COALESCE(NULLIF(TRIM(si."productName"), ''), p.name, 'Producto sin nombre'),
+             COALESCE(NULLIF(TRIM(si."productSku"), ''), p.sku, 'N/A'), p."categoryId", c.name, p."costPrice"
+    ORDER BY "quantitySold" DESC
+    `,
+    [storeId, SaleStatus.PENDING, SaleStatus.CANCELLED, startDate, endDate]
+  )
 
   return results.map((r: any) => {
-    const quantitySold = parseInt(r.quantitySold) || 0
+    const quantitySold = r.quantitySold || 0
     const revenue = parseFloat(r.revenue || 0)
     const costPrice = parseFloat(r.costPrice || 0)
     const totalCost = costPrice * quantitySold
@@ -212,8 +218,8 @@ export async function getProductAnalytics(
 
     return {
       productId: r.productId || 'unknown',
-      productName: r.productName || 'Unknown',
-      sku: r.sku || '',
+      productName: r.productName || 'Producto sin nombre',
+      sku: r.sku || 'N/A',
       categoryId: r.categoryId || null,
       categoryName: r.categoryName || null,
       quantitySold,
@@ -222,7 +228,7 @@ export async function getProductAnalytics(
       costPrice: String(costPrice.toFixed(2)),
       profit: String(profit.toFixed(2)),
       marginPercentage,
-      transactions: parseInt(r.transactions) || 0,
+      transactions: r.transactions || 0,
       totalTaxAmount: String(parseFloat(r.totalTaxAmount || 0).toFixed(2)),
     }
   })
@@ -236,26 +242,28 @@ export async function getCategoryAnalytics(
   storeId: string,
   { startDate, endDate }: AnalyticsParams
 ): Promise<CategoryAnalyticsResult[]> {
-  const results = await dataSource
-    .getRepository(SaleItem)
-    .createQueryBuilder('saleItem')
-    .select('category.id as categoryId')
-    .addSelect('category.name as categoryName')
-    .addSelect('COUNT(DISTINCT product.id)::int as productsCount')
-    .addSelect('SUM(saleItem.quantity)::int as quantitySold')
-    .addSelect('SUM(CAST(saleItem.total AS DECIMAL(10,2))) as revenue')
-    .innerJoin(Sale, 'sale', 'sale.id = saleItem.saleId')
-    .innerJoin(Product, 'product', 'product.id = saleItem.productId')
-    .leftJoin(Category, 'category', 'category.id = product.categoryId')
-    .where('sale.storeId = :storeId', { storeId })
-    .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-    .andWhere('sale.createdAt >= :startDate', { startDate })
-    .andWhere('sale.createdAt <= :endDate', { endDate })
-    .andWhere('category.id IS NOT NULL')
-    .groupBy('category.id')
-    .addGroupBy('category.name')
-    .orderBy('quantitySold', 'DESC')
-    .getRawMany()
+  const results = await dataSource.query(
+    `
+    SELECT
+      c.id as "categoryId",
+      c.name as "categoryName",
+      COUNT(DISTINCT p.id)::int as "productsCount",
+      SUM(si.quantity)::int as "quantitySold",
+      SUM(CAST(si.total AS DECIMAL(10,2))) as revenue
+    FROM sale_item si
+    INNER JOIN sale s ON s.id = si."saleId"
+    INNER JOIN product p ON p.id = si."productId"
+    LEFT JOIN category c ON c.id = p."categoryId"
+    WHERE s."storeId" = $1
+      AND s.status NOT IN ($2, $3)
+      AND DATE(s."createdAt") >= DATE($4)
+      AND DATE(s."createdAt") <= DATE($5)
+      AND c.id IS NOT NULL
+    GROUP BY c.id, c.name
+    ORDER BY "quantitySold" DESC
+    `,
+    [storeId, SaleStatus.PENDING, SaleStatus.CANCELLED, startDate, endDate]
+  )
 
   // Calculate total revenue for percentage calculation
   const totalRevenue = results.reduce((sum, r) => sum + parseFloat(r.revenue || 0), 0)
@@ -287,33 +295,37 @@ export async function getAnalyticsOverview(
   storeId: string,
   { startDate, endDate }: AnalyticsParams
 ) {
-  const saleRepo = dataSource.getRepository(Sale)
-
+  // Use raw SQL for overview to ensure proper aggregation
   const [totalResults, employeeResults, productResults] = await Promise.all([
-    saleRepo
-      .createQueryBuilder('sale')
-      .select('SUM(CAST(sale.total AS DECIMAL(10,2))) as totalRevenue')
-      .addSelect('COUNT(sale.id) as totalTransactions')
-      .addSelect('AVG(CAST(sale.total AS DECIMAL(10,2))) as avgTransaction')
-      .where('sale.storeId = :storeId', { storeId })
-      .andWhere('sale.status = :status', { status: SaleStatus.COMPLETED })
-      .andWhere('sale.createdAt >= :startDate', { startDate })
-      .andWhere('sale.createdAt <= :endDate', { endDate })
-      .getRawOne(),
+    dataSource.query(
+      `
+      SELECT
+        SUM(CAST(s.total AS DECIMAL(10,2))) as "totalRevenue",
+        COUNT(s.id)::int as "totalTransactions",
+        AVG(CAST(s.total AS DECIMAL(10,2))) as "avgTransaction"
+      FROM sale s
+      WHERE s."storeId" = $1
+        AND s.status NOT IN ($2, $3)
+        AND DATE(s."createdAt") >= DATE($4)
+        AND DATE(s."createdAt") <= DATE($5)
+      `,
+      [storeId, SaleStatus.PENDING, SaleStatus.CANCELLED, startDate, endDate]
+    ),
 
     getEmployeePerformance(dataSource, storeId, { startDate, endDate }),
     getProductAnalytics(dataSource, storeId, { startDate, endDate }),
   ])
 
-  const topEmployee = employeeResults[0]
-  const topProduct = productResults[0]
+  const totalResult = totalResults[0] || { totalRevenue: null, totalTransactions: 0, avgTransaction: null }
+  const topEmployee = employeeResults[0] || null
+  const topProduct = productResults[0] || null
 
   return {
-    totalRevenue: String(totalResults?.totalRevenue || 0),
-    totalTransactions: parseInt(totalResults?.totalTransactions) || 0,
-    avgTransaction: String(totalResults?.avgTransaction || 0),
-    topEmployee: topEmployee || null,
-    topProduct: topProduct || null,
+    totalRevenue: String(parseFloat(totalResult.totalRevenue || 0).toFixed(2)),
+    totalTransactions: totalResult.totalTransactions || 0,
+    avgTransaction: String(parseFloat(totalResult.avgTransaction || 0).toFixed(2)),
+    topEmployee,
+    topProduct,
   }
 }
 

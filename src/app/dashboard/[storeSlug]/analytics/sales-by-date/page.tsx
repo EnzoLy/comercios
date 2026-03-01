@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { useStore } from '@/hooks/use-store'
 import { toast } from 'sonner'
+import { TrendingUp, TrendingDown, AlertTriangle, Target, Flame, Snowflake } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -99,13 +100,31 @@ export default function SalesByDatePage() {
     percentOfTotal: totalRevenue > 0 ? ((parseFloat(d.revenue) / totalRevenue) * 100).toFixed(2) : '0.00',
   }))
 
+  // Calculate statistics
+  const revenues = salesData.map(d => parseFloat(d.revenue))
+  const avgRevenue = salesData.length > 0 ? revenues.reduce((a, b) => a + b, 0) / salesData.length : 0
+  const bestDay = salesData.length > 0 ? salesData.reduce((max, d) => parseFloat(d.revenue) > parseFloat(max.revenue) ? d : max) : null
+  const worstDay = salesData.length > 0 ? salesData.reduce((min, d) => parseFloat(d.revenue) < parseFloat(min.revenue) ? d : min) : null
+
+  // Calculate volatility (standard deviation)
+  const variance = salesData.length > 0
+    ? revenues.reduce((sum, r) => sum + Math.pow(r - avgRevenue, 2), 0) / salesData.length
+    : 0
+  const stdDev = Math.sqrt(variance)
+
+  // Detect patterns
+  const highPerformanceDays = salesData.filter(d => parseFloat(d.revenue) > avgRevenue * 1.2).length
+  const lowPerformanceDays = salesData.filter(d => parseFloat(d.revenue) < avgRevenue * 0.8).length
+
   return (
     <div className="p-4 md:p-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Ventas por Fecha</h1>
-        <p className="text-muted-foreground mt-2">
-          Ver tendencias de ventas diarias o mensuales y analizar patrones de ingresos
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Tendencias de Ventas</h1>
+          <p className="text-muted-foreground mt-2">
+            Análisis temporal de ingresos, transacciones y patrones de desempeño
+          </p>
+        </div>
       </div>
 
       {/* Date Range Selector */}
@@ -144,32 +163,109 @@ export default function SalesByDatePage() {
         </CardContent>
       </Card>
 
-      {/* Summary Metrics */}
+      {/* Alert Section - Critical Patterns */}
+      {!isLoading && salesData.length > 0 && (
+        <div className="space-y-3">
+          {worstDay && parseFloat(worstDay.revenue) < avgRevenue * 0.7 && (
+            <Card className="border-l-4 border-l-orange-500">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-orange-500 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-orange-900 dark:text-orange-100">⚠️ Patrón detectado</p>
+                    <p className="text-sm text-orange-800 dark:text-orange-200 mt-1">
+                      Caída significativa de ingresos. El {granularity === 'month' ? 'mes' : 'día'} con menor desempeño tuvo {formatCurrency(worstDay.revenue)} ({formatNumber((parseFloat(worstDay.revenue) / avgRevenue * 100).toFixed(0))}% del promedio)
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* Summary Metrics - Expanded */}
       {isLoading ? (
-        <LoadingState type="card" count={3} />
+        <LoadingState type="card" count={7} />
       ) : !summary ? (
         <EmptyState />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <MetricDisplay
-            title="Ingresos Totales"
-            value={summary.totalRevenue}
-            icon="💰"
-            format="currency"
-          />
-          <MetricDisplay
-            title="Transacciones Totales"
-            value={summary.totalTransactions}
-            icon="📊"
-            format="number"
-          />
-          <MetricDisplay
-            title="Transacción Promedio"
-            value={summary.avgTransaction}
-            icon="📈"
-            format="currency"
-          />
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
+            <MetricDisplay
+              title="Ingresos Totales"
+              value={summary.totalRevenue}
+              icon="💰"
+              format="currency"
+            />
+            <MetricDisplay
+              title="Transacciones"
+              value={summary.totalTransactions}
+              icon="📊"
+              format="number"
+            />
+            <MetricDisplay
+              title="Transacción Promedio"
+              value={summary.avgTransaction}
+              icon="💵"
+              format="currency"
+            />
+            <MetricDisplay
+              title="Promedio Diario"
+              value={avgRevenue.toFixed(2)}
+              icon="📈"
+              format="currency"
+            />
+            <MetricDisplay
+              title="Mejor Día"
+              value={bestDay?.revenue || '0'}
+              icon="🔥"
+              format="currency"
+            />
+            <MetricDisplay
+              title="Peor Día"
+              value={worstDay?.revenue || '0'}
+              icon="❄️"
+              format="currency"
+            />
+            <MetricDisplay
+              title="Volatilidad (σ)"
+              value={stdDev.toFixed(2)}
+              icon="📉"
+              format="currency"
+            />
+          </div>
+
+          {/* Performance Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="border-l-4 border-l-green-500">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-muted-foreground">
+                  🔥 Días Excepcionales
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-green-600">{highPerformanceDays}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {((highPerformanceDays / salesData.length) * 100).toFixed(0)}% de los {granularity === 'month' ? 'meses' : 'días'} superaron el promedio
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="border-l-4 border-l-orange-500">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-muted-foreground">
+                  ❄️ Días Bajos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-orange-600">{lowPerformanceDays}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {((lowPerformanceDays / salesData.length) * 100).toFixed(0)}% de los {granularity === 'month' ? 'meses' : 'días'} estuvieron bajo el promedio
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </>
       )}
 
       {/* Chart */}
@@ -213,44 +309,84 @@ export default function SalesByDatePage() {
         <EmptyState />
       ) : (
         <Card style={{ borderColor: 'var(--color-primary)' }}>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between gap-4">
             <div>
-              <CardTitle>Datos de Ventas</CardTitle>
-              <CardDescription>Desglose detallado por {granularity === 'month' ? 'mes' : granularity === 'week' ? 'semana' : 'día'}</CardDescription>
+              <CardTitle>Análisis Temporal Detallado</CardTitle>
+              <CardDescription>
+                {tableData.length} {granularity === 'month' ? 'meses' : granularity === 'week' ? 'semanas' : 'días'} analizados
+              </CardDescription>
             </div>
             <ExportButton
               data={tableData}
-              filename={`ventas-por-${granularity}-${startDate}-a-${endDate}`}
+              filename={`ventas-${granularity}-${startDate}-a-${endDate}`}
             />
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="hover:bg-transparent">
                     <TableHead>{granularity === 'month' ? 'Mes' : 'Fecha'}</TableHead>
                     <TableHead className="text-right">Ingresos</TableHead>
                     <TableHead className="text-right">Transacciones</TableHead>
-                    <TableHead className="text-right">Transacción Promedio</TableHead>
+                    <TableHead className="text-right">Promedio</TableHead>
                     <TableHead className="text-right">% del Total</TableHead>
+                    <TableHead className="text-center">Tendencia</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {tableData.map((row) => (
-                    <TableRow key={row.date}>
-                      <TableCell>
-                        {granularity === 'month'
-                          ? formatMonthDisplay(row.date)
-                          : formatDateDisplay(row.date)}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(row.revenue)}
-                      </TableCell>
-                      <TableCell className="text-right">{row.transactions}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(row.avgTransaction)}</TableCell>
-                      <TableCell className="text-right">{row.percentOfTotal}%</TableCell>
-                    </TableRow>
-                  ))}
+                  {tableData.map((row, idx) => {
+                    const rowRevenue = parseFloat(row.revenue)
+                    const isAboveAvg = rowRevenue > avgRevenue
+                    const isHighPerformance = rowRevenue > avgRevenue * 1.2
+                    const isLowPerformance = rowRevenue < avgRevenue * 0.8
+                    const percentage = parseFloat(row.percentOfTotal)
+
+                    return (
+                      <TableRow
+                        key={row.date}
+                        className={idx % 2 === 0 ? 'bg-muted/20' : ''}
+                      >
+                        <TableCell className="font-medium">
+                          {granularity === 'month'
+                            ? formatMonthDisplay(row.date)
+                            : formatDateDisplay(row.date)}
+                        </TableCell>
+                        <TableCell className="text-right font-bold">
+                          <span className={isHighPerformance ? 'text-green-600' : isLowPerformance ? 'text-orange-600' : ''}>
+                            {formatCurrency(row.revenue)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          {row.transactions}
+                        </TableCell>
+                        <TableCell className="text-right text-muted-foreground">
+                          {formatCurrency(row.avgTransaction)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <div className="w-16 bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                              <div
+                                className="h-2 rounded-full transition-all"
+                                style={{
+                                  width: `${Math.min(percentage, 100)}%`,
+                                  backgroundColor: isHighPerformance ? '#10b981' : isLowPerformance ? '#f97316' : 'var(--color-primary)',
+                                }}
+                              />
+                            </div>
+                            <span className="font-semibold min-w-[45px] text-right">
+                              {row.percentOfTotal}%
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {isHighPerformance && <Flame className="h-4 w-4 text-green-600 mx-auto" />}
+                          {isLowPerformance && <Snowflake className="h-4 w-4 text-orange-600 mx-auto" />}
+                          {!isHighPerformance && !isLowPerformance && <TrendingUp className="h-4 w-4 text-muted-foreground mx-auto" />}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
                 </TableBody>
               </Table>
             </div>

@@ -5,7 +5,7 @@ import { formatCurrency, formatPercentage, chartColors } from '@/lib/analytics/c
 
 interface PieDistributionChartProps {
   data: any[]
-  dataKey: string
+  dataKey?: string
   nameKey?: string
   title?: string
   variant?: 'pie' | 'donut'
@@ -15,7 +15,7 @@ interface PieDistributionChartProps {
 
 export function PieDistributionChart({
   data,
-  dataKey,
+  dataKey = 'value',
   nameKey = 'name',
   title,
   variant = 'pie',
@@ -50,8 +50,8 @@ export function PieDistributionChart({
             dataKey={dataKey}
             isAnimationActive={true}
           >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+            {data.map((entry: any, index) => (
+              <Cell key={entry.id || `cell-${index}`} fill={colors[index % colors.length]} />
             ))}
           </Pie>
           <Tooltip
@@ -63,7 +63,7 @@ export function PieDistributionChart({
             formatter={(value: any) => {
               const numValue = typeof value === 'number' ? value : 0
               if (formatValue) return formatValue(numValue)
-              if (dataKey.includes('revenue') || dataKey.includes('price')) {
+              if (dataKey && (dataKey.includes('revenue') || dataKey.includes('price'))) {
                 return formatCurrency(numValue)
               }
               return numValue

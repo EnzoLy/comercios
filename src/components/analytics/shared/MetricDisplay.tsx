@@ -34,8 +34,8 @@ export function MetricDisplay({
 
   return (
     <Card className={`p-6 ${highlight ? 'border-primary bg-primary/5' : ''}`}>
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
+      <div className="flex items-start justify-between gap-4 overflow-hidden">
+        <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
           <p className="text-2xl font-bold mt-2">{formatValue()}</p>
           {description && <p className="text-xs text-muted-foreground mt-2">{description}</p>}
@@ -45,7 +45,7 @@ export function MetricDisplay({
             </p>
           )}
         </div>
-        {icon && <div className="text-4xl text-muted-foreground ml-4">{icon}</div>}
+        {icon && <div className="text-4xl text-muted-foreground flex-shrink-0 h-16 w-16 flex items-center justify-center">{icon}</div>}
       </div>
     </Card>
   )

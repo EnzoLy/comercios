@@ -50,7 +50,8 @@ export async function GET(
     const startDateObj = new Date(finalStartDate!)
     const endDateObj = new Date(finalEndDate!)
 
-    // Set end date to end of day
+    // Set start date to beginning of day and end date to end of day
+    startDateObj.setHours(0, 0, 0, 0)
     endDateObj.setHours(23, 59, 59, 999)
 
     const analyticsParams = { startDate: startDateObj, endDate: endDateObj }

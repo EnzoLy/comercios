@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { useStore } from '@/hooks/use-store'
 import { toast } from 'sonner'
-import { Trophy, Zap } from 'lucide-react'
+import { Trophy, Zap, TrendingUp, TrendingDown, AlertCircle, Award, BarChart3 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
@@ -105,72 +105,130 @@ export default function EmployeesPage() {
     transactions: e.transactions,
   }))
 
+  // Calculate KPIs
+  const avgRevenuePerEmployee = summary && employees.length > 0 ? parseFloat(summary.totalRevenue) / employees.length : 0
+  const avgTransactionsPerEmployee = summary && employees.length > 0 ? summary.totalTransactions / employees.length : 0
+  const topEmployee = sortedEmployees.length > 0 ? sortedEmployees[0] : null
+  const lowestEmployee = sortedEmployees.length > 0 ? sortedEmployees[sortedEmployees.length - 1] : null
+
+  // Employees below average
+  const aboveAvgCount = employees.filter(e => parseFloat(e.revenue) > avgRevenuePerEmployee).length
+  const belowAvgCount = employees.length - aboveAvgCount
+
   return (
     <div className="p-4 md:p-8 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Desempeño de Empleados</h1>
-        <p className="text-muted-foreground mt-2">
-          Seguimiento de métricas de ventas y desempeño de cajeros/empleados
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Desempeño de Empleados</h1>
+          <p className="text-muted-foreground mt-2">
+            Análisis detallado de métricas de ventas, consistencia y desempeño de equipo
+          </p>
+        </div>
       </div>
 
       {/* Date Range Selector */}
       <DateRangeSelector startDate={startDate} endDate={endDate} onDateChange={handleDateChange} />
 
-      {/* Summary Metrics */}
+      {/* Main Summary Metrics - Expanded */}
       {isLoading ? (
-        <LoadingState type="card" count={3} />
+        <LoadingState type="card" count={8} />
       ) : !summary ? (
         <EmptyState />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <MetricDisplay
-            title="Ingresos Totales"
-            value={summary.totalRevenue}
-            icon="💰"
-            format="currency"
-          />
-          <MetricDisplay
-            title="Transacciones Totales"
-            value={summary.totalTransactions}
-            icon="📊"
-            format="number"
-          />
-          <MetricDisplay
-            title="Transacción Promedio"
-            value={summary.avgTransaction}
-            icon="📈"
-            format="currency"
-          />
-        </div>
-      )}
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-4">
+            <MetricDisplay
+              title="Ingresos Totales"
+              value={summary.totalRevenue}
+              icon="💰"
+              format="currency"
+            />
+            <MetricDisplay
+              title="Transacciones"
+              value={summary.totalTransactions}
+              icon="📊"
+              format="number"
+            />
+            <MetricDisplay
+              title="Transacción Promedio"
+              value={summary.avgTransaction}
+              icon="💵"
+              format="currency"
+            />
+            <MetricDisplay
+              title="Empleados Activos"
+              value={employees.length}
+              icon="👥"
+              format="number"
+            />
+            <MetricDisplay
+              title="Ingreso Promedio/Empleado"
+              value={avgRevenuePerEmployee.toFixed(2)}
+              icon="📈"
+              format="currency"
+            />
+            <MetricDisplay
+              title="Transacciones Promedio"
+              value={Math.round(avgTransactionsPerEmployee)}
+              icon="🎯"
+              format="number"
+            />
+            <MetricDisplay
+              title="Arriba del Promedio"
+              value={aboveAvgCount}
+              icon="⬆️"
+              format="number"
+            />
+            <MetricDisplay
+              title="Bajo del Promedio"
+              value={belowAvgCount}
+              icon="⬇️"
+              format="number"
+            />
+          </div>
 
-      {/* Top Performers */}
-      {!isLoading && topPerformers.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {topPerformers.map((employee, idx) => (
-            <Card
-              key={employee.employeeId}
-              className={idx === 0 ? 'md:col-span-2' : ''}
-              style={{ borderColor: idx === 0 ? 'var(--color-primary)' : 'var(--color-secondary)' }}
-            >
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {idx === 0 ? '🏆 Mejor Desempeño' : idx === 1 ? '🥈 Segundo Lugar' : '🥉 Tercer Lugar'}
-                    </p>
-                    <p className="text-xl font-bold mt-2">{employee.employeeName}</p>
-                    <div className="mt-4 space-y-1 text-sm">
-                      <p>Ingresos: {formatCurrency(employee.revenue)}</p>
-                      <p>Transacciones: {employee.transactions}</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+          {/* Top Performers - Improved */}
+          {topPerformers.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {topPerformers.map((employee, idx) => {
+                const medals = ['🥇', '🥈', '🥉']
+                return (
+                  <Card
+                    key={employee.employeeId}
+                    className={`border-l-4 ${idx === 0 ? 'border-l-yellow-500' : idx === 1 ? 'border-l-gray-400' : 'border-l-orange-400'}`}
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            {medals[idx]} {idx === 0 ? 'Mejor Desempeño' : idx === 1 ? 'Segundo Lugar' : 'Tercer Lugar'}
+                          </p>
+                          <p className="text-lg font-bold mt-2">{employee.employeeName}</p>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <p className="text-2xl font-bold">{formatCurrency(employee.revenue)}</p>
+                        <p className="text-xs text-muted-foreground">En ingresos</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Transacciones</p>
+                          <p className="font-semibold">{employee.transactions}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Promedio</p>
+                          <p className="font-semibold">{formatCurrency(employee.avgTransaction)}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
+        </>
       )}
 
       {/* Chart */}
@@ -198,23 +256,42 @@ export default function EmployeesPage() {
         </Card>
       )}
 
-      {/* Data Table */}
+      {/* Performance Alerts */}
+      {!isLoading && lowestEmployee && parseFloat(lowestEmployee.revenue) < avgRevenuePerEmployee * 0.5 && (
+        <Card className="border-l-4 border-l-orange-500">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-orange-500 mt-0.5" />
+              <div>
+                <p className="font-semibold text-orange-900 dark:text-orange-100">⚠️ Desempeño bajo detectado</p>
+                <p className="text-sm text-orange-800 dark:text-orange-200 mt-1">
+                  {lowestEmployee.employeeName} está significativamente por debajo del promedio ({formatCurrency(lowestEmployee.revenue)} vs {formatCurrency(avgRevenuePerEmployee.toString())})
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Detailed Data Table */}
       {isLoading ? (
         <LoadingState type="table" />
       ) : employees.length === 0 ? (
         <EmptyState />
       ) : (
         <Card style={{ borderColor: 'var(--color-primary)' }}>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between gap-4">
             <div>
-              <CardTitle>Detalles del Empleado</CardTitle>
-              <CardDescription>Métricas de desempeño completas para cada empleado</CardDescription>
+              <CardTitle>Análisis Detallado de Empleados</CardTitle>
+              <CardDescription>
+                {sortedEmployees.length} empleados — Ordenado por ingresos
+              </CardDescription>
             </div>
             <ExportButton
               data={sortedEmployees.map((e) => ({
-                'Nombre del Empleado': e.employeeName,
+                'Empleado': e.employeeName,
                 'Transacciones': e.transactions,
-                'Ingresos Totales': e.revenue,
+                'Ingresos': e.revenue,
                 'Transacción Promedio': e.avgTransaction,
                 'Última Venta': e.lastSaleDate ? formatDateDisplay(e.lastSaleDate) : 'N/A',
               }))}
@@ -225,34 +302,69 @@ export default function EmployeesPage() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre del Empleado</TableHead>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="w-1/3">Empleado</TableHead>
                     <TableHead className="text-right">Transacciones</TableHead>
                     <TableHead className="text-right">Ingresos</TableHead>
-                    <TableHead className="text-right">Transacción Promedio</TableHead>
-                    <TableHead>Última Venta</TableHead>
+                    <TableHead className="text-right">Promedio</TableHead>
+                    <TableHead className="text-right">% del Total</TableHead>
+                    <TableHead className="text-center">Estado</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedEmployees.map((employee, idx) => (
-                    <TableRow key={employee.employeeId}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          {idx === 0 && <Trophy className="h-4 w-4 text-yellow-500" />}
-                          {idx === 1 && <Zap className="h-4 w-4 text-blue-500" />}
-                          {employee.employeeName}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">{employee.transactions}</TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(employee.revenue)}
-                      </TableCell>
-                      <TableCell className="text-right">{formatCurrency(employee.avgTransaction)}</TableCell>
-                      <TableCell>
-                        {employee.lastSaleDate ? formatDateDisplay(employee.lastSaleDate) : 'N/A'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {sortedEmployees.map((employee, idx) => {
+                    const revenueNum = parseFloat(employee.revenue)
+                    const isAboveAvg = revenueNum > avgRevenuePerEmployee
+                    const isTopPerformer = idx < 3
+                    const percentOfTotal = summary ? ((revenueNum / parseFloat(summary.totalRevenue)) * 100) : 0
+
+                    return (
+                      <TableRow key={employee.employeeId} className={idx % 2 === 0 ? 'bg-muted/20' : ''}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {idx === 0 && <span>🥇</span>}
+                            {idx === 1 && <span>🥈</span>}
+                            {idx === 2 && <span>🥉</span>}
+                            {employee.employeeName}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          {employee.transactions}
+                        </TableCell>
+                        <TableCell className="text-right font-bold">
+                          <span className={isAboveAvg ? 'text-green-600' : 'text-orange-600'}>
+                            {formatCurrency(employee.revenue)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right text-muted-foreground">
+                          {formatCurrency(employee.avgTransaction)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <div className="w-20 bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                              <div
+                                className="h-2 rounded-full transition-all"
+                                style={{
+                                  width: `${Math.min(percentOfTotal, 100)}%`,
+                                  backgroundColor: isTopPerformer ? '#10b981' : isAboveAvg ? 'var(--color-primary)' : '#f97316',
+                                }}
+                              />
+                            </div>
+                            <span className="font-semibold min-w-[40px] text-right text-xs">
+                              {percentOfTotal.toFixed(1)}%
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {isAboveAvg ? (
+                            <TrendingUp className="h-4 w-4 text-green-600 mx-auto" />
+                          ) : (
+                            <TrendingDown className="h-4 w-4 text-orange-600 mx-auto" />
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
                 </TableBody>
               </Table>
             </div>
