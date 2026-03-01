@@ -8,7 +8,7 @@ interface MetricDisplayProps {
   title: string
   value: string | number
   icon?: ReactNode
-  format?: 'currency' | 'number' | 'percentage' | 'none'
+  format?: 'currency' | 'number' | 'percentage' | 'text' | 'none'
   trend?: number | null
   description?: string
   highlight?: boolean
@@ -27,6 +27,7 @@ export function MetricDisplay({
     if (format === 'currency') return formatCurrency(value)
     if (format === 'number') return formatNumber(value)
     if (format === 'percentage') return `${parseFloat(String(value)).toFixed(2)}%`
+    if (format === 'text' || format === 'none') return String(value)
     return String(value)
   }
 
