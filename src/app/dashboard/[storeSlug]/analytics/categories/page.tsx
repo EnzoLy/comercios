@@ -104,7 +104,7 @@ export default function CategoriesPage() {
   const topCategory = sortedCategories.length > 0 ? sortedCategories[0] : null
   const avgRevenuePerCategory = summary && sortedCategories.length > 0 ? parseFloat(summary.totalRevenue) / sortedCategories.length : 0
   const avgProductsPerCategory = summary && sortedCategories.length > 0 ? Math.round(
-    sortedCategories.reduce((sum, c) => sum + c.productsCount, 0) / sortedCategories.length
+    sortedCategories.reduce((sum: number, c) => sum + c.productsCount, 0) / sortedCategories.length
   ) : 0
 
   return (
