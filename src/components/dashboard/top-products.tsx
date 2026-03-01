@@ -8,6 +8,7 @@ interface TopProduct {
   sku: string
   quantitySold: number
   revenue: number
+  isActive: boolean
 }
 
 interface TopProductsProps {
@@ -30,7 +31,7 @@ export function TopProducts({ products, storeSlug }: TopProductsProps) {
           <p className="text-muted-foreground text-center py-4">Aún no hay datos de ventas</p>
         ) : (
           <div className="space-y-4">
-            {products.map((product, index) => (
+            {products.filter(product => product.isActive).map((product, index) => (
               <div
                 key={product.sku}
                 className="flex items-center justify-between border-b pb-3 last:border-0"

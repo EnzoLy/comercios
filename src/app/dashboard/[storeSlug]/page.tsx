@@ -93,6 +93,7 @@ export default async function StoreDashboard({
       SELECT
         p.name,
         p.sku,
+        p."isActive",
         SUM(si.quantity) as "quantitySold",
         SUM(si.total) as revenue
       FROM sale_item si
@@ -101,7 +102,7 @@ export default async function StoreDashboard({
       WHERE s."storeId" = $1
         AND s.status = $2
         AND s."createdAt" >= $3
-      GROUP BY p.id, p.name, p.sku
+      GROUP BY p.id, p.name, p.sku, p."isActive"
       ORDER BY "quantitySold" DESC
       LIMIT 5
     `,
@@ -113,6 +114,7 @@ export default async function StoreDashboard({
     sku: row.sku,
     quantitySold: Number(row.quantitySold),
     revenue: Number(row.revenue),
+    isActive: row.isActive,
   }))
 
   // Get low stock products
